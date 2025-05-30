@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -49,16 +49,23 @@ export function SignInForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-center gap-y-6 max-w-[500px] w-full h-screen sm:h-fit bg-[#2C2C2C]/75 p-8 border border-muted-foreground rounded-md">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col justify-center gap-y-6 max-w-[500px] w-full h-screen sm:h-fit bg-[#2C2C2C]/75 p-8 border border-muted-foreground rounded-md"
+      >
         <div className="lg:hidden flex flex-col">
           <span className="flex items-center gap-2">
             <Logo width={60} height={60} priority />
           </span>
         </div>
         <span className="">
-          <h2 className="text-lg sm:text-3xl lg:text-4xl font-bold">Sign In <br className="hidden lg:block" />
-            to your account</h2>
-          <p className="text-muted-foreground">Enter your details to proceed further</p>
+          <h2 className="text-lg sm:text-3xl lg:text-4xl font-bold">
+            Sign In <br className="hidden lg:block" />
+            to your account
+          </h2>
+          <p className="text-muted-foreground">
+            Enter your details to proceed further
+          </p>
         </span>
         <div className="space-y-6">
           <FormField
@@ -66,12 +73,12 @@ export function SignInForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className='font-normal'>Email Address</FormLabel>
+                <FormLabel className="font-normal">Email Address</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter Email Address"
                     {...field}
-                    className='border-muted-foreground'
+                    className="border-muted-foreground"
                   />
                 </FormControl>
                 <FormMessage />
@@ -84,14 +91,14 @@ export function SignInForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className='font-normal'>Your Password</FormLabel>
+                <FormLabel className="font-normal">Your Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter Password"
                       {...field}
-                      className='border-muted-foreground'
+                      className="border-muted-foreground"
                     />
                     <Button
                       type="button"
@@ -126,7 +133,7 @@ export function SignInForm() {
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel className='font-normal'>Remember me</FormLabel>
+                    <FormLabel className="font-normal">Remember me</FormLabel>
                   </div>
                 </FormItem>
               )}
@@ -136,9 +143,7 @@ export function SignInForm() {
               className="text-sm text-white font-normal"
               asChild
             >
-              <Link href="/auth/sign-in/forgot-password">
-                Forgot Password?
-              </Link>
+              <Link href="/auth/sign-in/forgot-password">Forgot Password?</Link>
             </Button>
           </div>
         </div>

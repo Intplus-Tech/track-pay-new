@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -43,10 +43,15 @@ export function ForgotPasswordForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-center gap-y-6 max-w-[400px] w-full h-screen sm:h-fit bg-[#2C2C2C]/75 p-8 border border-muted-foreground rounded-md">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col justify-center gap-y-6 max-w-[400px] w-full h-screen sm:h-fit bg-[#2C2C2C]/75 p-8 border border-muted-foreground rounded-md"
+      >
         <Logo width={60} height={60} priority />
         <span className="space-y-2">
-          <h2 className="text-lg sm:text-3xl lg:text-4xl font-bold">Forgot Password</h2>
+          <h2 className="text-lg sm:text-3xl lg:text-4xl font-bold">
+            Forgot Password
+          </h2>
           <p className="text-muted-foreground leading-4">
             Enter your email address to reset your password
           </p>
@@ -58,7 +63,7 @@ export function ForgotPasswordForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className='font-normal'>Email Address</FormLabel>
+                <FormLabel className="font-normal">Email Address</FormLabel>
                 <FormControl>
                   <span className="relative flex items-center">
                     <Mail className="absolute size-4 text-muted-foreground left-2 translate-y-[1px]" />
@@ -85,9 +90,7 @@ export function ForgotPasswordForm() {
             className="text-sm text-white font-normal"
             asChild
           >
-            <Link href={'/auth/sign-in'}>
-              Back to Sign In
-            </Link>
+            <Link href={"/auth/sign-in"}>Back to Sign In</Link>
           </Button>
         </div>
       </form>
