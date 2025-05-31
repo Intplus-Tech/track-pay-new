@@ -92,8 +92,9 @@ export function DashboardSidebar() {
         >
           <Logo width={40} height={40} priority />
           <p
-            className={`text-2xl font-semibold transition-all duration-200 text-primary ease-in-out ${open ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
-              }`}
+            className={`text-2xl font-semibold transition-all duration-200 text-primary ease-in-out ${
+              open ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
+            }`}
           >
             TrackPay
           </p>
@@ -103,11 +104,14 @@ export function DashboardSidebar() {
       <SidebarContent className="p-2">
         <SidebarMenu>
           {navItems.map((item) => (
-
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(item.href)}
+                isActive={
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname === item.href || pathname.startsWith(item.href)
+                }
                 className={cn(
                   "h-10 gap-3 pl-4 pr-2 font-medium text-primary/40 [active=true]:bg-white data-[active=true]:shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] data-[active=true]:text-primary hover:bg-primary/20 hover:text-primary",
                   // pathname === item.href && "bg-primary text-white hover:bg-blue-700 hover:text-white",

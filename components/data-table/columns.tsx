@@ -1,18 +1,22 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { LoanData, UserData } from "@/types/data-table"
-import { StatusBadge } from "./StatusBadge"
-import { RowActions, DropdownMenuItem, DropdownMenuSeparator } from "./RowActions"
-import { Separator } from "../ui/separator"
+import { ColumnDef } from "@tanstack/react-table";
+import { LoanData, UserData } from "@/types/data-table";
+import { StatusBadge } from "./StatusBadge";
+import {
+  RowActions,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "./RowActions";
+import { Separator } from "../ui/separator";
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
     minimumFractionDigits: 0,
-  }).format(amount)
-}
+  }).format(amount);
+};
 
 export const loanColumns: ColumnDef<LoanData>[] = [
   {
@@ -86,7 +90,7 @@ export const loanColumns: ColumnDef<LoanData>[] = [
       </RowActions>
     ),
   },
-]
+];
 
 export const userColumns: ColumnDef<UserData>[] = [
   {
@@ -119,7 +123,7 @@ export const userColumns: ColumnDef<UserData>[] = [
       </RowActions>
     ),
   },
-]
+];
 
 export const loaneeAccountColumns: ColumnDef<LoanData>[] = [
   {
@@ -164,4 +168,4 @@ export const loaneeAccountColumns: ColumnDef<LoanData>[] = [
       </RowActions>
     ),
   },
-]
+];

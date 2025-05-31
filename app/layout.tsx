@@ -25,7 +25,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
@@ -34,9 +33,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F4F7FE]`}
       >
-        <SidebarProvider defaultOpen={defaultOpen}>
-          {children}
-        </SidebarProvider>
+        <SidebarProvider defaultOpen={defaultOpen}>{children}</SidebarProvider>
         <Toaster />
       </body>
     </html>

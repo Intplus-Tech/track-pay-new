@@ -1,11 +1,9 @@
-import React from 'react'
-import { DataTable } from './data-table/DataTable'
-import { loanColumns } from './data-table/columns'
-import { sampleLoanData } from '@/data/sample-data'
+import React from "react";
+import { DataTable } from "./data-table/DataTable";
+import { loanColumns } from "./data-table/columns";
+import { sampleLoanData } from "@/data/sample-data";
 
 const TrackerPage = () => {
-
-
   const loanFilterConfig = {
     enabled: true,
     filters: [
@@ -17,10 +15,10 @@ const TrackerPage = () => {
           { label: "Kingsley (Abuja)", value: "Abuja/Kingsley" },
           { label: "Habeeb (Kano)", value: "Kano/Habeeb" },
           { label: "Opebi", value: "Opebi/Benedicta" },
-        ]
-      }
-    ]
-  }
+        ],
+      },
+    ],
+  };
 
   return (
     <div>
@@ -29,20 +27,20 @@ const TrackerPage = () => {
         data={sampleLoanData}
         searchConfig={{
           enabled: true,
-          placeholder: "Search Loans"
+          placeholder: "Search Loans",
         }}
         filterConfig={loanFilterConfig}
         exportConfig={{
           enabled: true,
-          options: ['excel']
+          options: ["excel"],
         }}
         paginationConfig={{
           enabled: true,
-          pageSizeOptions: [10, 20, 30, 40, 50]
+          pageSizeOptions: [10, 20, 30, 40, 50],
         }}
       />
     </div>
-  )
-}
+  );
+};
 
-export default TrackerPage
+export default TrackerPage;

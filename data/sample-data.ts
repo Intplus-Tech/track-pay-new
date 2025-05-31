@@ -1,4 +1,4 @@
-import { LoanData, UserData } from "@/types/data-table"
+import { LoanData, UserData } from "@/types/data-table";
 
 export const sampleLoanData: LoanData[] = [
   {
@@ -201,16 +201,31 @@ export const sampleLoanData: LoanData[] = [
     outstandingLoan: 50000,
     status: "On-Time",
   },
-]
-
+];
 
 export const sampleUserData: UserData[] = Array.from({ length: 20 }, (_, i) => {
   const names = [
-    "Adeola Bello", "Chike Obi", "Fatima Yusuf", "Emeka Okoro", "Ngozi Uche",
-    "Ibrahim Musa", "Blessing Adeniyi", "Samuel Adeyemi", "Miriam Johnson", "Tope Alabi",
-    "Ebuka Eze", "Tosin Adebayo", "Rasheed Lawal", "Kemi Ajayi", "Abubakar Bello",
-    "Lilian Nwankwo", "Olu Jacobs", "Halima Bello", "Kelvin Ojo", "Femi Daniels"
-  ]
+    "Adeola Bello",
+    "Chike Obi",
+    "Fatima Yusuf",
+    "Emeka Okoro",
+    "Ngozi Uche",
+    "Ibrahim Musa",
+    "Blessing Adeniyi",
+    "Samuel Adeyemi",
+    "Miriam Johnson",
+    "Tope Alabi",
+    "Ebuka Eze",
+    "Tosin Adebayo",
+    "Rasheed Lawal",
+    "Kemi Ajayi",
+    "Abubakar Bello",
+    "Lilian Nwankwo",
+    "Olu Jacobs",
+    "Halima Bello",
+    "Kelvin Ojo",
+    "Femi Daniels",
+  ];
   return {
     id: `${i + 1}`,
     employeeId: `EI-39${20 + i}`,
@@ -218,9 +233,8 @@ export const sampleUserData: UserData[] = Array.from({ length: 20 }, (_, i) => {
     email: `${names[i].toLowerCase().replace(" ", ".")}@gmail.com`,
     role: i % 2 === 0 ? "Business Development Manager" : "Loan Manager",
     password: "••••••••••••",
-  }
-})
-
+  };
+});
 
 export const loaneeAccountData: LoanData[] = [
   {
@@ -262,4 +276,4 @@ export const loaneeAccountData: LoanData[] = [
     outstandingLoan: 70000,
     status: "Failed",
   },
-]
+];

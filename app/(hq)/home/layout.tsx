@@ -1,10 +1,10 @@
-import Header from "../_components/Header"
-import { DashboardSidebar } from "../_components/SideBar"
+import Header from "../_components/Header";
+import { DashboardSidebar } from "../_components/SideBar";
 
 export default function HomeLayout({
-  children
+  children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <main className="relative h-screen w-screen flex">
@@ -27,6 +27,5 @@ export default function HomeLayout({
         </div>
       </div>
     </main>
-
-  )
+  );
 }

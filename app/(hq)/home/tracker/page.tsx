@@ -1,8 +1,7 @@
-import PageHeader from '@/components/PageHeader';
-import TrackerPage from '@/components/TrackerPage'
-import { PageProps } from '@/types';
-import React from 'react'
-
+import PageHeader from "@/components/PageHeader";
+import TrackerPage from "@/components/TrackerPage";
+import { PageProps } from "@/types";
+import React from "react";
 
 const page = async ({ params }: PageProps) => {
   const { id } = await params;
@@ -11,7 +10,7 @@ const page = async ({ params }: PageProps) => {
     <div>
       <TrackerPage />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

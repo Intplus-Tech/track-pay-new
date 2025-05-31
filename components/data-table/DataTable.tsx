@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -12,7 +12,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -20,20 +20,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
-import { TableFilters } from "./TableFilters"
-import { ExportButton } from "./ExportButton"
-import { DataTableProps } from "@/types/data-table"
+} from "@/components/ui/select";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { TableFilters } from "./TableFilters";
+import { ExportButton } from "./ExportButton";
+import { DataTableProps } from "@/types/data-table";
 
 export function DataTable<TData, TValue>({
   columns,
@@ -45,12 +45,14 @@ export function DataTable<TData, TValue>({
   rowActions,
   title,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = useState({})
-  const [globalFilter, setGlobalFilter] = useState("")
-  const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState<
+    Record<string, string[]>
+  >({});
 
   const table = useReactTable({
     data,
@@ -72,19 +74,19 @@ export function DataTable<TData, TValue>({
       rowSelection,
       globalFilter,
     },
-  })
+  });
 
   const handleFilterChange = (filterId: string, values: string[]) => {
-    setSelectedFilters(prev => ({
+    setSelectedFilters((prev) => ({
       ...prev,
-      [filterId]: values
-    }))
-  }
+      [filterId]: values,
+    }));
+  };
 
   const handleExport = (format: string) => {
-    console.log(`Exporting as ${format}`)
+    console.log(`Exporting as ${format}`);
     // Additional export logic can be added here if needed
-  }
+  };
 
   return (
     <div className="w-full">
@@ -97,7 +99,9 @@ export function DataTable<TData, TValue>({
               <Input
                 placeholder={searchConfig.placeholder}
                 value={globalFilter ?? ""}
-                onChange={(event) => setGlobalFilter(String(event.target.value))}
+                onChange={(event) =>
+                  setGlobalFilter(String(event.target.value))
+                }
                 className="pl-8 max-w-sm rounded-full bg-primary/10"
               />
             </div>
@@ -125,8 +129,10 @@ export function DataTable<TData, TValue>({
             <ExportButton
               options={exportConfig.options}
               onExport={handleExport}
-              data={table.getFilteredRowModel().rows.map(row => row.original)}
-              filename={title?.toLowerCase().replace(/\s+/g, '-') || 'table-export'}
+              data={table.getFilteredRowModel().rows.map((row) => row.original)}
+              filename={
+                title?.toLowerCase().replace(/\s+/g, "-") || "table-export"
+              }
             />
           )}
         </div>
@@ -139,13 +145,16 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="bg-gray-50">
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="font-medium text-gray-900">
+                  <TableHead
+                    key={header.id}
+                    className="font-medium text-gray-900"
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -163,7 +172,7 @@ export function DataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -191,11 +200,13 @@ export function DataTable<TData, TValue>({
             <Select
               value={`${table.getState().pagination.pageSize}`}
               onValueChange={(value) => {
-                table.setPageSize(Number(value))
+                table.setPageSize(Number(value));
               }}
             >
               <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={table.getState().pagination.pageSize} />
+                <SelectValue
+                  placeholder={table.getState().pagination.pageSize}
+                />
               </SelectTrigger>
               <SelectContent side="top" className="bg-white border shadow-lg">
                 {paginationConfig.pageSizeOptions?.map((pageSize) => (
@@ -220,24 +231,29 @@ export function DataTable<TData, TValue>({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              {Array.from({ length: Math.min(5, table.getPageCount()) }, (_, i) => {
-                const pageIndex = table.getState().pagination.pageIndex
-                const start = Math.max(0, pageIndex - 2)
-                const actualIndex = start + i
+              {Array.from(
+                { length: Math.min(5, table.getPageCount()) },
+                (_, i) => {
+                  const pageIndex = table.getState().pagination.pageIndex;
+                  const start = Math.max(0, pageIndex - 2);
+                  const actualIndex = start + i;
 
-                if (actualIndex >= table.getPageCount()) return null
+                  if (actualIndex >= table.getPageCount()) return null;
 
-                return (
-                  <Button
-                    key={actualIndex}
-                    variant={actualIndex === pageIndex ? "default" : "outline"}
-                    className="h-8 w-8 p-0"
-                    onClick={() => table.setPageIndex(actualIndex)}
-                  >
-                    {actualIndex + 1}
-                  </Button>
-                )
-              })}
+                  return (
+                    <Button
+                      key={actualIndex}
+                      variant={
+                        actualIndex === pageIndex ? "default" : "outline"
+                      }
+                      className="h-8 w-8 p-0"
+                      onClick={() => table.setPageIndex(actualIndex)}
+                    >
+                      {actualIndex + 1}
+                    </Button>
+                  );
+                },
+              )}
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
@@ -251,5 +267,5 @@ export function DataTable<TData, TValue>({
         </div>
       )}
     </div>
-  )
+  );
 }

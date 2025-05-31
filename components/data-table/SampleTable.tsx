@@ -1,13 +1,21 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DataTable } from "@/components/data-table/DataTable"
-import { loanColumns, userColumns, loaneeAccountColumns } from "@/components/data-table/columns"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { loaneeAccountData, sampleLoanData, sampleUserData } from "@/data/sample-data"
+import { useState } from "react";
+import { DataTable } from "@/components/data-table/DataTable";
+import {
+  loanColumns,
+  userColumns,
+  loaneeAccountColumns,
+} from "@/components/data-table/columns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  loaneeAccountData,
+  sampleLoanData,
+  sampleUserData,
+} from "@/data/sample-data";
 
 const Sampletable = () => {
-  const [activeTable, setActiveTable] = useState("loans")
+  const [activeTable, setActiveTable] = useState("loans");
 
   const loanFilterConfig = {
     enabled: true,
@@ -20,10 +28,10 @@ const Sampletable = () => {
           { label: "Kingsley (Abuja)", value: "Abuja/Kingsley" },
           { label: "Habeeb (Kano)", value: "Kano/Habeeb" },
           { label: "Opebi", value: "Opebi/Benedicta" },
-        ]
-      }
-    ]
-  }
+        ],
+      },
+    ],
+  };
 
   const userFilterConfig = {
     enabled: true,
@@ -36,7 +44,7 @@ const Sampletable = () => {
           { label: "Abuja", value: "abuja" },
           { label: "Kano", value: "kano" },
           { label: "Opebi", value: "opebi" },
-        ]
+        ],
       },
       {
         id: "officers",
@@ -46,10 +54,10 @@ const Sampletable = () => {
           { label: "Kingsley", value: "kingsley" },
           { label: "Habeeb", value: "habeeb" },
           { label: "Benedicta", value: "benedicta" },
-        ]
-      }
-    ]
-  }
+        ],
+      },
+    ],
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -59,11 +67,16 @@ const Sampletable = () => {
             DataVerse Table Kit
           </h1>
           <p className="text-gray-600">
-            Dynamic, reusable data tables with filtering, search, and export capabilities
+            Dynamic, reusable data tables with filtering, search, and export
+            capabilities
           </p>
         </div>
 
-        <Tabs value={activeTable} onValueChange={setActiveTable} className="w-full">
+        <Tabs
+          value={activeTable}
+          onValueChange={setActiveTable}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="loans">Loan Management</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
@@ -72,25 +85,28 @@ const Sampletable = () => {
 
           <TabsContent value="loans" className="space-y-4">
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-semibold mb-4">Loan Management Table</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                Loan Management Table
+              </h2>
               <p className="text-gray-600 mb-6">
-                Full-featured table with search, filtering, export, and row actions
+                Full-featured table with search, filtering, export, and row
+                actions
               </p>
               <DataTable
                 columns={loanColumns}
                 data={sampleLoanData}
                 searchConfig={{
                   enabled: true,
-                  placeholder: "Search Loans"
+                  placeholder: "Search Loans",
                 }}
                 filterConfig={loanFilterConfig}
                 exportConfig={{
                   enabled: true,
-                  options: ['excel']
+                  options: ["excel"],
                 }}
                 paginationConfig={{
                   enabled: true,
-                  pageSizeOptions: [10, 20, 30, 40, 50]
+                  pageSizeOptions: [10, 20, 30, 40, 50],
                 }}
               />
             </div>
@@ -98,7 +114,9 @@ const Sampletable = () => {
 
           <TabsContent value="users" className="space-y-4">
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-semibold mb-4">User Management Table</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                User Management Table
+              </h2>
               <p className="text-gray-600 mb-6">
                 Employee data with role-based filtering and actions
               </p>
@@ -107,16 +125,16 @@ const Sampletable = () => {
                 data={sampleUserData}
                 searchConfig={{
                   enabled: true,
-                  placeholder: "Search Officers"
+                  placeholder: "Search Officers",
                 }}
                 filterConfig={userFilterConfig}
                 exportConfig={{
                   enabled: true,
-                  options: ['excel', 'csv']
+                  options: ["excel", "csv"],
                 }}
                 paginationConfig={{
                   enabled: true,
-                  pageSizeOptions: [10, 20, 30]
+                  pageSizeOptions: [10, 20, 30],
                 }}
               />
             </div>
@@ -133,15 +151,15 @@ const Sampletable = () => {
                 data={loaneeAccountData}
                 searchConfig={{
                   enabled: true,
-                  placeholder: "Search Loanee"
+                  placeholder: "Search Loanee",
                 }}
                 exportConfig={{
                   enabled: true,
-                  options: ['pdf', 'excel']
+                  options: ["pdf", "excel"],
                 }}
                 paginationConfig={{
                   enabled: true,
-                  pageSizeOptions: [10, 20, 30, 40, 50]
+                  pageSizeOptions: [10, 20, 30, 40, 50],
                 }}
               />
             </div>
@@ -152,34 +170,54 @@ const Sampletable = () => {
           <h3 className="text-lg font-semibold mb-4">Features Demonstrated</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Dynamic Filtering</h4>
-              <p className="text-sm text-blue-700">Branch and officer-based filtering with multi-select options</p>
+              <h4 className="font-medium text-blue-900 mb-2">
+                Dynamic Filtering
+              </h4>
+              <p className="text-sm text-blue-700">
+                Branch and officer-based filtering with multi-select options
+              </p>
             </div>
             <div className="p-4 bg-green-50 rounded-lg">
               <h4 className="font-medium text-green-900 mb-2">Global Search</h4>
-              <p className="text-sm text-green-700">Search across all table columns with real-time filtering</p>
+              <p className="text-sm text-green-700">
+                Search across all table columns with real-time filtering
+              </p>
             </div>
             <div className="p-4 bg-purple-50 rounded-lg">
-              <h4 className="font-medium text-purple-900 mb-2">Export Options</h4>
-              <p className="text-sm text-purple-700">PDF, Excel, and CSV export capabilities</p>
+              <h4 className="font-medium text-purple-900 mb-2">
+                Export Options
+              </h4>
+              <p className="text-sm text-purple-700">
+                PDF, Excel, and CSV export capabilities
+              </p>
             </div>
             <div className="p-4 bg-yellow-50 rounded-lg">
-              <h4 className="font-medium text-yellow-900 mb-2">Status Badges</h4>
-              <p className="text-sm text-yellow-700">Color-coded status indicators with proper styling</p>
+              <h4 className="font-medium text-yellow-900 mb-2">
+                Status Badges
+              </h4>
+              <p className="text-sm text-yellow-700">
+                Color-coded status indicators with proper styling
+              </p>
             </div>
             <div className="p-4 bg-red-50 rounded-lg">
               <h4 className="font-medium text-red-900 mb-2">Row Actions</h4>
-              <p className="text-sm text-red-700">Configurable dropdown menus for each row</p>
+              <p className="text-sm text-red-700">
+                Configurable dropdown menus for each row
+              </p>
             </div>
             <div className="p-4 bg-indigo-50 rounded-lg">
-              <h4 className="font-medium text-indigo-900 mb-2">Responsive Design</h4>
-              <p className="text-sm text-indigo-700">Mobile-friendly layout with proper spacing</p>
+              <h4 className="font-medium text-indigo-900 mb-2">
+                Responsive Design
+              </h4>
+              <p className="text-sm text-indigo-700">
+                Mobile-friendly layout with proper spacing
+              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Sampletable
+export default Sampletable;

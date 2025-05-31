@@ -1,15 +1,15 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { EllipsisVertical } from "lucide-react"
+} from "@/components/ui/dropdown-menu";
+import { EllipsisVertical } from "lucide-react";
 
 interface RowActionsProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function RowActions({ children }: RowActionsProps) {
@@ -21,11 +21,14 @@ export function RowActions({ children }: RowActionsProps) {
           <EllipsisVertical className="h-4 w-4 -translate-x-1" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[160px] bg-white border shadow-lg">
+      <DropdownMenuContent
+        align="end"
+        className="min-w-[160px] bg-white border shadow-lg"
+      >
         {children}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
 
-export { DropdownMenuItem, DropdownMenuSeparator }
+export { DropdownMenuItem, DropdownMenuSeparator };
