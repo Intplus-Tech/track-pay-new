@@ -9,12 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AddTeamMemberForm } from "@/components/forms/AddTeamMemberForm";
 
 const Teamstable = () => {
-
   // const userFilterConfig = {
   //   enabled: true,
   //   filters: [
@@ -46,9 +45,7 @@ const Teamstable = () => {
       <Dialog>
         <DialogTrigger asChild>
           <span className="absolute top-0.5 bg-background p-2 rounded-full capitalize">
-            <Button
-              className="bg-primary/10 text-foreground hover:text-white rounded-full"
-            >
+            <Button className="bg-primary/10 text-foreground hover:text-white rounded-full">
               Add new team
             </Button>
           </span>

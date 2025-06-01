@@ -4,7 +4,6 @@ import { DataTable } from "@/components/data-table/DataTable";
 import { loanOfficerColumns } from "@/components/data-table/columns";
 
 const LoanOfficerTable = () => {
-
   const loanFilterConfig = {
     enabled: true,
     filters: [
@@ -27,7 +26,7 @@ const LoanOfficerTable = () => {
         columns={loanOfficerColumns}
         data={staffLoanPerformanceData}
         durationConfig={{
-          enabled: false
+          enabled: false,
         }}
         searchConfig={{
           enabled: true,

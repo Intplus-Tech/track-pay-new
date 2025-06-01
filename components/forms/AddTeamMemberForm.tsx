@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -14,16 +14,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Eye, EyeOff } from "lucide-react"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Eye, EyeOff } from "lucide-react";
 
 const permissions = [
   { id: "overview", label: "Overview", description: "View app overview" },
@@ -32,12 +33,12 @@ const permissions = [
   { id: "loan", label: "Loan Officers", description: "Manage loan officers" },
   { id: "team", label: "Team", description: "View and manage team" },
   { id: "settings", label: "Settings", description: "Access app settings" },
-] as const
+] as const;
 
-const roles = ["Admin", "Manager", "Trader", "Loan Officer"] as const
+const roles = ["Admin", "Manager", "Trader", "Loan Officer"] as const;
 
-type PermissionId = (typeof permissions)[number]["id"]
-type RoleType = (typeof roles)[number]
+type PermissionId = (typeof permissions)[number]["id"];
+type RoleType = (typeof roles)[number];
 
 const schema = z.object({
   employeeId: z.string().min(1, "Employee ID is required"),
@@ -48,15 +49,13 @@ const schema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   role: z.enum(roles, { message: "Role is required" }),
-  permissions: z.record(
-    z.object({ view: z.boolean(), manage: z.boolean() })
-  ),
-})
+  permissions: z.record(z.object({ view: z.boolean(), manage: z.boolean() })),
+});
 
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<typeof schema>;
 
 export function AddTeamMemberForm() {
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -69,26 +68,30 @@ export function AddTeamMemberForm() {
       email: "",
       password: "",
       role: roles[0],
-      permissions: permissions.reduce((acc, perm) => {
-        acc[perm.id] = { view: false, manage: false }
-        return acc
-      }, {} as Record<PermissionId, { view: boolean; manage: boolean }>),
+      permissions: permissions.reduce(
+        (acc, perm) => {
+          acc[perm.id] = { view: false, manage: false };
+          return acc;
+        },
+        {} as Record<PermissionId, { view: boolean; manage: boolean }>,
+      ),
     },
-  })
+  });
 
   const generatePassword = () => {
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"
-    let password = ""
+    const charset =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+    let password = "";
     for (let i = 0; i < 12; i++) {
-      const randomIndex = Math.floor(Math.random() * charset.length)
-      password += charset[randomIndex]
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
     }
-    form.setValue("password", password)
-  }
+    form.setValue("password", password);
+  };
 
   const onSubmit = (values: FormValues) => {
-    console.log(values)
-  }
+    console.log(values);
+  };
 
   return (
     <Form {...form}>
@@ -172,7 +175,11 @@ export function AddTeamMemberForm() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Enter email" {...field} />
+                      <Input
+                        type="email"
+                        placeholder="Enter email"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -198,7 +205,11 @@ export function AddTeamMemberForm() {
                         className="absolute right-2 top-2 text-sm text-muted-foreground"
                         onClick={() => setShowPassword((prev) => !prev)}
                       >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
                       </button>
                     </div>
                     <Button
@@ -221,7 +232,10 @@ export function AddTeamMemberForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a role" />
@@ -252,10 +266,15 @@ export function AddTeamMemberForm() {
             </CardHeader>
             <CardContent className="space-y-6 border py-4 rounded-md">
               {permissions.map((permission) => (
-                <div key={permission.id} className="flex items-center justify-between">
+                <div
+                  key={permission.id}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex-1">
                     <div className="font-medium">{permission.label}</div>
-                    <div className="text-sm text-muted-foreground">{permission.description}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {permission.description}
+                    </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <FormField
@@ -298,5 +317,5 @@ export function AddTeamMemberForm() {
         </div>
       </form>
     </Form>
-  )
+  );
 }

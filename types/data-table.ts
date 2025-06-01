@@ -66,13 +66,12 @@ export interface UserData {
   password: string;
 }
 
-
 export type StaffLoanPerformance = {
-  employeeId: string
-  fullName: string
-  branch: string
-  activeLoan: number
-  collectionRate: string
-  overdueRate: string
-  status: 'Active' | 'Unavailable'
-}
+  employeeId: string;
+  fullName: string;
+  branch: string;
+  activeLoan: number;
+  collectionRate: string;
+  overdueRate: string;
+  status: "Active" | "Unavailable";
+};

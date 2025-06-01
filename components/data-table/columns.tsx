@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 import { PortfolioCard } from "../PortfolioCard";
@@ -47,12 +47,12 @@ const portfolioData = {
 };
 
 const PasswordCell = ({ password }: { password: string }) => {
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
 
   return (
     <div className="flex items-center gap-2">
       <span className="font-mono text-sm">
-        {isVisible ? password : '••••••••'}
+        {isVisible ? password : "••••••••"}
       </span>
       <Button
         variant="ghost"
@@ -67,10 +67,8 @@ const PasswordCell = ({ password }: { password: string }) => {
         )}
       </Button>
     </div>
-  )
-}
-
-
+  );
+};
 
 export const loanColumns: ColumnDef<LoanData>[] = [
   {
@@ -225,7 +223,6 @@ export const loaneeAccountColumns: ColumnDef<LoanData>[] = [
   },
 ];
 
-
 export const loanOfficerColumns: ColumnDef<StaffLoanPerformance>[] = [
   {
     accessorKey: "employeeId",
@@ -265,14 +262,16 @@ export const loanOfficerColumns: ColumnDef<StaffLoanPerformance>[] = [
           <DialogTrigger asChild>
             <Button
               variant={"ghost"}
-              size={'sm'}
+              size={"sm"}
               className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
             >
               View Portfolio
             </Button>
           </DialogTrigger>
           <DialogContent className="">
-            <DialogTitle className="sr-only">Empolyee portfolio information</DialogTitle>
+            <DialogTitle className="sr-only">
+              Empolyee portfolio information
+            </DialogTitle>
             <PortfolioCard {...portfolioData} />
           </DialogContent>
         </Dialog>
@@ -280,19 +279,21 @@ export const loanOfficerColumns: ColumnDef<StaffLoanPerformance>[] = [
           <DialogTrigger asChild>
             <Button
               variant={"ghost"}
-              size={'sm'}
+              size={"sm"}
               className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
             >
-
-
               Reassign Loans
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-transparent border-none">
-            <DialogTitle className="sr-only">Reassign Employee loads</DialogTitle>
+            <DialogTitle className="sr-only">
+              Reassign Employee loads
+            </DialogTitle>
             <div className="p-6 rounded-md bg-background max-h-[90vh] overflow-y-auto w-fit mx-auto">
               <div className="flex items-center justify-end w-full">
-                <DialogClose><X /></DialogClose>
+                <DialogClose>
+                  <X />
+                </DialogClose>
               </div>
               <ReassignLoanTable />
             </div>

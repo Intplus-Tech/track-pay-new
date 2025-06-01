@@ -78,9 +78,15 @@ const Sampletable = () => {
           className="w-full"
         >
           <TabsList className="grid wfit sm:w-full grid-cols-1 sm:grid-cols-3 mb-6">
-            <TabsTrigger className="w-fit sm:w-full" value="loans">Loan Management</TabsTrigger>
-            <TabsTrigger className="w-fit sm:w-full" value="users">User Management</TabsTrigger>
-            <TabsTrigger className="w-fit sm:w-full" value="accounts">Loanee Accounts</TabsTrigger>
+            <TabsTrigger className="w-fit sm:w-full" value="loans">
+              Loan Management
+            </TabsTrigger>
+            <TabsTrigger className="w-fit sm:w-full" value="users">
+              User Management
+            </TabsTrigger>
+            <TabsTrigger className="w-fit sm:w-full" value="accounts">
+              Loanee Accounts
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="loans" className="space-y-4">

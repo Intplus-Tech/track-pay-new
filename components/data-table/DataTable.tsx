@@ -51,33 +51,36 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
-  const [filteredData, setFilteredData] = useState<TData[]>(data)
+  const [selectedFilters, setSelectedFilters] = useState<
+    Record<string, string[]>
+  >({});
+  const [filteredData, setFilteredData] = useState<TData[]>(data);
 
   // Apply custom filters to data
   useEffect(() => {
-    let filtered = [...data]
+    let filtered = [...data];
 
     // Apply selected filters
     Object.entries(selectedFilters).forEach(([filterId, selectedValues]) => {
       if (selectedValues.length > 0) {
         filtered = filtered.filter((row: any) => {
           // For branch/officer filter, check if the branchOfficer field contains any of the selected values
-          if (filterId === 'branches') {
-            return selectedValues.some(value =>
-              row.branchOfficer?.includes(value.split('/')[1]) || // Check by officer name
-              row.branchOfficer?.includes(value.split('/')[0]) || // Check by branch name
-              row.branchOfficer === value // Exact match
-            )
+          if (filterId === "branches") {
+            return selectedValues.some(
+              (value) =>
+                row.branchOfficer?.includes(value.split("/")[1]) || // Check by officer name
+                row.branchOfficer?.includes(value.split("/")[0]) || // Check by branch name
+                row.branchOfficer === value, // Exact match
+            );
           }
           // Add other filter logic here as needed
-          return true
-        })
+          return true;
+        });
       }
-    })
+    });
 
-    setFilteredData(filtered)
-  }, [data, selectedFilters])
+    setFilteredData(filtered);
+  }, [data, selectedFilters]);
 
   const table = useReactTable({
     data: filteredData,
@@ -176,9 +179,9 @@ export function DataTable<TData, TValue>({
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                 </TableHead>
               ))}
             </TableRow>
@@ -194,20 +197,14 @@ export function DataTable<TData, TValue>({
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext(),
-                    )}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center"
-              >
+              <TableCell colSpan={columns.length} className="h-24 text-center">
                 No results.
               </TableCell>
             </TableRow>

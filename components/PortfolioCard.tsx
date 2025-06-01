@@ -29,7 +29,7 @@ export function PortfolioCard({
   problemLoans,
 }: PortfolioCardProps) {
   const capacityPercentage = Math.round(
-    (assignedLoans.current / assignedLoans.capacity) * 100
+    (assignedLoans.current / assignedLoans.capacity) * 100,
   );
 
   return (
@@ -42,7 +42,8 @@ export function PortfolioCard({
           <div>
             <p className="text-sm text-muted-foreground">Assigned Loans:</p>
             <p className="font-medium">
-              {assignedLoans.current}/{assignedLoans.capacity} ({capacityPercentage}% capacity)
+              {assignedLoans.current}/{assignedLoans.capacity} (
+              {capacityPercentage}% capacity)
             </p>
           </div>
 
@@ -66,10 +67,12 @@ export function PortfolioCard({
 
           <div className="space-y-3">
             <div>
-              <Badge variant="destructive" className="mb-1">Overdue loans</Badge>
+              <Badge variant="destructive" className="mb-1">
+                Overdue loans
+              </Badge>
               <ul className="space-y-1">
                 {problemLoans
-                  .filter(loan => loan.type === "overdue")
+                  .filter((loan) => loan.type === "overdue")
                   .map((loan, index) => (
                     <li key={index} className="text-sm">
                       • {loan.name} ({loan.daysOverdue} Days)
@@ -82,7 +85,7 @@ export function PortfolioCard({
               <Badge className="mb-1">Partial Payments</Badge>
               <ul className="space-y-1">
                 {problemLoans
-                  .filter(loan => loan.type === "partial")
+                  .filter((loan) => loan.type === "partial")
                   .map((loan, index) => (
                     <li key={index} className="text-sm">
                       • {loan.name} ({loan.balance} Bal.)

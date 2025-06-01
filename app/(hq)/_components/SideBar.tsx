@@ -92,8 +92,9 @@ export function DashboardSidebar() {
         >
           <Logo width={40} height={40} priority />
           <p
-            className={`text-2xl font-semibold transition-all duration-200 text-primary ease-in-out ${open ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
-              }`}
+            className={`text-2xl font-semibold transition-all duration-200 text-primary ease-in-out ${
+              open ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
+            }`}
           >
             TrackPay
           </p>

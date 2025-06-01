@@ -278,7 +278,6 @@ export const loaneeAccountData: LoanData[] = [
   },
 ];
 
-
 export const staffLoanPerformanceData: StaffLoanPerformance[] = [
   {
     employeeId: "EI-1001",
@@ -460,4 +459,4 @@ export const staffLoanPerformanceData: StaffLoanPerformance[] = [
     overdueRate: "4%",
     status: "Active",
   },
-]
+];
