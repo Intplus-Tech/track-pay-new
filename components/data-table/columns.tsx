@@ -11,8 +11,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -21,8 +19,6 @@ import { Button } from "../ui/button";
 import { PortfolioCard } from "../PortfolioCard";
 import { formatCurrency } from "@/lib/utils";
 import ReassignLoanTable from "@/app/(hq)/_components/tables/ReassignLoanTable";
-import { DataTable } from "./DataTable";
-import { staffLoanPerformanceData } from "@/data/sample-data";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Eye, EyeOff, X } from "lucide-react";
 import { useState } from "react";

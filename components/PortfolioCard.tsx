@@ -1,5 +1,3 @@
-// components/portfolio-snapshot-card.tsx
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface ProblemLoan {

@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PageHeader from "@/components/PageHeader";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const Header = () => {
   return (

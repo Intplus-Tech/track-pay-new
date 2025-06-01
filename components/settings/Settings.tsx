@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UpdatePassword } from "@/components/settings/UpdatePassword";
 import { BranchConfiguration } from "@/components/settings/BranchConfiguration";
 import { NotificationSMS } from "@/components/settings/NotificationSMS";
@@ -18,8 +17,6 @@ const components = [
 
 export default function SettingsDemo() {
   const [selectedComponent, setSelectedComponent] = useState(0);
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
-  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   const SelectedComponent = components[selectedComponent].component;
 

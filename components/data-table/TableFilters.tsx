@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FilterOption } from "@/types/data-table";
-import { ChevronDown, Filter } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 interface TableFiltersProps {
   filters: FilterOption[];
@@ -23,10 +23,6 @@ export function TableFilters({
 }: TableFiltersProps) {
   return (
     <div className="flex items-center space-x-2">
-      {/* <div className="flex items-center text-sm text-gray-600">
-        <Filter className="h-4 w-4 mr-1" />
-        Filter:
-      </div> */}
       {filters.map((filter) => (
         <DropdownMenu key={filter.id}>
           <DropdownMenuTrigger asChild>

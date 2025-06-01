@@ -1,9 +1,7 @@
-import { PageProps } from "@/types";
 import React from "react";
 import AccountsTable from "../../_components/tables/AccountsTable";
 
-const page = async ({ params }: PageProps) => {
-  // const { id } = await params;
+const page = async () => {
 
   return (
     <div>

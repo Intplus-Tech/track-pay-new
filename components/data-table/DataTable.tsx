@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-  ColumnDef,
+  // ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -43,7 +43,7 @@ export function DataTable<TData, TValue>({
   durationConfig = { enabled: false },
   exportConfig,
   paginationConfig = { enabled: true, pageSizeOptions: [10, 20, 30, 40, 50] },
-  rowActions,
+  // rowActions,
   title,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -179,9 +179,9 @@ export function DataTable<TData, TValue>({
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                 </TableHead>
               ))}
             </TableRow>

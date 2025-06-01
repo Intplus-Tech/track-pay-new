@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,7 +37,7 @@ const permissions = [
 const roles = ["Admin", "Manager", "Trader", "Loan Officer"] as const;
 
 type PermissionId = (typeof permissions)[number]["id"];
-type RoleType = (typeof roles)[number];
+// type RoleType = (typeof roles)[number];
 
 const schema = z.object({
   employeeId: z.string().min(1, "Employee ID is required"),
