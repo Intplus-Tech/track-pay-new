@@ -13,9 +13,9 @@ import PageHeader from "@/components/PageHeader";
 
 const Header = () => {
   return (
-    <header className="flex items-center justify-between mb-6">
+    <header className="flex items- justify-between mb-6">
       <PageHeader />
-      <div className="rounded-full bg-white border p-2 flex items-center gap-4">
+      <div className="rounded-full bg-white h-fit border p-2 flex items-center gap-4">
         <span className="relative">
           <Search
             size={16}

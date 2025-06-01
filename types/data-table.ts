@@ -17,6 +17,10 @@ export interface FilterConfig {
   filters: FilterOption[];
 }
 
+export interface DurationConfig {
+  enabled: boolean;
+}
+
 export interface ExportConfig {
   enabled: boolean;
   options: ("pdf" | "excel" | "csv")[];
@@ -32,6 +36,7 @@ export interface DataTableProps<TData, TValue> {
   data: TData[];
   searchConfig?: SearchConfig;
   filterConfig?: FilterConfig;
+  durationConfig?: DurationConfig;
   exportConfig?: ExportConfig;
   paginationConfig?: PaginationConfig;
   rowActions?: (row: TData) => ReactNode;
@@ -59,4 +64,15 @@ export interface UserData {
   email: string;
   role: string;
   password: string;
+}
+
+
+export type StaffLoanPerformance = {
+  employeeId: string
+  fullName: string
+  branch: string
+  activeLoan: number
+  collectionRate: string
+  overdueRate: string
+  status: 'Active' | 'Unavailable'
 }

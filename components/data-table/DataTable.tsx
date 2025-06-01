@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -40,6 +40,7 @@ export function DataTable<TData, TValue>({
   data,
   searchConfig = { enabled: true, placeholder: "Search..." },
   filterConfig,
+  durationConfig = { enabled: false },
   exportConfig,
   paginationConfig = { enabled: true, pageSizeOptions: [10, 20, 30, 40, 50] },
   rowActions,
@@ -50,12 +51,36 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState<
-    Record<string, string[]>
-  >({});
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
+  const [filteredData, setFilteredData] = useState<TData[]>(data)
+
+  // Apply custom filters to data
+  useEffect(() => {
+    let filtered = [...data]
+
+    // Apply selected filters
+    Object.entries(selectedFilters).forEach(([filterId, selectedValues]) => {
+      if (selectedValues.length > 0) {
+        filtered = filtered.filter((row: any) => {
+          // For branch/officer filter, check if the branchOfficer field contains any of the selected values
+          if (filterId === 'branches') {
+            return selectedValues.some(value =>
+              row.branchOfficer?.includes(value.split('/')[1]) || // Check by officer name
+              row.branchOfficer?.includes(value.split('/')[0]) || // Check by branch name
+              row.branchOfficer === value // Exact match
+            )
+          }
+          // Add other filter logic here as needed
+          return true
+        })
+      }
+    })
+
+    setFilteredData(filtered)
+  }, [data, selectedFilters])
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -89,10 +114,10 @@ export function DataTable<TData, TValue>({
   };
 
   return (
-    <div className="w-full">
+    <div className="max-w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-4 p-2 rounded-full border bg-background">
+      <div className="flex items-center md:justify-end mb-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-2 p-2 rounded-full md:border bg-background">
           {searchConfig.enabled && (
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -113,18 +138,18 @@ export function DataTable<TData, TValue>({
               onFilterChange={handleFilterChange}
             />
           )}
-        </div>
-        <div className="flex items-center space-x-2 p-2 border bg-background rounded-full">
-          <Select defaultValue="24">
-            <SelectTrigger className="w-[140px] h-8 rounded-full bg-primary/10">
-              <SelectValue placeholder="Time filter" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border shadow-lg">
-              <SelectItem value="24">Last 24 Hours</SelectItem>
-              <SelectItem value="48">48 Hours</SelectItem>
-              <SelectItem value="week">1 Week</SelectItem>
-            </SelectContent>
-          </Select>
+          {durationConfig?.enabled && (
+            <Select defaultValue="24">
+              <SelectTrigger className="w-[140px] h-8 rounded-full bg-primary/10">
+                <SelectValue placeholder="Time filter" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-lg">
+                <SelectItem value="24">Last 24 Hours</SelectItem>
+                <SelectItem value="48">48 Hours</SelectItem>
+                <SelectItem value="week">1 Week</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           {exportConfig?.enabled && (
             <ExportButton
               options={exportConfig.options}
@@ -139,62 +164,60 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border bg-background">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-gray-50">
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="font-medium text-gray-900"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
+      <Table className="bg-gray-50">
+        <TableHeader className="bg-gray-100">
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id} className="">
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className="font-medium text-gray-900"
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody className="space-y-4">
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                className="hover:bg-gray-50 mb-4"
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext(),
+                    )}
+                  </TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody className="space-y-4">
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="hover:bg-gray-50 mb-4"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center"
+              >
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
 
       {/* Pagination */}
       {paginationConfig.enabled && (
-        <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex flex-col-reverse md:flex-row items-center justify-between space-x-2 py-4">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Rows per page</p>
             <Select

@@ -1,22 +1,76 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { LoanData, UserData } from "@/types/data-table";
+import { LoanData, StaffLoanPerformance, UserData } from "@/types/data-table";
 import { StatusBadge } from "./StatusBadge";
 import {
   RowActions,
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "./RowActions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Separator } from "../ui/separator";
+import { Button } from "../ui/button";
+import { PortfolioCard } from "../PortfolioCard";
+import { formatCurrency } from "@/lib/utils";
+import ReassignLoanTable from "@/app/(hq)/_components/tables/ReassignLoanTable";
+import { DataTable } from "./DataTable";
+import { staffLoanPerformanceData } from "@/data/sample-data";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { Eye, EyeOff, X } from "lucide-react";
+import { useState } from "react";
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    minimumFractionDigits: 0,
-  }).format(amount);
+const portfolioData = {
+  title: "Chike Portfolio Snapshot",
+  assignedLoans: {
+    current: 72,
+    capacity: 75,
+  },
+  currentMonth: {
+    collected: "¥2.8M",
+    target: "¥3.0M (93%)",
+  },
+  problemLoans: [
+    { name: "Adeola Bello", daysOverdue: 2, type: "overdue" },
+    { name: "Liberty Kayode", daysOverdue: 9, type: "overdue" },
+    { name: "Ireti Adebayo", daysOverdue: 2, type: "overdue" },
+    { name: "Lolu Bello", balance: "¥10,500", type: "partial" },
+    { name: "Helen Aguemi", balance: "¥10,500", type: "partial" },
+  ],
 };
+
+const PasswordCell = ({ password }: { password: string }) => {
+  const [isVisible, setIsVisible] = useState(false)
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-sm">
+        {isVisible ? password : '••••••••'}
+      </span>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setIsVisible(!isVisible)}
+        className="h-6 w-6 p-0"
+      >
+        {isVisible ? (
+          <EyeOff className="h-3 w-3" />
+        ) : (
+          <Eye className="h-3 w-3" />
+        )}
+      </Button>
+    </div>
+  )
+}
+
+
 
 export const loanColumns: ColumnDef<LoanData>[] = [
   {
@@ -112,6 +166,7 @@ export const userColumns: ColumnDef<UserData>[] = [
   {
     accessorKey: "password",
     header: "Password",
+    cell: ({ row }) => <PasswordCell password={row.getValue("password")} />,
   },
   {
     id: "actions",
@@ -165,6 +220,85 @@ export const loaneeAccountColumns: ColumnDef<LoanData>[] = [
         <DropdownMenuSeparator />
         <DropdownMenuItem>Edit Order</DropdownMenuItem>
         <DropdownMenuItem>Deactivate</DropdownMenuItem>
+      </RowActions>
+    ),
+  },
+];
+
+
+export const loanOfficerColumns: ColumnDef<StaffLoanPerformance>[] = [
+  {
+    accessorKey: "employeeId",
+    header: "Employee ID",
+  },
+  {
+    accessorKey: "fullName",
+    header: "Full Name",
+  },
+  {
+    accessorKey: "branch",
+    header: "Branch",
+  },
+  {
+    accessorKey: "activeLoan",
+    header: "Active Loans",
+  },
+  {
+    accessorKey: "collectionRate",
+    header: "Collection rate",
+  },
+  {
+    accessorKey: "overdueRate",
+    header: "Overdue Rate",
+    cell: ({ row }) => formatCurrency(row.getValue("overdueRate")),
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <RowActions>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant={"ghost"}
+              size={'sm'}
+              className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            >
+              View Portfolio
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="">
+            <DialogTitle className="sr-only">Empolyee portfolio information</DialogTitle>
+            <PortfolioCard {...portfolioData} />
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant={"ghost"}
+              size={'sm'}
+              className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            >
+
+
+              Reassign Loans
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-transparent border-none">
+            <DialogTitle className="sr-only">Reassign Employee loads</DialogTitle>
+            <div className="p-6 rounded-md bg-background max-h-[90vh] overflow-y-auto w-fit mx-auto">
+              <div className="flex items-center justify-end w-full">
+                <DialogClose><X /></DialogClose>
+              </div>
+              <ReassignLoanTable />
+            </div>
+          </DialogContent>
+        </Dialog>
+        <DropdownMenuItem>Mark as Unavailable</DropdownMenuItem>
       </RowActions>
     ),
   },
