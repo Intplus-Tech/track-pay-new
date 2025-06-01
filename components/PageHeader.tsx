@@ -15,7 +15,7 @@ const PageHeader = () => {
   const finalSegment = pathname.split("/").filter(Boolean).pop() || "";
 
   return (
-    <div className="">
+    <div className="hidden xl:block">
       <p className="text-gray-900 text-lg">{pathWithoutLeadingSlash}</p>
       <p className="text-gray-900 text-3xl font-bold capitalize">
         {finalSegment}

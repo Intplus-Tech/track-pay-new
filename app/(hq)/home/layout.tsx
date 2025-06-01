@@ -1,31 +1,30 @@
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "../_components/AppSidebar";
 import Header from "../_components/Header";
-import { DashboardSidebar } from "../_components/SideBar";
+import { cookies } from "next/headers";
 
-export default function HomeLayout({
+export default async function HomeLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+
   return (
-    <main className="relative h-screen w-screen flex">
-      {/* Background Image */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 bg-[url(/images/bg-image.svg)] bg-center bg-no-repeat bg-cover opacity-10 z-0"
-      />
-
-      {/* Main Layout */}
-      <div className="relative z-10 flex flex-1">
-        <DashboardSidebar />
-
-        {/* Content Area */}
-        <div className="flex flex-1 flex-col h-screen overflow-hidden">
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-8">
-            <Header />
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <div className="min-h-screen flex w-full bg-background relative">
+        {/* <div className="absolute inset-0 bg-[url(/images/bg-image.svg)] bg-no-repeat bg-cover opacity-10"></div> */}
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header />
+          <main className="flex-1 p-6 space-y-6 z50">
             {children}
-          </div>
+          </main>
         </div>
       </div>
-    </main>
+    </SidebarProvider>
+
   );
 }
+

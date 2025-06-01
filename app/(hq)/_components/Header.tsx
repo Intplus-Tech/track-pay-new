@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PageHeader from "@/components/PageHeader";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const Header = () => {
   return (
-    <header className="flex items- justify-between mb-6">
+    <header className="flex justify-between p-6">
       <PageHeader />
       <div className="rounded-full bg-white h-fit border p-2 flex items-center gap-4">
         <span className="relative">

@@ -1,9 +1,18 @@
-"use client";
+"use client"
 
-import type React from "react";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import * as React from "react"
+import {
+  AudioWaveform,
+  BookOpen,
+  Bot,
+  Command,
+  Frame,
+  GalleryVerticalEnd,
+  Map,
+  PieChart,
+  Settings2,
+  SquareTerminal,
+} from "lucide-react"
 import {
   BarChart2,
   CreditCard,
@@ -16,20 +25,23 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger,
   useSidebar,
-} from "@/components/ui/sidebar";
-import Image from "next/image";
+} from "@/components/ui/sidebar"
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
+import { Button } from "@/components/ui/button";
+
 
 interface NavItem {
   title: string;
@@ -70,8 +82,9 @@ const navItems: NavItem[] = [
   },
 ];
 
-export function DashboardSidebar() {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+
 
   const {
     state,
@@ -81,29 +94,27 @@ export function DashboardSidebar() {
     setOpenMobile,
     isMobile,
     toggleSidebar,
-  } = useSidebar();
+  } = useSidebar()
 
   return (
-    <Sidebar className="border-r" collapsible="none" >
-      <SidebarHeader className={`${open ? "p-0" : "p-0"}`}>
-        {/* <Link
-          href="/dashboard"
-          className="flex items-center gap-2 font-bold whitespace-nowrap p-2"
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader className={`my-4 ${open ? "p-0" : "p-0"}`}>
+        <Button
+          variant={'ghost'}
+          onClick={() => toggleSidebar()}
+          className="p-0 hover:bg-sidebar"
         >
           <Logo width={40} height={40} priority />
           <p
-            className={`text-2xl font-semibold transition-all duration-200 text-primary ease-in-out ${
-              open ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
-            }`}
+            className={`text-2xl font-semibold transition-all duration-200 text-primary ease-in-out ${open ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
+              }`}
           >
             TrackPay
           </p>
-        </Link> */}
-        <SidebarTrigger />
+        </Button>
       </SidebarHeader>
-
-      <SidebarContent className="p-2">
-        <SidebarMenu>
+      <SidebarContent>
+        <SidebarMenu className="p-2">
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
@@ -130,5 +141,5 @@ export function DashboardSidebar() {
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }

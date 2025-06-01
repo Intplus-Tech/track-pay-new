@@ -119,7 +119,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="max-w-full">
       {/* Header */}
-      <div className="flex items-center md:justify-end mb-4">
+      <div className="flex items-center md:justify-end mb-4 -z-20">
         <div className="flex flex-col md:flex-row md:items-center gap-2 p-2 rounded-full md:border bg-background">
           {searchConfig.enabled && (
             <div className="relative">
@@ -179,9 +179,9 @@ export function DataTable<TData, TValue>({
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                 </TableHead>
               ))}
             </TableRow>
