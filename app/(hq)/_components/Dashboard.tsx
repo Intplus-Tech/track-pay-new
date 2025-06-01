@@ -1,11 +1,15 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts"
-import { DataTable } from "@/components/data-table/DataTable"
-import { chartData, dashboardData } from "@/data/dashboard-data"
-import { dashboardColumns } from "@/components/data-table/dashboard-columns"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { DataTable } from "@/components/data-table/DataTable";
+import { chartData, dashboardData } from "@/data/dashboard-data";
+import { dashboardColumns } from "@/components/data-table/dashboard-columns";
 
 const Dashboard = () => {
   const chartConfig = {
@@ -21,11 +25,10 @@ const Dashboard = () => {
       label: "Overdue",
       color: "#ef4444",
     },
-  }
+  };
 
   return (
     <div className="">
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="bg-primary text-white">
@@ -38,7 +41,9 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg  lg:text-2xl font-bold mb-1">₦230,221,100.45</div>
+            <div className="text-lg  lg:text-2xl font-bold mb-1">
+              ₦230,221,100.45
+            </div>
             <div className="text-blue-100 text-sm">Than last month</div>
           </CardContent>
         </Card>
@@ -53,7 +58,9 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg  lg:text-2xl font-bold mb-1 text-gray-900">₦230,221,100.45</div>
+            <div className="text-lg  lg:text-2xl font-bold mb-1 text-gray-900">
+              ₦230,221,100.45
+            </div>
             <div className="text-gray-500 text-sm">Than last month</div>
           </CardContent>
         </Card>
@@ -68,7 +75,9 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg  lg:text-2xl font-bold mb-1 text-gray-900">₦230,221,100.45</div>
+            <div className="text-lg  lg:text-2xl font-bold mb-1 text-gray-900">
+              ₦230,221,100.45
+            </div>
             <div className="text-gray-500 text-sm">Than last month</div>
           </CardContent>
         </Card>
@@ -77,7 +86,9 @@ const Dashboard = () => {
       {/* Chart Section */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold">Loan Performance</CardTitle>
+          <CardTitle className="text-xl font-semibold">
+            Loan Performance
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -89,11 +100,7 @@ const Dashboard = () => {
                   tickLine={false}
                   className="text-xs"
                 />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  className="text-xs"
-                />
+                <YAxis axisLine={false} tickLine={false} className="text-xs" />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line
                   type="monotone"
@@ -125,23 +132,25 @@ const Dashboard = () => {
       {/* Data Table */}
       <Card>
         <CardContent className="relative">
-          <p className="absolute top-3 left-8 text-xl xl:text-2xl font-semibold">Recent Transactions</p>
+          <p className="absolute top-3 left-8 text-xl xl:text-2xl font-semibold">
+            Recent Transactions
+          </p>
           <DataTable
             columns={dashboardColumns}
             data={dashboardData}
             searchConfig={{
               enabled: true,
-              placeholder: "Search transactions..."
+              placeholder: "Search transactions...",
             }}
             paginationConfig={{
               enabled: true,
-              pageSizeOptions: [10, 20, 30]
+              pageSizeOptions: [10, 20, 30],
             }}
           />
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

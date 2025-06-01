@@ -8,12 +8,11 @@ import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { CreateSingleAccount } from "@/components/forms/CreateSingleAccount";
 import { BulkUpload } from "@/components/forms/BulkUpload";
 
 const AccountsTable = () => {
-
   return (
     <div className="relative">
       <div className="absolute top-0.5 flex items-center gap-2">

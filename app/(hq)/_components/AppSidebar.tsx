@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   AudioWaveform,
   BookOpen,
@@ -14,7 +14,7 @@ import {
   Settings2,
   SquareTerminal,
   UserRound,
-} from "lucide-react"
+} from "lucide-react";
 import {
   BarChart2,
   CreditCard,
@@ -37,13 +37,12 @@ import {
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-
 
 interface NavItem {
   title: string;
@@ -87,7 +86,6 @@ const navItems: NavItem[] = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
 
-
   const {
     state,
     open,
@@ -96,20 +94,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     setOpenMobile,
     isMobile,
     toggleSidebar,
-  } = useSidebar()
+  } = useSidebar();
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className={`my-4 ${open ? "p-0" : "p-0"}`}>
         <Button
-          variant={'ghost'}
+          variant={"ghost"}
           onClick={() => toggleSidebar()}
           className={`hover:bg-sidebar p-0 justify-start ${open ? "pl-2" : " justify-center"} `}
         >
           <Logo width={40} height={40} priority />
           <p
-            className={`text-2xl font-semibold transition-all duration-200 text-primary ease-in-out ${open ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
-              }`}
+            className={`text-2xl font-semibold transition-all duration-200 text-primary ease-in-out ${
+              open ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
+            }`}
           >
             TrackPay
           </p>
@@ -143,5 +142,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

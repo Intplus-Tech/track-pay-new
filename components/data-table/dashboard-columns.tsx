@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { StatusBadge } from "./StatusBadge"
+import { ColumnDef } from "@tanstack/react-table";
+import { StatusBadge } from "./StatusBadge";
 
 export interface DashboardData {
-  id: string
-  time: string
-  loanId: string
-  loanee: string
-  branchOfficer: string
-  amountPaid: number
-  outstandingLoan: number
-  status: 'On-Time' | 'Partial' | 'Overdue'
+  id: string;
+  time: string;
+  loanId: string;
+  loanee: string;
+  branchOfficer: string;
+  amountPaid: number;
+  outstandingLoan: number;
+  status: "On-Time" | "Partial" | "Overdue";
 }
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
     minimumFractionDigits: 0,
-  }).format(amount)
-}
+  }).format(amount);
+};
 
 export const dashboardColumns: ColumnDef<DashboardData>[] = [
   {
@@ -54,4 +54,4 @@ export const dashboardColumns: ColumnDef<DashboardData>[] = [
     header: "Status",
     cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
   },
-]
+];

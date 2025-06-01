@@ -1,36 +1,34 @@
-'use client'
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { UpdatePassword } from "@/components/settings/UpdatePassword"
-import { BranchConfiguration } from "@/components/settings/BranchConfiguration"
-import { NotificationSMS } from "@/components/settings/NotificationSMS"
-import { TwoFactorSetup } from "@/components/settings/TwoFactorSetup"
-import { Separator } from "../ui/separator"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UpdatePassword } from "@/components/settings/UpdatePassword";
+import { BranchConfiguration } from "@/components/settings/BranchConfiguration";
+import { NotificationSMS } from "@/components/settings/NotificationSMS";
+import { TwoFactorSetup } from "@/components/settings/TwoFactorSetup";
+import { Separator } from "../ui/separator";
 
 const components = [
   { name: "Update Password", component: UpdatePassword },
   { name: "2 Factor Authentication", component: TwoFactorSetup },
   { name: "Branch Configuration", component: BranchConfiguration },
   { name: "Notification", component: NotificationSMS },
-]
+];
 
 export default function SettingsDemo() {
-  const [selectedComponent, setSelectedComponent] = useState(0)
-  const [showCreateAccount, setShowCreateAccount] = useState(false)
-  const [showBulkUpload, setShowBulkUpload] = useState(false)
+  const [selectedComponent, setSelectedComponent] = useState(0);
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
-  const SelectedComponent = components[selectedComponent].component
+  const SelectedComponent = components[selectedComponent].component;
 
   return (
     <div className="flex w-full items-start gap-6">
       {/* Navigation */}
       <div className="border min-w-[300px] h-full md:min-h-[450px] bg-background">
         {components.map((comp, index) => (
-          <div
-            key={index}
-          >
+          <div key={index}>
             <Button
               className={`rounded-none hover:bg-muted w-full h-12 justify-start bg-background text-foreground ${selectedComponent === index ? "text-primary bg-background" : ""}`}
               onClick={() => setSelectedComponent(index)}
@@ -40,7 +38,6 @@ export default function SettingsDemo() {
             <Separator />
           </div>
         ))}
-
       </div>
 
       {/* Content */}
@@ -48,5 +45,5 @@ export default function SettingsDemo() {
         <SelectedComponent />
       </div>
     </div>
-  )
+  );
 }

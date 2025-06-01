@@ -1,13 +1,12 @@
-
 export interface DashboardData {
-  id: string
-  time: string
-  loanId: string
-  loanee: string
-  branchOfficer: string
-  amountPaid: number
-  outstandingLoan: number
-  status: 'On-Time' | 'Partial' | 'Overdue'
+  id: string;
+  time: string;
+  loanId: string;
+  loanee: string;
+  branchOfficer: string;
+  amountPaid: number;
+  outstandingLoan: number;
+  status: "On-Time" | "Partial" | "Overdue";
 }
 
 export const dashboardData: DashboardData[] = [
@@ -19,7 +18,7 @@ export const dashboardData: DashboardData[] = [
     branchOfficer: "Lagos Mainland/Akin",
     amountPaid: 442500,
     outstandingLoan: 945500,
-    status: "On-Time"
+    status: "On-Time",
   },
   {
     id: "2",
@@ -29,7 +28,7 @@ export const dashboardData: DashboardData[] = [
     branchOfficer: "Abuja/Kingsley",
     amountPaid: 918000,
     outstandingLoan: 945500,
-    status: "Partial"
+    status: "Partial",
   },
   {
     id: "3",
@@ -39,7 +38,7 @@ export const dashboardData: DashboardData[] = [
     branchOfficer: "Kano/Habeeb",
     amountPaid: 928000,
     outstandingLoan: 945500,
-    status: "Overdue"
+    status: "Overdue",
   },
   {
     id: "4",
@@ -49,9 +48,9 @@ export const dashboardData: DashboardData[] = [
     branchOfficer: "Opebi/Benedicta",
     amountPaid: 982300,
     outstandingLoan: 1224600,
-    status: "On-Time"
-  }
-]
+    status: "On-Time",
+  },
+];
 
 export const chartData = [
   { month: "Jan", approved: 4000, disbursed: 2400, overdue: 1800 },
@@ -65,5 +64,5 @@ export const chartData = [
   { month: "Sep", approved: 4200, disbursed: 3200, overdue: 1900 },
   { month: "Oct", approved: 3800, disbursed: 3600, overdue: 1700 },
   { month: "Nov", approved: 4100, disbursed: 3900, overdue: 1400 },
-  { month: "Dec", approved: 4500, disbursed: 4200, overdue: 1600 }
-]
+  { month: "Dec", approved: 4500, disbursed: 4200, overdue: 1600 },
+];

@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { useState } from "react"
-import { Switch } from "@/components/ui/switch"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "../ui/separator"
+import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "../ui/separator";
 
 export function TwoFactorSetup() {
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true)
-  const [emailAddress, setEmailAddress] = useState("")
-  const [password, setPassword] = useState("")
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
     <Card className="w-full border-none shadow-none p-0">
@@ -62,5 +62,5 @@ export function TwoFactorSetup() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

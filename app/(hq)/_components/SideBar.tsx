@@ -84,7 +84,7 @@ export function DashboardSidebar() {
   } = useSidebar();
 
   return (
-    <Sidebar className="border-r" collapsible="none" >
+    <Sidebar className="border-r" collapsible="none">
       <SidebarHeader className={`${open ? "p-0" : "p-0"}`}>
         {/* <Link
           href="/dashboard"

@@ -1,24 +1,33 @@
-'use client'
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { X } from "lucide-react"
-
-
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { X } from "lucide-react";
 
 export function CreateSingleAccount() {
-  const [loanId, setLoanId] = useState("")
-  const [firstName, setFirstName] = useState("")
-  const [middleName, setMiddleName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [loanAmount, setLoanAmount] = useState("")
-  const [amount, setAmount] = useState("")
-  const [repaymentPeriod, setRepaymentPeriod] = useState("")
-  const [loanOfficer, setLoanOfficer] = useState("")
+  const [loanId, setLoanId] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [loanAmount, setLoanAmount] = useState("");
+  const [amount, setAmount] = useState("");
+  const [repaymentPeriod, setRepaymentPeriod] = useState("");
+  const [loanOfficer, setLoanOfficer] = useState("");
 
   return (
     <div className="space-y-4">
@@ -109,9 +118,7 @@ export function CreateSingleAccount() {
         </Select>
       </div>
 
-      <Button className="w-full">
-        Create Account
-      </Button>
+      <Button className="w-full">Create Account</Button>
     </div>
-  )
+  );
 }
