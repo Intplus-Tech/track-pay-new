@@ -13,7 +13,7 @@ export default async function HomeLayout({
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <div className="min-h-screen flex w-full bg-background relative">
+      <div className="min-h-screen flex w-full relative">
         {/* <div className="absolute inset-0 bg-[url(/images/bg-image.svg)] bg-no-repeat bg-cover opacity-10"></div> */}
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">

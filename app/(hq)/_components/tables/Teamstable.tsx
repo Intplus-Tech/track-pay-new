@@ -44,7 +44,7 @@ const Teamstable = () => {
     <div className="relative">
       <Dialog>
         <DialogTrigger asChild>
-          <span className="absolute top-0.5 bg-background p-2 rounded-full capitalize">
+          <span className="absolute top-0.5 bg-background border p-2 rounded-full capitalize">
             <Button className="bg-primary/10 text-foreground hover:text-white rounded-full">
               Add new team
             </Button>

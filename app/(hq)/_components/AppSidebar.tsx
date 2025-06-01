@@ -8,10 +8,12 @@ import {
   Command,
   Frame,
   GalleryVerticalEnd,
+  Landmark,
   Map,
   PieChart,
   Settings2,
   SquareTerminal,
+  UserRound,
 } from "lucide-react"
 import {
   BarChart2,
@@ -58,22 +60,22 @@ const navItems: NavItem[] = [
   {
     title: "Tracker",
     href: "/home/tracker",
-    icon: Wallet,
+    icon: BarChart2,
   },
   {
     title: "Accounts",
     href: "/home/accounts",
-    icon: Grid,
+    icon: Landmark,
   },
   {
     title: "Loan-Officer",
     href: "/home/loan-officer",
-    icon: BarChart2,
+    icon: UserRound,
   },
   {
     title: "Team",
     href: "/home/team",
-    icon: ShoppingCart,
+    icon: Users,
   },
   {
     title: "Settings",
@@ -102,7 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Button
           variant={'ghost'}
           onClick={() => toggleSidebar()}
-          className="p-0 hover:bg-sidebar"
+          className={`hover:bg-sidebar p-0 justify-start ${open ? "pl-2" : " justify-center"} `}
         >
           <Logo width={40} height={40} priority />
           <p
@@ -113,7 +115,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </p>
         </Button>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="mt-14">
         <SidebarMenu className="p-2">
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
