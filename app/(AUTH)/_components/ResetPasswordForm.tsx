@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Logo from "@/components/Logo";
 import { Eye, EyeOff } from "lucide-react"; // Add this import for eye icons
+import { useRouter } from "next/navigation";
+import { getCsrfToken } from "@/lib/csrf-client";
 
 const resetPasswordSchema = z
   .object({
@@ -38,6 +40,8 @@ export function ResetPasswordForm() {
   const [submitting, setIsSubmitting] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -47,11 +51,40 @@ export function ResetPasswordForm() {
     },
   });
 
-  function onSubmit(data: ResetPasswordFormValues) {
+  async function onSubmit(data: ResetPasswordFormValues) {
     setIsSubmitting(true);
-    console.log(data);
-    // Handle password reset logic here
-    setIsSubmitting(false);
+    setErrorMessage(null);
+
+    try {
+      const csrfToken = await getCsrfToken();
+
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify({
+          newPassword: data.newPassword,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string }
+        | null;
+
+      if (!response.ok) {
+        setErrorMessage(payload?.message ?? "Unable to reset password.");
+        return;
+      }
+
+      router.push("/auth/sign-in");
+      router.refresh();
+    } catch {
+      setErrorMessage("Unable to reach the authentication service.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -147,7 +180,13 @@ export function ResetPasswordForm() {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={submitting}>
+        {errorMessage ? <p className="text-sm text-red-400">{errorMessage}</p> : null}
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={submitting}
+        >
           {submitting ? "Resetting..." : "Reset Password"}
         </Button>
       </form>

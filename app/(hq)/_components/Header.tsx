@@ -1,6 +1,8 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Bell, CircleArrowRight, Search } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -10,8 +12,55 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PageHeader from "@/components/PageHeader";
+import type { DashboardSession } from "@/lib/session";
+import { useRouter } from "next/navigation";
+import { clearCsrfTokenCache, getCsrfToken } from "@/lib/csrf-client";
 
-const Header = () => {
+function getInitials(name?: string | null) {
+  if (!name) {
+    return "TP";
+  }
+
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("")
+    .slice(0, 2);
+}
+
+const Header = ({ session }: { session: DashboardSession | null }) => {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+
+    try {
+      const csrfToken = await getCsrfToken();
+
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": csrfToken,
+        },
+      });
+
+      if (!response.ok) {
+        setIsLoggingOut(false);
+        return;
+      }
+
+      clearCsrfTokenCache();
+
+      router.replace("/auth/sign-in");
+      router.refresh();
+    } catch {
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <header className="flex justify-between p-6">
       <PageHeader />
@@ -37,11 +86,29 @@ const Header = () => {
         </div>
 
         <Bell size={20} />
-        <CircleArrowRight strokeWidth={1} size={20} color="red" />
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="text-red-500 disabled:opacity-50"
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          <CircleArrowRight strokeWidth={1} size={20} color="currentColor" />
+        </button>
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarFallback>{getInitials(session?.user.name)}</AvatarFallback>
         </Avatar>
+        <div className="hidden xl:block leading-tight">
+          <p className="text-sm font-semibold text-gray-900">
+            {session?.user.name ?? "Signed in user"}
+          </p>
+          <p className="text-xs text-gray-500">
+            {session?.role?.name ?? "No role"}
+            {session?.branch?.name ? ` • ${session.branch.name}` : ""}
+          </p>
+        </div>
       </div>
     </header>
   );

@@ -16,9 +16,10 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import Logo from "@/components/Logo";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react"; // Add this import for eye icons
+import { Eye, EyeOff } from "lucide-react";
+import { getCsrfToken } from "@/lib/csrf-client";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -29,9 +30,10 @@ const signInSchema = z.object({
 type SignInFormValues = z.infer<typeof signInSchema>;
 
 export function SignInForm() {
-  // const [submitting, setIsSubmitting] = useState(false);
+  const [submitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  // const router = useRouter();
+  const router = useRouter();
 
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -42,9 +44,52 @@ export function SignInForm() {
     },
   });
 
-  function onSubmit(data: SignInFormValues) {
-    console.log(data);
-    // Handle sign in logic here
+  async function onSubmit(data: SignInFormValues) {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const csrfToken = await getCsrfToken();
+
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | {
+          message?: string;
+          accessToken?: string;
+          twoFactorRequired?: boolean;
+        }
+        | null;
+
+      if (!response.ok) {
+        setErrorMessage(payload?.message ?? "Unable to sign in.");
+        return;
+      }
+
+      if (payload?.twoFactorRequired) {
+        router.push("/auth/sign-in/verify");
+        return;
+      }
+
+      if (payload?.accessToken) {
+        router.push("/home/overview");
+        router.refresh();
+        return;
+      }
+
+      setErrorMessage("Unexpected login response.");
+    } catch {
+      setErrorMessage("Unable to reach the authentication service.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -148,8 +193,12 @@ export function SignInForm() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full">
-          Sign In
+        {errorMessage ? (
+          <p className="text-sm text-red-400">{errorMessage}</p>
+        ) : null}
+
+        <Button type="submit" className="w-full" disabled={submitting}>
+          {submitting ? "Signing in..." : "Sign In"}
         </Button>
       </form>
     </Form>

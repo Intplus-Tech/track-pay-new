@@ -17,6 +17,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import { Mail } from "lucide-react";
+import { getCsrfToken } from "@/lib/csrf-client";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -26,6 +27,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export function ForgotPasswordForm() {
   const [submitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -34,11 +36,36 @@ export function ForgotPasswordForm() {
     },
   });
 
-  function onSubmit(data: ForgotPasswordFormValues) {
+  async function onSubmit(data: ForgotPasswordFormValues) {
     setIsSubmitting(true);
-    console.log(data);
-    // Handle forgot password logic here
-    setIsSubmitting(false);
+    setMessage(null);
+
+    try {
+      const csrfToken = await getCsrfToken();
+
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string }
+        | null;
+
+      setMessage(
+        response.ok
+          ? payload?.message ?? "If the email exists, reset instructions were sent."
+          : payload?.message ?? "Unable to request password reset.",
+      );
+    } catch {
+      setMessage("Unable to reach the authentication service.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -79,6 +106,8 @@ export function ForgotPasswordForm() {
             )}
           />
         </div>
+
+        {message ? <p className="text-sm text-white/80">{message}</p> : null}
 
         <div className="flex flex-col gap-y-4">
           <Button type="submit" className="w-full" disabled={submitting}>

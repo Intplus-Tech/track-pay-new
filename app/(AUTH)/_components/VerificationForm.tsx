@@ -17,8 +17,9 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
+import { getCsrfToken } from "@/lib/csrf-client";
 
 const verificationSchema = z.object({
   code: z.string().length(6, "Verification code must be 6 characters"),
@@ -26,8 +27,15 @@ const verificationSchema = z.object({
 
 type VerificationFormValues = z.infer<typeof verificationSchema>;
 
-export function VerificationForm({ email }: { email: string }) {
+export function VerificationForm({
+  email,
+}: {
+  email: string;
+}) {
   const [submitting, setIsSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const form = useForm<VerificationFormValues>({
     resolver: zodResolver(verificationSchema),
@@ -36,11 +44,74 @@ export function VerificationForm({ email }: { email: string }) {
     },
   });
 
-  function onSubmit(data: VerificationFormValues) {
+  async function onSubmit(data: VerificationFormValues) {
     setIsSubmitting(true);
-    console.log(data);
-    // Handle verification logic here
-    setIsSubmitting(false);
+    setErrorMessage(null);
+
+    try {
+      const csrfToken = await getCsrfToken();
+
+      const response = await fetch("/api/auth/2fa-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify({
+          token: data.code,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string; accessToken?: string }
+        | null;
+
+      if (!response.ok) {
+        setErrorMessage(payload?.message ?? "Verification failed.");
+        return;
+      }
+
+      if (payload?.accessToken) {
+        router.push("/home/overview");
+        router.refresh();
+        return;
+      }
+
+      setErrorMessage("Unexpected verification response.");
+    } catch {
+      setErrorMessage("Unable to reach the authentication service.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function resendCode() {
+    setResending(true);
+    setErrorMessage(null);
+
+    try {
+      const csrfToken = await getCsrfToken();
+
+      const response = await fetch("/api/auth/request-2fa-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string }
+        | null;
+
+      if (!response.ok) {
+        setErrorMessage(payload?.message ?? "Unable to resend the code.");
+      }
+    } catch {
+      setErrorMessage("Unable to reach the authentication service.");
+    } finally {
+      setResending(false);
+    }
   }
 
   return (
@@ -107,24 +178,29 @@ export function VerificationForm({ email }: { email: string }) {
           )}
         />
 
-        <div className="flex items-center">
-          <p className="text-muted-foreground mr-2">
-            Didn&apos;t Received Code?
-          </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-muted-foreground">Didn&apos;t receive code?</p>
           <Button
+            type="button"
             variant="link"
             className="text-sm text-white font-normal p-0"
-            asChild
+            onClick={resendCode}
+            disabled={resending}
           >
-            <Link href="#">
-              Resend Code?{" "}
-              <span className="text-muted-foreground font-bold">(30s)</span>
-            </Link>
+            {resending ? "Resending..." : "Resend code"}
           </Button>
         </div>
 
-        <Button type="submit" className="w-full" disabled={submitting}>
-          {submitting ? "Verifying..." : "Sign in"}
+        {errorMessage ? (
+          <p className="text-sm text-red-400">{errorMessage}</p>
+        ) : null}
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={submitting}
+        >
+          {submitting ? "Verifying..." : "Verify"}
         </Button>
       </form>
     </Form>
