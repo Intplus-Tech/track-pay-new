@@ -1,20 +1,19 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Bell, CircleArrowRight, Search } from "lucide-react";
+import { Bell, Search, Settings } from "lucide-react";
 import React, { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import PageHeader from "@/components/PageHeader";
 import type { DashboardSession } from "@/lib/session";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { clearCsrfTokenCache, getCsrfToken } from "@/lib/csrf-client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function getInitials(name?: string | null) {
   if (!name) {
@@ -32,9 +31,36 @@ function getInitials(name?: string | null) {
 
 const Header = ({ session }: { session: DashboardSession | null }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const pathname = usePathname();
   const router = useRouter();
 
+  const routeTitles: Record<string, string> = {
+    "/home/overview": "Overview",
+    "/home/branch-matrix": "Branch Matrix",
+    "/home/user-directory": "User Directory",
+    "/home/loan-ledger": "Loan Ledger",
+    "/home/team": "Team",
+    "/home/settings": "Settings",
+    "/home/accounts": "Branch Matrix",
+    "/home/loan-officer": "User Directory",
+    "/home/tracker": "Loan Ledger",
+  };
+
+  const title =
+    routeTitles[pathname] ??
+    pathname
+      .split("/")
+      .filter(Boolean)
+      .pop()
+      ?.replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase()) ??
+    "Dashboard";
+
   async function handleLogout() {
+    if (isLoggingOut) {
+      return;
+    }
+
     setIsLoggingOut(true);
 
     try {
@@ -53,7 +79,6 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
       }
 
       clearCsrfTokenCache();
-
       router.replace("/auth/sign-in");
       router.refresh();
     } catch {
@@ -62,52 +87,66 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
   }
 
   return (
-    <header className="flex justify-between p-6">
-      <PageHeader />
-      <div className="rounded-full bg-white h-fit border p-2 flex items-center gap-4">
-        <span className="relative">
-          <Search
-            size={16}
-            className="absolute top-1/2 left-3 -translate-y-2"
-          />
-          <Input className="rounded-full pl-8 bg-primary/10" />
-        </span>
-        <div>
-          <Select defaultValue="24">
-            <SelectTrigger className="w-[140px] h-8 rounded-full bg-primary/10">
-              <SelectValue placeholder="Time filter" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border shadow-lg">
-              <SelectItem value="24">Last 24 Hours</SelectItem>
-              <SelectItem value="48">48 Hours</SelectItem>
-              <SelectItem value="week">1 Week</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Bell size={20} />
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-          className="text-red-500 disabled:opacity-50"
-          aria-label="Sign out"
-          title="Sign out"
-        >
-          <CircleArrowRight strokeWidth={1} size={20} color="currentColor" />
-        </button>
-        <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>{getInitials(session?.user.name)}</AvatarFallback>
-        </Avatar>
-        <div className="hidden xl:block leading-tight">
-          <p className="text-sm font-semibold text-gray-900">
-            {session?.user.name ?? "Signed in user"}
-          </p>
-          <p className="text-xs text-gray-500">
-            {session?.role?.name ?? "No role"}
-            {session?.branch?.name ? ` • ${session.branch.name}` : ""}
-          </p>
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-slate-100/85 px-6 py-3 backdrop-blur-sm">
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-[2rem] font-semibold leading-none tracking-[-0.03em] text-slate-900">
+          {title}
+        </h1>
+        <div className="flex items-center gap-3">
+          <label className="relative hidden w-[320px] md:block">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <Input
+              placeholder="Search portfolio..."
+              className="h-9 rounded-full border-slate-300 bg-white pl-9 text-sm shadow-none placeholder:text-slate-400"
+            />
+          </label>
+          <button
+            type="button"
+            className="inline-flex size-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
+            aria-label="Notifications"
+          >
+            <Bell size={18} />
+          </button>
+          <Link
+            href="/home/settings"
+            className="inline-flex size-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
+            aria-label="Settings"
+            title="Settings"
+          >
+            <Settings size={18} />
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="rounded-full ring-offset-background transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label="Open user menu"
+              >
+                <Avatar>
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>{getInitials(session?.user.name)}</AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem asChild>
+                <Link href="/home/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={(event) => {
+                  event.preventDefault();
+                  void handleLogout();
+                }}
+                disabled={isLoggingOut}
+              >
+                {isLoggingOut ? "Logging out..." : "Logout"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

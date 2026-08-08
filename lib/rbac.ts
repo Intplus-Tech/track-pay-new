@@ -1,0 +1,173 @@
+import {
+  type AssignRolePermissionsPayload,
+  type BackendEntity,
+  type CreatePermissionPayload,
+  type CreateRolePayload,
+  type CreateUserPayload,
+  type RbacBranch,
+  type RbacPaginationResponse,
+  type RbacPermission,
+  type RbacRole,
+  type RbacUser,
+} from "@/types/rbac";
+
+function getRecordId(record: BackendEntity) {
+  return record.id ?? record._id ?? "";
+}
+
+function normalizeBoolean(value: unknown, fallback = false) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function normalizeString(value: unknown, fallback = "") {
+  return typeof value === "string" ? value : fallback;
+}
+
+function normalizeNullableString(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function normalizeEntity(record: BackendEntity) {
+  return {
+    id: getRecordId(record),
+    _id: record._id,
+    isActive: normalizeBoolean(record.isActive, true),
+    isDeleted: normalizeBoolean(record.isDeleted, false),
+    createdAt: normalizeNullableString(record.createdAt),
+    updatedAt: normalizeNullableString(record.updatedAt),
+    deletedAt: normalizeNullableString(record.deletedAt),
+  };
+}
+
+export function normalizeUser(record: Record<string, unknown>): RbacUser {
+  return {
+    ...normalizeEntity(record as BackendEntity),
+    name: normalizeString(record.name),
+    email: normalizeString(record.email),
+    twoFactorEnabled: normalizeBoolean(record.twoFactorEnabled),
+    roleId: normalizeNullableString(record.roleId),
+    branchId: normalizeNullableString(record.branchId),
+  };
+}
+
+export function normalizeRole(record: Record<string, unknown>): RbacRole {
+  return {
+    ...normalizeEntity(record as BackendEntity),
+    name: normalizeString(record.name),
+    description: normalizeNullableString(record.description),
+    permissionIds: Array.isArray(record.permissionIds)
+      ? record.permissionIds.filter((value): value is string => typeof value === "string")
+      : [],
+  };
+}
+
+export function normalizePermission(
+  record: Record<string, unknown>,
+): RbacPermission {
+  return {
+    ...normalizeEntity(record as BackendEntity),
+    name: normalizeString(record.name),
+    description: normalizeNullableString(record.description),
+  };
+}
+
+export function normalizeBranch(record: Record<string, unknown>): RbacBranch {
+  return {
+    ...normalizeEntity(record as BackendEntity),
+    name: normalizeString(record.name),
+    code: normalizeNullableString(record.code),
+    location: normalizeNullableString(record.location),
+    isHeadOffice:
+      typeof record.isHeadOffice === "boolean" ? record.isHeadOffice : null,
+    managerId: normalizeNullableString(record.managerId),
+    parentBranchId: normalizeNullableString(record.parentBranchId),
+  };
+}
+
+export function normalizePaginatedUsers(
+  payload: unknown,
+): RbacPaginationResponse<RbacUser> {
+  const fallback = {
+    data: [],
+    total: 0,
+    page: 1,
+    limit: 10,
+  };
+
+  if (!payload || typeof payload !== "object") {
+    return fallback;
+  }
+
+  const response = payload as Record<string, unknown>;
+  const data = Array.isArray(response.data)
+    ? response.data
+      .filter((value): value is Record<string, unknown> =>
+        typeof value === "object" && value !== null,
+      )
+      .map(normalizeUser)
+    : [];
+
+  return {
+    data,
+    total: typeof response.total === "number" ? response.total : data.length,
+    page: typeof response.page === "number" ? response.page : 1,
+    limit: typeof response.limit === "number" ? response.limit : Math.max(data.length, 1),
+  };
+}
+
+export function buildUsersQuery(params: URLSearchParams) {
+  const query = new URLSearchParams();
+
+  for (const [key, value] of params.entries()) {
+    if (value.trim().length > 0) {
+      query.set(key, value);
+    }
+  }
+
+  return query.toString() ? `?${query.toString()}` : "";
+}
+
+export function sanitizeCreateUserPayload(
+  payload: Record<string, unknown>,
+): CreateUserPayload {
+  return {
+    name: normalizeString(payload.name),
+    email: normalizeString(payload.email),
+    password: normalizeString(payload.password),
+    roleId: normalizeString(payload.roleId).trim() || undefined,
+    branchId: normalizeString(payload.branchId).trim() || undefined,
+    isActive: typeof payload.isActive === "boolean" ? payload.isActive : true,
+  };
+}
+
+export function sanitizeCreateRolePayload(
+  payload: Record<string, unknown>,
+): CreateRolePayload {
+  return {
+    name: normalizeString(payload.name),
+    description: normalizeString(payload.description).trim() || undefined,
+    isActive: typeof payload.isActive === "boolean" ? payload.isActive : true,
+    isDeleted: typeof payload.isDeleted === "boolean" ? payload.isDeleted : false,
+  };
+}
+
+export function sanitizeCreatePermissionPayload(
+  payload: Record<string, unknown>,
+): CreatePermissionPayload {
+  return {
+    name: normalizeString(payload.name),
+    description: normalizeString(payload.description).trim() || undefined,
+    isActive: typeof payload.isActive === "boolean" ? payload.isActive : true,
+    isDeleted: typeof payload.isDeleted === "boolean" ? payload.isDeleted : false,
+  };
+}
+
+export function sanitizeAssignPermissionsPayload(
+  payload: Record<string, unknown>,
+): AssignRolePermissionsPayload {
+  return {
+    permissionIds: Array.isArray(payload.permissionIds)
+      ? payload.permissionIds.filter((value): value is string => typeof value === "string")
+      : [],
+  };
+}

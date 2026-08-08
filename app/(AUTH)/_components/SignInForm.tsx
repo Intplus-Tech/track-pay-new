@@ -63,7 +63,7 @@ export function SignInForm() {
       const payload = (await response.json().catch(() => null)) as
         | {
           message?: string;
-          accessToken?: string;
+          success?: boolean;
           twoFactorRequired?: boolean;
         }
         | null;
@@ -78,7 +78,7 @@ export function SignInForm() {
         return;
       }
 
-      if (payload?.accessToken) {
+      if (payload?.success) {
         router.push("/home/overview");
         router.refresh();
         return;

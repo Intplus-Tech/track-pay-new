@@ -11,15 +11,21 @@ import {
   sanitizeAuthPayloadForLogs,
   setAuthenticatedSession,
 } from "@/lib/auth";
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+import { isObject } from "@/lib/type-guards";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const csrfError = validateCsrfRequest(request);
   if (csrfError) {
     return csrfError;
+  }
+
+  const clientIp = getClientIp(request);
+  if (!rateLimit(`2fa-login:${clientIp}`, 5, 60_000)) {
+    return NextResponse.json(
+      { message: "Too many verification attempts. Please try again later." },
+      { status: 429 },
+    );
   }
 
   const body = (await request.json().catch(() => null)) as
@@ -77,9 +83,10 @@ export async function POST(request: NextRequest) {
     const normalizedSuccessPayload = normalizeLoginSuccessPayload(payload);
 
     if (normalizedSuccessPayload) {
-      const successResponse = NextResponse.json(normalizedSuccessPayload, {
-        status: 200,
-      });
+      const successResponse = NextResponse.json(
+        { success: true },
+        { status: 200 },
+      );
 
       setAuthenticatedSession(
         successResponse,

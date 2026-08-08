@@ -90,6 +90,12 @@ export async function resolveDashboardSession(
       },
     });
 
+    // If the backend rejects the token, signal that the session is invalid
+    // so the caller can redirect to sign-in instead of rendering with stale data.
+    if (userResponse.status === 401 || userResponse.status === 403) {
+      return null;
+    }
+
     const userProfile = await readJsonOrNull<BackendUserProfile>(userResponse);
 
     const resolvedUser: DashboardUser = {
@@ -165,3 +171,4 @@ export async function resolveDashboardSession(
     };
   }
 }
+

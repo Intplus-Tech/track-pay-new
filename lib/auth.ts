@@ -1,4 +1,5 @@
 import type { NextResponse } from "next/server";
+import { isObject } from "@/lib/type-guards";
 
 export const AUTH_ACCESS_TOKEN_COOKIE = "trackpay_access_token";
 export const AUTH_USER_COOKIE = "trackpay_user";
@@ -48,11 +49,8 @@ type AuthTokenClaims = {
   twoFactorEnabled?: boolean;
   roleId?: string;
   branchId?: string;
+  exp?: number;
 };
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
 
 function getString(value: unknown) {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
@@ -62,7 +60,11 @@ function getBoolean(value: unknown) {
   return typeof value === "boolean" ? value : null;
 }
 
-function decodeJwtClaims(token: string): AuthTokenClaims | null {
+function getNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+export function decodeJwtClaims(token: string): AuthTokenClaims | null {
   try {
     const parts = token.split(".");
     if (parts.length < 2) {
@@ -82,10 +84,21 @@ function decodeJwtClaims(token: string): AuthTokenClaims | null {
       twoFactorEnabled: getBoolean(claims.twoFactorEnabled) ?? undefined,
       roleId: getString(claims.roleId) ?? undefined,
       branchId: getString(claims.branchId) ?? undefined,
+      exp: getNumber(claims.exp) ?? undefined,
     };
   } catch {
     return null;
   }
+}
+
+export function getJwtRemainingSeconds(token: string): number | undefined {
+  const claims = decodeJwtClaims(token);
+  if (!claims?.exp) {
+    return undefined;
+  }
+
+  const remaining = claims.exp - Math.floor(Date.now() / 1000);
+  return remaining > 0 ? remaining : 0;
 }
 
 export function normalizeLoginSuccessPayload(
@@ -173,13 +186,18 @@ export function sanitizeAuthPayloadForLogs(payload: unknown) {
   return safePayload;
 }
 
-function authCookieOptions(rememberMe: boolean) {
+function authCookieOptions(rememberMe: boolean, tokenMaxAge?: number) {
+  // If we know the token's remaining lifetime, use it as the cookie maxAge
+  // so the cookie self-destructs when the JWT expires.
+  // Fall back to rememberMe behaviour (30 days or session cookie) if unknown.
+  const maxAge = tokenMaxAge ?? (rememberMe ? THIRTY_DAYS_IN_SECONDS : undefined);
+
   return {
     httpOnly: true,
     sameSite: "strict" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: rememberMe ? THIRTY_DAYS_IN_SECONDS : undefined,
+    maxAge,
   };
 }
 
@@ -214,15 +232,17 @@ export function setAuthenticatedSession(
   session: LoginSuccessResponse,
   rememberMe = false,
 ) {
+  const tokenMaxAge = getJwtRemainingSeconds(session.accessToken);
+
   response.cookies.set(
     AUTH_ACCESS_TOKEN_COOKIE,
     session.accessToken,
-    authCookieOptions(rememberMe),
+    authCookieOptions(rememberMe, tokenMaxAge),
   );
   response.cookies.set(
     AUTH_USER_COOKIE,
     encodeSessionValue(session.user),
-    authCookieOptions(rememberMe),
+    authCookieOptions(rememberMe, tokenMaxAge),
   );
   response.cookies.delete(AUTH_PENDING_COOKIE);
 }

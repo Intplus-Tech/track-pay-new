@@ -4,8 +4,11 @@ import * as React from "react";
 import {
   Building2,
   Grid2X2,
+  KeyRound,
   NotebookText,
+  ShieldCheck,
   Users,
+  UserCog,
   UsersRound,
 } from "lucide-react";
 
@@ -40,17 +43,32 @@ const navItems: NavItem[] = [
   },
   {
     title: "Branch Matrix",
-    href: "/home/accounts",
+    href: "/home/branch-matrix",
     icon: Building2,
   },
   {
     title: "User Directory",
-    href: "/home/loan-officer",
+    href: "/home/user-directory",
     icon: UsersRound,
   },
   {
+    title: "User Management",
+    href: "/home/user-management",
+    icon: UserCog,
+  },
+  {
+    title: "Role Management",
+    href: "/home/role-management",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Permission Management",
+    href: "/home/permission-management",
+    icon: KeyRound,
+  },
+  {
     title: "Loan Ledger",
-    href: "/home/tracker",
+    href: "/home/loan-ledger",
     icon: NotebookText,
   },
   {

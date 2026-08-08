@@ -6,11 +6,20 @@ import {
   decodeSessionValue,
   PendingPasswordResetSession,
 } from "@/lib/auth";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const csrfError = validateCsrfRequest(request);
   if (csrfError) {
     return csrfError;
+  }
+
+  const clientIp = getClientIp(request);
+  if (!rateLimit(`reset-password:${clientIp}`, 5, 60_000)) {
+    return NextResponse.json(
+      { message: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
   }
 
   const body = (await request.json().catch(() => null)) as
@@ -53,7 +62,10 @@ export async function POST(request: NextRequest) {
       status: backendResponse.status,
     });
 
-    if (backendResponse.ok) {
+    // Always clear the reset cookie on terminal responses (success or
+    // client-error like "token already used"). Only preserve it on
+    // transient server errors so the user can retry.
+    if (backendResponse.status < 500) {
       response.cookies.delete(AUTH_PASSWORD_RESET_COOKIE);
     }
 
@@ -65,3 +77,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

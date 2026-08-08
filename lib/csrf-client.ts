@@ -1,14 +1,17 @@
-let csrfTokenCache: string | null = null;
+interface CsrfCache {
+  token: string;
+  cachedAt: number;
+}
+
+// Token cache with TTL — must expire before the server-side cookie (2 hours).
+const CSRF_CACHE_TTL_MS = 90 * 60 * 1000; // 90 minutes
+let csrfCache: CsrfCache | null = null;
 
 interface CsrfResponse {
   csrfToken?: string;
 }
 
-export async function getCsrfToken() {
-  if (csrfTokenCache) {
-    return csrfTokenCache;
-  }
-
+async function fetchFreshCsrfToken(): Promise<string> {
   const response = await fetch("/api/auth/csrf", {
     method: "GET",
     cache: "no-store",
@@ -25,11 +28,20 @@ export async function getCsrfToken() {
     throw new Error("Unable to initialize request security.");
   }
 
-  csrfTokenCache = payload.csrfToken;
+  csrfCache = { token: payload.csrfToken, cachedAt: Date.now() };
 
-  return csrfTokenCache;
+  return csrfCache.token;
+}
+
+export async function getCsrfToken() {
+  if (csrfCache && Date.now() - csrfCache.cachedAt < CSRF_CACHE_TTL_MS) {
+    return csrfCache.token;
+  }
+
+  return fetchFreshCsrfToken();
 }
 
 export function clearCsrfTokenCache() {
-  csrfTokenCache = null;
+  csrfCache = null;
 }
+

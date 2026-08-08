@@ -1,541 +1,246 @@
-# Track-Pay API Reference
+    # Track-Pay API Reference
 
-This document is the frontend integration reference for the Track-Pay API specification, version `1.0`. It records the API contract exactly where it is defined and explicitly calls out missing definitions so that implementation does not rely on guesses.
+This is the frontend integration reference for Track-Pay API specification `1.0`, updated from the supplied Swagger document.
 
 ## Base URL and authentication
 
-The supplied OpenAPI document declares no server URL. Configure the deployment origin in `NEXT_PUBLIC_API_BASE_URL` without a trailing slash, then append the paths in this document.
+The OpenAPI document declares no server URL. Configure `NEXT_PUBLIC_API_BASE_URL` without a trailing slash and append the endpoint paths in this document.
 
-Protected endpoints use the declared `JWT-auth` HTTP bearer scheme:
+Protected endpoints use the declared HTTP bearer scheme:
 
 ```http
 Authorization: Bearer <accessToken>
 ```
 
-The specification applies an undeclared `bearer` scheme to authentication routes. Treat login and recovery routes as unauthenticated unless the backend gateway requires otherwise; confirm this before release.
+The Swagger document applies an undeclared `bearer` security scheme to several authentication endpoints. `JWT-auth` is the only scheme defined in `components.securitySchemes`. Treat login, password recovery, and 2FA completion as unauthenticated flows; use a bearer token for `POST /auth/change-password` and `GET /auth/me`. Confirm the backend's intended enforcement before release.
 
-## Conventions and gaps
+## Conventions
 
-- All request bodies are `application/json` unless noted otherwise.
-- IDs are strings. The specification uses both UUID and MongoDB ObjectId examples, so clients must treat them as opaque strings.
-- Fields marked **required** are required by the supplied schema.
-- `DELETE` operations that return `204` are soft deletes with no response body.
-- A response marked **not specified** has a status code and description in the OpenAPI document but no JSON body schema.
-- `UpdateBranchDto`, `UpdateRoleDto`, `UpdatePermissionDto`, `UpdateUserDto`, and `UpdateLoaneeDto` contain no defined properties. Do not assume their writable fields without backend confirmation.
-- CSV import is described as a file upload, but no `multipart/form-data` body or file field name is defined.
+- Request bodies are JSON unless the endpoint is explicitly `multipart/form-data`.
+- Entity IDs are opaque strings. The document shows MongoDB ObjectId examples, although some endpoint text still refers to UUIDs.
+- Monetary values are decimal strings, not JavaScript numbers.
+- List endpoints use individual query parameters; the prior undocumented `filter` object is no longer used.
+- `DELETE` responses with `204` have no body and represent soft deletion where stated.
+- `PaginationResponseDto.limit` is described as the total number of pages even though the list query parameter is the page size. Preserve the raw value until the backend clarifies this inconsistency.
 
 ## Shared types
 
-### Common entity fields
+### Common entities
 
-`Branch`, `User`, `Role`, and `Permission` include the following required fields:
-
-| Field | Type | Notes |
-| --- | --- | --- |
-| `_id` | string | MongoDB ObjectId example |
-| `isActive` | boolean | Active state |
-| `isDeleted` | boolean | Soft-delete state |
-| `createdAt` | string, date-time | Creation timestamp |
-| `updatedAt` | string, date-time | Last update timestamp |
-| `deletedAt` | object or `null` | Declared as nullable `object` in the specification |
-
-### Branch
-
-All common entity fields and the following fields are required:
-
-| Field | Type | Nullable | Example |
-| --- | --- | --- | --- |
-| `name` | string | No | `Main Branch` |
-| `code` | string | No | `MB-001` |
-| `location` | string | No | `New York, USA` |
-| `isHeadOffice` | boolean | No | `true` |
-| `managerId` | string | Yes | MongoDB ObjectId |
-| `parentBranchId` | string | Yes | MongoDB ObjectId |
+`Branch`, `User`, `Role`, `Permission`, and `Upload` expose `_id`, `isActive`, `isDeleted`, `createdAt`, `updatedAt`, and nullable `deletedAt` (declared as `object | null`).
 
 ### User
 
-All common entity fields and the following fields are required:
+In addition to common fields, `User` requires `name`, `firstName`, `middleName`, `lastName`, `employeeId`, `email`, `phoneNumber`, `twoFactorEnabled`, nullable `roleId`, nullable `branchId`, `availabilityStatus` (`ACTIVE` or `UNAVAILABLE`), `maxAssignedLoans`, `monthlyCollectionTarget`, `modulePermissions`, `photoUrl`, and nullable `photoUploadId`.
 
-| Field | Type | Nullable | Example |
-| --- | --- | --- | --- |
-| `name` | string | No | `John Doe` |
-| `email` | string | No | `omatsolaseund@gmail.com` |
-| `twoFactorEnabled` | boolean | No | `false` |
-| `roleId` | string | Yes | MongoDB ObjectId |
-| `branchId` | string | Yes | MongoDB ObjectId |
+`modulePermissions` is an array of `{ module, view, manage }`, where `module` is one of `OVERVIEW`, `TRACKER`, `ACCOUNTS`, `LOAN_OFFICERS`, `TEAM`, or `SETTINGS`. `manage` implies `view`.
 
-### Role
+### Branch
 
-All common entity fields and the following fields are required:
+`Branch` also requires `name`, `code`, `location`, `isHeadOffice`, nullable `managerId`, nullable `parentBranchId`, and `status` (`ACTIVE` or `CLOSED`).
 
-| Field | Type | Example |
-| --- | --- | --- |
-| `name` | string | `ADMIN` |
-| `description` | string | `Administrator role with full access` |
-| `permissionIds` | string[] | MongoDB ObjectId values |
+### Upload
 
-### Permission
+`Upload` additionally requires `originalName`, `mimeType`, `size`, `storageKey`, `storageDriver`, `url`, `purpose`, `status`, `checksum`, nullable `uploadedById`, nullable `branchId`, and nullable `processingResult`.
 
-All common entity fields and the following fields are required:
+Upload purposes are `BULK_ACCOUNTS`, `RECONCILIATION_IMPORT`, `LOANEE_PHOTO`, `USER_AVATAR`, `KYC_DOCUMENT`, and `GENERAL`. Processing statuses are `AVAILABLE`, `PROCESSING`, `PROCESSED`, and `FAILED`.
 
-| Field | Type | Example |
-| --- | --- | --- |
-| `name` | string | `CREATE_USER` |
-| `description` | string | `Allow creating new user accounts` |
-
-### PaginationResponseDto
-
-| Field | Type | Required | Constraints |
-| --- | --- | --- | --- |
-| `data` | array | Yes | Item type is not defined |
-| `total` | number | Yes | Minimum `0` |
-| `page` | number | Yes | Minimum `1` |
-| `limit` | number | Yes | Described as total pages; example `10` |
-
-## Request schemas
-
-### CreateBranchDto
-
-| Field | Type | Required |
-| --- | --- | --- |
-| `name` | string | Yes |
-| `location` | string | No |
-| `isActive` | boolean | No |
-
-### CreateUserDto
-
-| Field | Type | Required | Constraints |
-| --- | --- | --- | --- |
-| `name` | string | Yes | |
-| `email` | string | Yes | Email format |
-| `password` | string | Yes | Minimum length `8` |
-| `roleId` | string | No | UUID format |
-| `branchId` | string | No | |
-| `isActive` | boolean | No | |
-| `isDeleted` | boolean | No | |
-
-### CreateRoleDto and CreatePermissionDto
-
-| Field | Type | Required |
-| --- | --- | --- |
-| `name` | string | Yes |
-| `description` | string | No |
-| `isActive` | boolean | No |
-| `isDeleted` | boolean | No |
-
-### LoginDto
-
-| Field | Type | Required | Constraints |
-| --- | --- | --- | --- |
-| `email` | string | Yes | Email format |
-| `password` | string | Yes | Minimum length `8` |
-
-### CreateLoaneeDto
-
-| Field | Type | Required | Constraints |
-| --- | --- | --- | --- |
-| `loaneeNumber` | number | Yes | Minimum `1` |
-| `firstName` | string | Yes | 1-255 characters |
-| `lastName` | string | Yes | 1-255 characters |
-| `middleName` | string | No | 0-255 characters |
-| `email` | string | Yes | Email format |
-| `phoneNumber` | string | No | 0-20 characters |
-| `photoUrl` | string | No | URL is described but no `uri` format is declared |
-
-### CreateLoanPortfolioDto
-
-| Field | Type | Required | Values / default |
-| --- | --- | --- | --- |
-| `loaneeId` | string | Yes | UUID format |
-| `principal` | string | Yes | Decimal represented as a string, example `50000.00` |
-| `status` | string | No | `PENDING`, `APPROVED`, `REJECTED`, `PARTIAL`, `OVERDUE`, `ONTIME`; default `PENDING` |
-| `tenureMonths` | number | Yes | Minimum `1` |
-| `interestRate` | string | Yes | Example `5.5000` |
-| `interestType` | string | No | `FIXED`, `FLOAT`, `REDUCING`; default `FIXED` |
-| `loanOfficerId` | string | No | UUID format |
-| `nextDueDate` | string | No | ISO timestamp example |
-
-### CreateLoanRepaymentDto
-
-| Field | Type | Required | Values / default |
-| --- | --- | --- | --- |
-| `portfolioId` | string | Yes | UUID format |
-| `amount` | string | Yes | Decimal represented as a string, example `5000.00` |
-| `currency` | string | No | 3 characters; default `NGN` |
-| `paidAt` | string | No | ISO timestamp example |
-| `provider` | string | No | Example `SQUAD` |
-| `providerReference` | string | No | Example `TXN-ABC123` |
-
-### CreateVirtualAccountDto
-
-| Field | Type | Required | Constraints |
-| --- | --- | --- | --- |
-| `name` | string | Yes | |
-| `email` | string | Yes | Email format |
-| `phone` | string | No | |
-| `reference` | string | Yes | |
-
-### Filter schemas
-
-`LoaneeFilterDto` accepts optional `id` (string), `loaneeNumber` (number, minimum `1`), `firstName` (string partial match), `lastName` (string partial match), `email` (email string), and `phoneNumber` (string).
-
-`LoanPortfolioFilterDto` accepts optional `id` (UUID string), `loaneeId` (UUID string), `loanId` (string), `accountNumber` (string), `status` (`PENDING`, `APPROVED`, `REJECTED`, `PARTIAL`, `OVERDUE`, or `ONTIME`), and `loanOfficerId` (UUID string).
-
-`UpdateLoanPortfolioDto` accepts optional `status` with the same six portfolio statuses. No other update DTO fields are specified.
-
-## Endpoint reference
-
-### App
-
-#### `GET /`
-
-Renders the gateway home page. No parameters, authorization, or response body schema are specified.
-
-| Status | Response |
-| --- | --- |
-| `200` | HTML rendered successfully; body schema not specified |
-
-#### `GET /api/v1/status`
-
-Returns service health. No parameters, authorization, or response body schema are specified.
-
-| Status | Response |
-| --- | --- |
-| `200` | Application is running; body schema not specified |
-
-### Branches
-
-#### `POST /api/v1/branches`
-
-Authorization: `JWT-auth`. Request body: [CreateBranchDto](#createbranchdto).
-
-| Status | Response |
-| --- | --- |
-| `201` | [Branch](#branch) |
-| `403` | Missing admin role or create-branch permission |
-
-#### `GET /api/v1/branches`
-
-Authorization: `JWT-auth`. No parameters.
-
-| Status | Response |
-| --- | --- |
-| `200` | `Branch[]` |
-
-#### `GET /api/v1/branches/{id}`
-
-Authorization: `JWT-auth`.
-
-| Parameter | In | Required | Type |
-| --- | --- | --- | --- |
-| `id` | path | Yes | string |
-
-| Status | Response |
-| --- | --- |
-| `200` | [Branch](#branch) |
-
-#### `PATCH /api/v1/branches/{id}`
-
-Authorization: `JWT-auth`. Path parameter `id` is a required string. Request body: `UpdateBranchDto` (object with no defined properties).
-
-| Status | Response |
-| --- | --- |
-| `200` | [Branch](#branch) |
-| `400` | Invalid input or missing authority |
-| `403` | Missing administrative permission |
-| `404` | Branch does not exist |
-| `500` | Unexpected update error |
-
-#### `DELETE /api/v1/branches/{id}`
-
-Authorization: `JWT-auth`. Path parameter `id` is a required string.
-
-| Status | Response |
-| --- | --- |
-| `200` | boolean |
-| `400` | Deletion failed |
-
-### Users and RBAC
-
-#### `POST /api/v1/users`
-
-Authorization: `JWT-auth`. Request body: [CreateUserDto](#createuserdto).
-
-| Status | Response |
-| --- | --- |
-| `201` | [User](#user) |
-| `403` | Missing administrator or HR manager permission |
-
-#### `GET /api/v1/users`
-
-Authorization: `JWT-auth`.
-
-| Parameter | In | Required | Type / values |
-| --- | --- | --- | --- |
-| `total` | query | No | number, minimum `0` |
-| `page` | query | No | number, minimum `1` |
-| `limit` | query | No | number, minimum `1` |
-| `id` | query | No | UUID string |
-| `isActive` | query | No | boolean |
-| `isDeleted` | query | No | boolean |
-| `createdAt` | query | No | ISO date string |
-| `updatedAt` | query | No | ISO date string |
-| `deletedAt` | query | No | ISO date string |
-| `name` | query | No | string |
-| `email` | query | No | email string |
-| `roleId` | query | No | UUID string |
-| `branchId` | query | No | UUID string |
-| `order` | query | No | `ASC` or `DESC`; default `ASC` |
-
-| Status | Response |
-| --- | --- |
-| `200` | [PaginationResponseDto](#paginationresponsedto) |
-| `403` | Missing view-user-list permission |
-| `404` | Requesting user could not be verified |
-| `500` | Database error |
-
-#### `GET /api/v1/users/{id}`
-
-Authorization: `JWT-auth`. Required path parameter: `id` (string).
-
-| Status | Response |
-| --- | --- |
-| `200` | [User](#user) |
-
-#### `PUT /api/v1/users/{id}`
-
-Authorization: `JWT-auth`. Required path parameter: `id` (string). Request body: `UpdateUserDto` (object with no defined properties).
-
-| Status | Response |
-| --- | --- |
-| `200` | [User](#user) |
-| `403` | Cannot update this user |
-
-#### `DELETE /api/v1/users/{id}`
-
-Authorization: `JWT-auth`. Required path parameter: `id` (string).
-
-| Status | Response |
-| --- | --- |
-| `204` | User soft-deleted; no body |
-
-#### Roles
-
-| Method and path | Request | Success response |
-| --- | --- | --- |
-| `GET /api/v1/users/roles` | No parameters | `200` `Role[]` |
-| `POST /api/v1/users/roles` | [CreateRoleDto](#createroledto-and-createpermissiondto) | `201` [Role](#role) |
-| `PATCH /api/v1/users/roles/{id}` | Required string `id`; `UpdateRoleDto` has no defined properties | `200` [Role](#role) |
-| `DELETE /api/v1/users/roles/{id}` | Required string `id` | `204` no body |
-| `POST /api/v1/users/roles/{roleId}/permissions` | Required string `roleId`; JSON `{ "permissionIds": string[] }`, `permissionIds` required | `200` or `201` [Role](#role) |
-
-All role endpoints require `JWT-auth`.
-
-#### Permissions
-
-| Method and path | Request | Success response |
-| --- | --- | --- |
-| `GET /api/v1/users/permissions` | No parameters | `200` `Permission[]` |
-| `POST /api/v1/users/permissions` | [CreatePermissionDto](#createroledto-and-createpermissiondto) | `201` [Permission](#permission) |
-| `PUT /api/v1/users/permissions/{id}` | Required string `id`; `UpdatePermissionDto` has no defined properties | `200` [Permission](#permission) |
-| `DELETE /api/v1/users/permissions/{id}` | Required string `id` | `204` no body |
-
-All permission endpoints require `JWT-auth`.
+## Request payloads
 
 ### Authentication
 
-The document references the undeclared `bearer` security scheme for every authentication endpoint.
-
-#### `POST /api/v1/auth/login`
-
-Request body: [LoginDto](#logindto).
-
-| Status | Response |
+| Endpoint | Required JSON body |
 | --- | --- |
-| `200` | Either `{ accessToken: string, user: { id: string, email: string, name: string, twoFactorEnabled: boolean } }` or `{ twoFactorRequired: boolean, authUserId: string, message: string }` |
-| `401` | Invalid email or password |
+| `POST /api/v1/auth/login` | `{ email, password }`; password minimum length `8` |
+| `POST /api/v1/auth/forgot-password` | `{ email }` |
+| `POST /api/v1/auth/reset-password` | `{ authUserId, newPassword, token }` |
+| `POST /api/v1/auth/enable-2fa` | `{ authUserId, confirmEmail? }` |
+| `POST /api/v1/auth/change-password` | `{ currentPassword, newPassword }` |
+| `POST /api/v1/auth/2fa-login` | `{ authUserId, token }` |
+| `POST /api/v1/auth/request-2fa-otp` | `{ authUserId }` |
 
-#### Recovery and 2FA
+Login returns either `{ accessToken, user }` or `{ twoFactorRequired, authUserId, message }`. The successful 2FA login response returns `{ accessToken, user }`. `enable-2fa` returns `{ twoFactorEnabled }` on `200`.
 
-| Method and path | Required JSON body | Success response | Other responses |
-| --- | --- | --- | --- |
-| `POST /api/v1/auth/forgot-password` | `{ email: string }` | `200` or `201`; body not specified | |
-| `POST /api/v1/auth/reset-password` | `{ authUserId: string, newPassword: string, token: string }` | `200` or `201`; body not specified | |
-| `POST /api/v1/auth/enable-2fa` | `{ authUserId: string }` | `200` or `201`; body not specified | |
-| `POST /api/v1/auth/2fa-login` | `{ authUserId: string, token: string }` | `200` `{ accessToken, user: { id, email, name, twoFactorEnabled } }`; `201` unspecified object | |
-| `POST /api/v1/auth/request-2fa-otp` | `{ authUserId: string }` | `200` or `201`; body not specified | `400` bad request |
+### Users and RBAC
 
-### Logs
+`POST /api/v1/users` accepts `email` and `password` (both required), plus optional `name`, name parts, `employeeId`, `phoneNumber`, `roleId`, `roleName`, `branchId`, `modulePermissions`, `maxAssignedLoans`, `monthlyCollectionTarget`, `photoUploadId`, `isActive`, and `isDeleted`. If `roleId` is omitted, `roleName` can create or select a role.
 
-#### `GET /api/v1/logs/{index}/search`
+`PATCH /api/v1/users/{id}/permissions` requires `{ modulePermissions }`. `PATCH /api/v1/users/{id}/activate` and `/deactivate` accept optional `{ reason }`.
 
-Authorization: `JWT-auth`.
+`CreateRoleDto` and `CreatePermissionDto` accept required `name` plus optional `description`, `isActive`, and `isDeleted`. Role assignment requires `{ permissionIds: string[] }`.
 
-| Parameter | In | Required | Type / values |
-| --- | --- | --- | --- |
-| `index` | path | Yes | string; intended values `error`, `http`, `event` |
-| `service_name` | query | No | string |
-| `action_name` | query | No | string |
-| `type` | query | No | `http`, `event`, or `error` |
-| `user_id` | query | No | string |
-| `from` | query | No | ISO 8601 date-time |
-| `to` | query | No | ISO 8601 date-time |
+`UpdateUserDto`, `UpdateRoleDto`, and `UpdatePermissionDto` still define no writable fields. Do not send fields to these endpoints without backend confirmation.
 
-| Status | Response |
-| --- | --- |
-| `200` | `{ total: number, logs: Array<{ service_name: string, action_name: string, date: string, payload: string, response: string }> }` |
-| `403` | Missing JWT authorization |
+### Branches
 
-### Loan - Loanees
+`POST /api/v1/branches` accepts `{ name, location?, isActive? }`. `PATCH /api/v1/branches/{id}/status` requires `{ status: "ACTIVE" | "CLOSED", reason? }`.
 
-#### `POST /api/v1/loan/loanees`
+`UpdateBranchDto` has no defined properties; confirm the writable branch fields before using `PATCH /api/v1/branches/{id}`.
 
-Authorization: `JWT-auth`. Request body: [CreateLoaneeDto](#createloaneedto).
+### Uploads and accounts
 
-| Status | Response |
-| --- | --- |
-| `201` | Body not specified |
+`POST /api/v1/uploads?purpose=<purpose>` is `multipart/form-data` with required binary field `file` and optional `purpose`. It returns an `Upload`. Upload a CSV before importing accounts or reconciliation data.
 
-#### `GET /api/v1/loan/loanees`
+`POST /api/v1/accounts` requires `firstName`, `lastName`, `loanAmount`, `cycleStepAmount`, and `repaymentInterval` (`DAILY`, `WEEKLY`, `BIWEEKLY`, or `MONTHLY`). Optional fields are `loanId`, `middleName`, `email`, `phoneNumber`, `firstDueDate`, `loanOfficerId`, `branchId`, `tenureMonths`, `interestRate`, `interestType`, and `photoUploadId`. At least one of email or phone number is required by the endpoint description.
 
-Authorization: `JWT-auth`.
+`POST /api/v1/accounts/bulk` requires `{ uploadId }` and optionally accepts `branchId`, `dryRun` (default `false`), and `continueOnError` (default `true`). It returns `{ uploadId, dryRun, totalRows, succeeded, failed, results }`; each result includes `row`, `success`, nullable `loanId`, nullable `portfolioId`, and nullable `error`.
 
-| Parameter | In | Required | Type / values |
-| --- | --- | --- | --- |
-| `total` | query | No | number, minimum `0` |
-| `page` | query | No | number, minimum `1` |
-| `limit` | query | No | number, minimum `1` |
-| `filter` | query | Yes | [LoaneeFilterDto](#filter-schemas) object serialization is not defined |
-| `order` | query | Yes | string; description specifies `ASC` or `DESC` |
+### Loans and repayments
 
-| Status | Response |
-| --- | --- |
-| `200` | Body not specified |
-
-#### Loanee by ID
-
-All routes below require `JWT-auth` and a required string path parameter `id`.
-
-| Method and path | Request | Responses |
+| Payload | Required fields | Optional fields |
 | --- | --- | --- |
-| `GET /api/v1/loan/loanees/{id}` | None | `200` body not specified; `404` not found |
-| `PATCH /api/v1/loan/loanees/{id}` | `UpdateLoaneeDto` with no defined properties | `200` body not specified |
-| `DELETE /api/v1/loan/loanees/{id}` | None | `204` no body |
+| `CreateLoaneeDto` | `loaneeNumber`, `firstName`, `lastName`, `email` | `middleName`, `phoneNumber`, `photoUrl` |
+| `CreateLoanPortfolioDto` | `loaneeId`, `principal`, `tenureMonths`, `interestRate` | `status`, `interestType`, `loanOfficerId`, `nextDueDate` |
+| `CreateLoanRepaymentDto` | `portfolioId`, `amount` | `currency` (default `NGN`), `paidAt`, `provider`, `providerReference` |
+| Apply payment | `amount` | none |
 
-### Loan - Portfolios
+Portfolio status values are `PENDING`, `APPROVED`, `REJECTED`, `PARTIAL`, `OVERDUE`, `ONTIME`, and `CLOSED`. Interest types are `FIXED`, `FLOAT`, and `REDUCING`. `UpdateLoanPortfolioDto` only defines optional `status`.
 
-#### `POST /api/v1/loan/portfolios`
+`UpdateLoaneeDto` has no defined properties; confirm it before using the loanee update endpoint.
 
-Authorization: `JWT-auth`. Request body: [CreateLoanPortfolioDto](#createloanportfoliodto).
+### Loan officers and settings
 
-| Status | Response |
-| --- | --- |
-| `201` | Body not specified |
+`POST /api/v1/loan-officers` requires `{ firstName, lastName, email, password }` and accepts `employeeId`, `middleName`, `phoneNumber`, `branchId`, `maxAssignedLoans`, and `monthlyCollectionTarget`.
 
-#### `GET /api/v1/loan/portfolios`
+`POST /api/v1/loan-officers/{id}/reassign` requires `{ targetOfficerId, portfolioIds }` and accepts `reason`. `portfolioIds` must contain at least one item. `PATCH /api/v1/loan-officers/{id}/availability` requires `{ availabilityStatus }` and accepts `reason`.
 
-Authorization: `JWT-auth`.
+`PUT /api/v1/settings/notifications/{branchId}` accepts any combination of `accountCreation`, `loanPaymentConfirmation`, `loanOverdueReminder`, and `all`; `all` takes precedence. `PATCH /api/v1/settings/notifications/report` requires `{ sendReport }`. Adding a report recipient requires `{ email }`.
 
-| Parameter | In | Required | Type / values |
-| --- | --- | --- | --- |
-| `total` | query | No | number, minimum `0` |
-| `page` | query | No | number, minimum `1` |
-| `limit` | query | No | number, minimum `1` |
-| `filter` | query | Yes | [LoanPortfolioFilterDto](#filter-schemas) object serialization is not defined |
-| `order` | query | Yes | string |
+### Reconciliation and Squad
 
-| Status | Response |
-| --- | --- |
-| `200` | Body not specified |
+`POST /api/v1/reconciliation/import/csv` requires `{ uploadId }` from an earlier `RECONCILIATION_IMPORT` upload and optionally accepts `provider` and three-character `currency`.
 
-#### Portfolio by ID and payment
+`POST /api/v1/integrations/squad/virtual-accounts` requires `{ name, email, reference }` and accepts `phone`. The Squad webhook is server-to-server only; never call it from the browser.
 
-All routes below require `JWT-auth` and a required string path parameter `id`.
+## Endpoint reference
 
-| Method and path | Request | Responses |
+Unless noted, endpoints in this section require `JWT-auth`.
+
+### App and authentication
+
+| Method | Path | Notes |
 | --- | --- | --- |
-| `GET /api/v1/loan/portfolios/{id}` | None | `200` body not specified |
-| `PATCH /api/v1/loan/portfolios/{id}` | [UpdateLoanPortfolioDto](#filter-schemas) | `200` body not specified |
-| `DELETE /api/v1/loan/portfolios/{id}` | None | `204` no body |
-| `POST /api/v1/loan/portfolios/{id}/apply-payment` | `{ amount: string }`, required; example `10000.00` | `201` body not specified |
+| `GET` | `/` | Gateway homepage HTML; public |
+| `GET` | `/api/v1/status` | Health status; public |
+| `POST` | `/api/v1/auth/login` | Public credential login; `200` token or 2FA challenge, `401` invalid credentials |
+| `POST` | `/api/v1/auth/forgot-password` | Public recovery request |
+| `POST` | `/api/v1/auth/reset-password` | Public OTP password reset |
+| `POST` | `/api/v1/auth/enable-2fa` | Toggle 2FA; response includes state |
+| `POST` | `/api/v1/auth/change-password` | Change signed-in user's password; `400` reused password, `401` invalid current password |
+| `GET` | `/api/v1/auth/me` | Current user with role, permissions, module grid, and branch |
+| `POST` | `/api/v1/auth/2fa-login` | Complete a 2FA challenge |
+| `POST` | `/api/v1/auth/request-2fa-otp` | Resend an OTP for the pending challenge |
 
-### Loan - Repayments
+### Users, roles, and permissions
 
-#### `POST /api/v1/loan/repayments`
-
-Authorization: `JWT-auth`. Request body: [CreateLoanRepaymentDto](#createloanrepaymentdto).
-
-| Status | Response |
-| --- | --- |
-| `201` | Body not specified; created repayment begins in `RECEIVED` status |
-
-#### Repayment lookup and state changes
-
-All routes below require `JWT-auth`.
-
-| Method and path | Required path parameter | Request | Responses |
-| --- | --- | --- | --- |
-| `GET /api/v1/loan/repayments/portfolio/{portfolioId}` | `portfolioId`: string | None | `200` body not specified |
-| `GET /api/v1/loan/repayments/{id}` | `id`: string | None | `200` body not specified |
-| `PATCH /api/v1/loan/repayments/{id}/apply` | `id`: string | None | `200` body not specified; changes `RECEIVED` to `APPLIED` and lowers balances |
-| `PATCH /api/v1/loan/repayments/{id}/reverse` | `id`: string | None | `200` body not specified; changes payment to `REVERSED` and restores balances |
-
-### Reconciliation
-
-#### `POST /api/v1/reconciliation/import/csv`
-
-Authorization: `JWT-auth`. Described as a CSV file upload, but the request content type and field name are not specified.
-
-| Parameter | In | Required | Type / constraints |
-| --- | --- | --- | --- |
-| `provider` | query | No | string, example `SQUAD` |
-| `currency` | query | No | 3-character string, example `NGN` |
-
-| Status | Response |
-| --- | --- |
-| `201` | `{ success: boolean, message: string, runId: string, paymentsCount: number }` |
-
-#### Runs
-
-All routes require `JWT-auth`.
-
-| Method and path | Parameters | Success response |
+| Method | Path | Notes |
 | --- | --- | --- |
-| `GET /api/v1/reconciliation/runs` | None | `200` body not specified |
-| `GET /api/v1/reconciliation/runs/{id}` | Required string path `id` | `200` body not specified |
-| `GET /api/v1/reconciliation/runs/{id}/payments` | Required string path `id`; optional query `status`: `UNMATCHED`, `MATCHED`, `AMBIGUOUS`, `DUPLICATE`, `ERROR` | `200` body not specified |
-| `POST /api/v1/reconciliation/runs/{id}/match` | Required string path `id`; optional boolean query `dryRun`, default `false` | `200` `{ matchedCount: number, unmatchedCount: number, dryRun: boolean }`; `201` body not specified |
-| `GET /api/v1/reconciliation/runs/{id}/summary` | Required string path `id` | `200` `{ runId: string, totalPayments: number, matched: number, unmatched: number, duplicates: number, ambiguous: number, errors: number, totalAmount: string, matchedAmount: string }` |
+| `GET`, `POST` | `/api/v1/users` | Paginated directory / create user |
+| `GET`, `PUT`, `DELETE` | `/api/v1/users/{id}` | User detail, update, soft delete |
+| `PATCH` | `/api/v1/users/{id}/permissions` | Replace a user's module permission grid |
+| `PATCH` | `/api/v1/users/{id}/deactivate` | Deactivate user; optional audit reason |
+| `PATCH` | `/api/v1/users/{id}/activate` | Reinstate user; optional audit reason |
+| `GET`, `POST` | `/api/v1/users/roles` | List or create/find a role |
+| `PATCH`, `DELETE` | `/api/v1/users/roles/{id}` | Update or soft delete a role |
+| `POST` | `/api/v1/users/roles/{roleId}/permissions` | Replace role permission IDs |
+| `GET`, `POST` | `/api/v1/users/permissions` | List or create permissions |
+| `PUT`, `DELETE` | `/api/v1/users/permissions/{id}` | Update or soft delete a permission |
 
-### Integrations - Squad
+`GET /api/v1/users` supports `total`, `page`, `limit`, `id`, `isActive`, `isDeleted`, `createdAt`, `updatedAt`, `deletedAt`, `name`, `email`, `roleId`, `branchId`, `search`, `employeeId`, and `order` (`ASC` or `DESC`).
 
-#### `POST /api/v1/integrations/squad/virtual-accounts`
+### Branches, audit, and logs
 
-Authorization: `JWT-auth`. Request body: [CreateVirtualAccountDto](#createvirtualaccountdto).
+| Method | Path | Notes |
+| --- | --- | --- |
+| `GET`, `POST` | `/api/v1/branches` | List or create branches |
+| `GET`, `PATCH`, `DELETE` | `/api/v1/branches/{id}` | Detail, update, delete |
+| `GET` | `/api/v1/branches/configuration` | Settings branch configuration table |
+| `PATCH` | `/api/v1/branches/{id}/status` | Open or close a branch |
+| `GET` | `/api/v1/audit-logs` | Paginated institutional audit trail |
+| `GET` | `/api/v1/audit-logs/{entityType}/{entityId}` | Audit history for one entity |
+| `GET` | `/api/v1/logs/{index}/search` | Search `error`, `http`, or `event` logs |
 
-| Status | Response |
-| --- | --- |
-| `201` | `{ success: boolean, message: string, data: { account_number: string, bank_name: string, account_name: string, contract_code: string } }` |
+Audit-log filters are `total`, `page`, `limit`, `actorId`, `action`, `entityType`, `entityId`, `branchId`, `dateFrom`, `dateTo`, and `order` (default `DESC`). Log search accepts `service_name`, `action_name`, `type`, `user_id`, `from`, and `to`.
 
-#### `POST /api/v1/integrations/squad/webhook`
+### Uploads, accounts, and exports
 
-This is a server-to-server callback endpoint. Do not call it from the browser. The OpenAPI document applies `JWT-auth`, although the description says it validates Squad HMAC-SHA512 data.
+| Method | Path | Notes |
+| --- | --- | --- |
+| `POST`, `GET` | `/api/v1/uploads` | Multipart upload / paginated upload history |
+| `GET`, `DELETE` | `/api/v1/uploads/{id}` | Upload metadata / delete stored upload |
+| `GET` | `/api/v1/uploads/{id}/download` | Streams the original file |
+| `GET`, `POST` | `/api/v1/accounts` | Paginated account directory / single-account creation |
+| `POST` | `/api/v1/accounts/bulk` | Create accounts from prior CSV upload |
+| `POST` | `/api/v1/accounts/{id}/retry-provisioning` | Retry failed virtual-account provisioning |
+| `GET` | `/api/v1/exports/tracker` | Download filtered Tracker CSV |
+| `GET` | `/api/v1/exports/accounts` | Download filtered accounts CSV |
+| `GET` | `/api/v1/exports/loan-officers` | Download filtered loan-officers CSV |
 
-| Parameter | In | Required | Type |
-| --- | --- | --- | --- |
-| `x-squad-encrypted-body` | header | Yes | string |
+Account filters are `total`, `page`, `limit`, `search`, `accountStatus` (`ACTIVE`, `PENDING`, `FAILED`), `branchId`, `loanOfficerId`, `dateFrom`, `dateTo`, and `order`. Upload filters are `total`, `page`, `limit`, `purpose`, `status`, `uploadedById`, `branchId`, and `order`.
 
-| Status | Response |
-| --- | --- |
-| `200` | `{ received: boolean, processed: boolean, reference: string }` |
-| `400` | Missing signature header or raw request body |
-| `401` | Signature validation failed |
+### Loans, repayments, and schedules
 
-## Implementation questions to resolve
+| Method | Path | Notes |
+| --- | --- | --- |
+| `GET`, `POST` | `/api/v1/loan/loanees` | Paginated loanee directory / create loanee |
+| `GET`, `PATCH`, `DELETE` | `/api/v1/loan/loanees/{id}` | Loanee detail, update, soft delete |
+| `GET`, `POST` | `/api/v1/loan/portfolios` | Paginated portfolios / create portfolio |
+| `GET`, `PATCH`, `DELETE` | `/api/v1/loan/portfolios/{id}` | Portfolio detail, update, soft delete |
+| `GET` | `/api/v1/loan/portfolios/{id}/details` | Amounts, status, and payment history summary |
+| `POST` | `/api/v1/loan/portfolios/{id}/apply-payment` | Apply a manual payment amount |
+| `POST` | `/api/v1/loan/repayments` | Record a repayment as `RECEIVED` |
+| `GET` | `/api/v1/loan/repayments/portfolio/{portfolioId}` | Repayments for a portfolio |
+| `GET` | `/api/v1/loan/repayments/{id}` | One repayment |
+| `PATCH` | `/api/v1/loan/repayments/{id}/apply` | Transition `RECEIVED` to `APPLIED` |
+| `PATCH` | `/api/v1/loan/repayments/{id}/reverse` | Transition an applied repayment to `REVERSED` |
+| `GET` | `/api/v1/loan/schedules/portfolio/{portfolioId}` | Complete instalment schedule |
+| `GET` | `/api/v1/loan/schedules/portfolio/{portfolioId}/upcoming` | Upcoming unsettled instalments; `limit` defaults to `3` |
+| `GET` | `/api/v1/loan/schedules/portfolio/{portfolioId}/summary` | Schedule counts, balances, next due, and overdue age |
+| `POST` | `/api/v1/loan/schedules/refresh-overdue` | Mark overdue instalments; optional `branchId` |
+
+Loanee filters are `total`, `page`, `limit`, `id`, `loaneeNumber`, `firstName`, `lastName`, `email`, `phoneNumber`, and `order`. Portfolio filters are `total`, `page`, `limit`, `id`, `loaneeId`, `loanId`, `accountNumber`, `status`, `loanOfficerId`, `branchId`, `search`, `dateFrom`, `dateTo`, and `order`.
+
+### Loan officers and dashboard
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| `GET`, `POST` | `/api/v1/loan-officers` | Paginated officer directory / create officer |
+| `GET` | `/api/v1/loan-officers/{id}/snapshot` | Capacity, collections, and problem-loan snapshot |
+| `GET` | `/api/v1/loan-officers/{id}/loans` | Paginated book of assigned loans |
+| `POST` | `/api/v1/loan-officers/{id}/reassign` | Reassign selected portfolios |
+| `PATCH` | `/api/v1/loan-officers/{id}/availability` | Change officer availability |
+| `GET` | `/api/v1/dashboard/overview` | KPI cards and recent loans |
+| `GET` | `/api/v1/dashboard/performance-chart` | Twelve-month disbursed/collected series |
+| `GET` | `/api/v1/dashboard/today` | Today's collection position |
+| `GET` | `/api/v1/dashboard/search` | Loan and officer search; `q` is required |
+
+Officer listing filters are `total`, `page`, `limit`, `search`, `branchId`, `availabilityStatus`, and `order`. Dashboard overview, chart, and today support `branchId`, `loanOfficerId`, and `recentLimit`; the chart additionally accepts `endDate`. Search accepts `q`, `type` (`all`, `loans`, `officers`), and `limit`.
+
+### Reconciliation, Squad, and notification settings
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| `POST` | `/api/v1/integrations/squad/virtual-accounts` | Provision a Squad virtual account |
+| `POST` | `/api/v1/integrations/squad/webhook` | Server-to-server Squad callback; HMAC header required |
+| `POST` | `/api/v1/reconciliation/import/csv` | Create a run from a previous CSV upload |
+| `GET` | `/api/v1/reconciliation/runs` | List reconciliation runs |
+| `GET` | `/api/v1/reconciliation/runs/{id}` | Reconciliation run detail |
+| `GET` | `/api/v1/reconciliation/runs/{id}/payments` | Payments for a run; optional match `status` |
+| `POST` | `/api/v1/reconciliation/runs/{id}/match` | Match payments; optional `dryRun` |
+| `GET` | `/api/v1/reconciliation/runs/{id}/summary` | Run counts and amounts |
+| `GET` | `/api/v1/settings/notifications` | Per-branch SMS matrix; optional `branchId` |
+| `PUT` | `/api/v1/settings/notifications/{branchId}` | Change one branch's SMS settings |
+| `GET`, `PATCH` | `/api/v1/settings/notifications/report` | Read or toggle report delivery |
+| `POST` | `/api/v1/settings/notifications/report/recipients` | Add report recipient |
+| `DELETE` | `/api/v1/settings/notifications/report/recipients/{email}` | Remove report recipient |
+
+Reconciliation payment statuses are `UNMATCHED`, `MATCHED`, `AMBIGUOUS`, `DUPLICATE`, and `ERROR`. A successful match response is `{ matchedCount, unmatchedCount, dryRun }`.
+
+## Open questions
 
 1. What is the production API base URL?
-2. Which fields are accepted by each empty update DTO?
-3. How are `filter` objects encoded in loan-list query strings?
-4. What request content type and form field name does CSV import require?
-5. What body shapes do endpoints marked as unspecified return?
-6. Are authentication endpoints deliberately protected, and should their security scheme be `JWT-auth` or removed?
+2. Which fields are accepted by `UpdateUserDto`, `UpdateRoleDto`, `UpdatePermissionDto`, `UpdateBranchDto`, and `UpdateLoaneeDto`?
+3. Is the undeclared `bearer` security requirement on authentication routes intentional, and which authentication endpoints must actually have `JWT-auth` enforced?
+4. Is `PaginationResponseDto.limit` a page size or a total-page count?
+5. What exact JSON shapes are returned by list and detail endpoints whose Swagger responses only have a description?
+6. Do `POST /api/v1/auth/enable-2fa`, `/2fa-login`, and `/request-2fa-otp` require a valid bearer token in production, or are they transition endpoints authenticated by their request bodies/pending login state?

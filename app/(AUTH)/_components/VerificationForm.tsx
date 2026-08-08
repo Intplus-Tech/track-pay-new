@@ -63,7 +63,7 @@ export function VerificationForm({
       });
 
       const payload = (await response.json().catch(() => null)) as
-        | { message?: string; accessToken?: string }
+        | { message?: string; success?: boolean }
         | null;
 
       if (!response.ok) {
@@ -71,7 +71,7 @@ export function VerificationForm({
         return;
       }
 
-      if (payload?.accessToken) {
+      if (payload?.success) {
         router.push("/home/overview");
         router.refresh();
         return;

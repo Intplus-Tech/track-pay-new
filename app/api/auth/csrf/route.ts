@@ -1,7 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { generateCsrfToken, setCsrfCookie } from "@/lib/csrf";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const clientIp = getClientIp(request);
+  if (!rateLimit(`csrf:${clientIp}`, 30, 60_000)) {
+    return NextResponse.json(
+      { message: "Too many requests." },
+      { status: 429 },
+    );
+  }
+
   const csrfToken = generateCsrfToken();
   const response = NextResponse.json({ csrfToken }, { status: 200 });
 
@@ -14,3 +23,4 @@ export async function GET() {
 
   return response;
 }
+

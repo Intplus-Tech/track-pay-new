@@ -18,8 +18,12 @@ function buildJsonHeaders(init?: RequestInit) {
   };
 }
 
+function buildBackendUrl(path: string) {
+  return `${getBackendBaseUrl()}${path.startsWith(DEFAULT_API_VERSION_PREFIX) ? path : `${DEFAULT_API_VERSION_PREFIX}${path}`}`;
+}
+
 export async function getBackendJson(path: string, init?: RequestInit) {
-  return fetch(`${getBackendBaseUrl()}${path}`, {
+  return fetch(buildBackendUrl(path), {
     method: "GET",
     cache: "no-store",
     ...init,
@@ -40,7 +44,48 @@ export async function postBackendJson(
     body: JSON.stringify(body),
   };
 
-  return fetch(`${getBackendBaseUrl()}${path}`, requestInit);
+  return fetch(buildBackendUrl(path), requestInit);
+}
+
+export async function putBackendJson(
+  path: string,
+  body: unknown,
+  init?: RequestInit,
+) {
+  const requestInit: RequestInit = {
+    ...init,
+    method: "PUT",
+    cache: "no-store",
+    headers: buildJsonHeaders(init),
+    body: JSON.stringify(body),
+  };
+
+  return fetch(buildBackendUrl(path), requestInit);
+}
+
+export async function patchBackendJson(
+  path: string,
+  body: unknown,
+  init?: RequestInit,
+) {
+  const requestInit: RequestInit = {
+    ...init,
+    method: "PATCH",
+    cache: "no-store",
+    headers: buildJsonHeaders(init),
+    body: JSON.stringify(body),
+  };
+
+  return fetch(buildBackendUrl(path), requestInit);
+}
+
+export async function deleteBackend(path: string, init?: RequestInit) {
+  return fetch(buildBackendUrl(path), {
+    method: "DELETE",
+    cache: "no-store",
+    ...init,
+    headers: init?.headers ?? {},
+  });
 }
 
 export async function readBackendBody<T>(response: Response) {

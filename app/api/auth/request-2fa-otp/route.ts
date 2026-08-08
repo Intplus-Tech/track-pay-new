@@ -6,11 +6,20 @@ import {
   decodeSessionValue,
   PendingAuthSession,
 } from "@/lib/auth";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const csrfError = validateCsrfRequest(request);
   if (csrfError) {
     return csrfError;
+  }
+
+  const clientIp = getClientIp(request);
+  if (!rateLimit(`request-2fa-otp:${clientIp}`, 3, 60_000)) {
+    return NextResponse.json(
+      { message: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
   }
 
   const pendingSession = decodeSessionValue<PendingAuthSession>(
@@ -44,3 +53,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

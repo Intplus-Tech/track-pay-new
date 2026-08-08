@@ -9,10 +9,8 @@ import {
   setAuthenticatedSession,
   setPendingAuthSession,
 } from "@/lib/auth";
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+import { isObject } from "@/lib/type-guards";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 function hasStringProperty(
   value: Record<string, unknown>,
@@ -25,6 +23,14 @@ export async function POST(request: NextRequest) {
   const csrfError = validateCsrfRequest(request);
   if (csrfError) {
     return csrfError;
+  }
+
+  const clientIp = getClientIp(request);
+  if (!rateLimit(`login:${clientIp}`, 10, 60_000)) {
+    return NextResponse.json(
+      { message: "Too many login attempts. Please try again later." },
+      { status: 429 },
+    );
   }
 
   const body = (await request.json().catch(() => null)) as
@@ -102,9 +108,10 @@ export async function POST(request: NextRequest) {
     );
 
     if (normalizedSuccessPayload) {
-      const successResponse = NextResponse.json(normalizedSuccessPayload, {
-        status: 200,
-      });
+      const successResponse = NextResponse.json(
+        { success: true, twoFactorRequired: false },
+        { status: 200 },
+      );
 
       setAuthenticatedSession(
         successResponse,

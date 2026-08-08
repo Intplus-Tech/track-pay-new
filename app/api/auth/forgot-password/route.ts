@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { postBackendJson, readBackendBody } from "@/lib/backend";
 import { validateCsrfRequest } from "@/lib/csrf";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const csrfError = validateCsrfRequest(request);
   if (csrfError) {
     return csrfError;
+  }
+
+  const clientIp = getClientIp(request);
+  if (!rateLimit(`forgot-password:${clientIp}`, 3, 60_000)) {
+    return NextResponse.json(
+      { message: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
   }
 
   const body = (await request.json().catch(() => null)) as
@@ -50,3 +59,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
