@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,8 +26,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RowActions, DropdownMenuItem } from "@/components/data-table/RowActions";
-import { fetchJson, mutateJson } from "@/lib/rbac-client";
 import type { RbacPermission, RbacRole } from "@/types/rbac";
+import { useCreatePermissionMutation } from "@/hooks/rbac/useCreatePermissionMutation";
+import { useDeletePermissionMutation } from "@/hooks/rbac/useDeletePermissionMutation";
+import { usePermissionsQuery } from "@/hooks/rbac/usePermissionsQuery";
+import { useRolesQuery } from "@/hooks/rbac/useRolesQuery";
+import { useUpdatePermissionMutation } from "@/hooks/rbac/useUpdatePermissionMutation";
 import {
   InlineMessage,
   ManagementPageShell,
@@ -48,12 +52,19 @@ interface PermissionRow extends RbacPermission {
 }
 
 export default function PermissionManagementPage() {
-  const [permissions, setPermissions] = useState<RbacPermission[]>([]);
-  const [roles, setRoles] = useState<RbacRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedPermission, setSelectedPermission] = useState<RbacPermission | null>(null);
+  const [pendingDeleteName, setPendingDeleteName] = useState<string | null>(null);
+
+  const permissionsQuery = usePermissionsQuery();
+  const rolesQuery = useRolesQuery();
+  const createPermissionMutation = useCreatePermissionMutation();
+  const deletePermissionMutation = useDeletePermissionMutation();
+  const updatePermissionMutation = useUpdatePermissionMutation();
+
+  const loading = permissionsQuery.isLoading || rolesQuery.isLoading;
+  const errorMessage = permissionsQuery.error?.message ?? rolesQuery.error?.message ?? null;
 
   const form = useForm<CreatePermissionValues>({
     resolver: zodResolver(createPermissionSchema),
@@ -63,59 +74,72 @@ export default function PermissionManagementPage() {
     },
   });
 
-  async function loadData() {
-    setLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const [permissionsResponse, rolesResponse] = await Promise.all([
-        fetchJson<RbacPermission[]>("/api/permissions", "Unable to load permissions."),
-        fetchJson<RbacRole[]>("/api/roles", "Unable to load roles."),
-      ]);
-
-      setPermissions(permissionsResponse);
-      setRoles(rolesResponse);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to load permission management data.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void loadData();
-  }, []);
+  const editForm = useForm<CreatePermissionValues>({
+    resolver: zodResolver(createPermissionSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
 
   const permissionRows = useMemo<PermissionRow[]>(() => {
+    const permissions = permissionsQuery.data ?? [];
+    const roles = rolesQuery.data ?? [];
+
     return permissions.map((permission) => ({
       ...permission,
       roleUsageCount: roles.filter((role) => role.permissionIds.includes(permission.id)).length,
     }));
-  }, [permissions, roles]);
+  }, [permissionsQuery.data, rolesQuery.data]);
 
   async function handleDeletePermission(id: string, name: string) {
+    setPendingDeleteName(name);
+
     try {
-      await mutateJson<null>(`/api/permissions/${id}`, "DELETE", "Unable to delete permission.");
+      await deletePermissionMutation.mutateAsync(id);
       toast.success(`${name} deleted.`);
-      await loadData();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to delete permission.");
+    } finally {
+      setPendingDeleteName(null);
     }
   }
 
-  async function handleCreatePermission(values: CreatePermissionValues) {
-    setSubmitting(true);
+  function openEditPermission(permission: RbacPermission) {
+    setSelectedPermission(permission);
+    editForm.reset({
+      name: permission.name,
+      description: permission.description ?? "",
+    });
+    setEditOpen(true);
+  }
 
+  async function handleCreatePermission(values: CreatePermissionValues) {
     try {
-      await mutateJson("/api/permissions", "POST", "Unable to create permission.", values);
+      await createPermissionMutation.mutateAsync(values);
       toast.success("Permission created.");
       form.reset({ name: "", description: "" });
       setCreateOpen(false);
-      await loadData();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to create permission.");
-    } finally {
-      setSubmitting(false);
+    }
+  }
+
+  async function handleUpdatePermission(values: CreatePermissionValues) {
+    if (!selectedPermission) {
+      return;
+    }
+
+    try {
+      await updatePermissionMutation.mutateAsync({
+        id: selectedPermission.id,
+        payload: values,
+      });
+      toast.success("Permission updated.");
+      setEditOpen(false);
+      setSelectedPermission(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update permission.");
     }
   }
 
@@ -148,10 +172,20 @@ export default function PermissionManagementPage() {
         <RowActions>
           <DropdownMenuItem
             onClick={() => {
+              openEditPermission(row.original);
+            }}
+          >
+            Edit permission
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={deletePermissionMutation.isPending}
+            onClick={() => {
               void handleDeletePermission(row.original.id, row.original.name);
             }}
           >
-            Delete permission
+            {deletePermissionMutation.isPending && pendingDeleteName === row.original.name
+              ? "Deleting..."
+              : "Delete permission"}
           </DropdownMenuItem>
         </RowActions>
       ),
@@ -161,12 +195,16 @@ export default function PermissionManagementPage() {
   const stats = [
     {
       label: "Total permissions",
-      value: String(permissions.length),
+      value: String(permissionsQuery.data?.length ?? 0),
       note: "Current permission catalog",
     },
     {
       label: "Active permissions",
-      value: String(permissions.filter((permission) => permission.isActive && !permission.isDeleted).length),
+      value: String(
+        (permissionsQuery.data ?? []).filter(
+          (permission) => permission.isActive && !permission.isDeleted,
+        ).length,
+      ),
       note: "Permissions available for assignment",
     },
     {
@@ -194,6 +232,12 @@ export default function PermissionManagementPage() {
         description="Live permission data from the backend. Use usage counts to spot stale or orphaned permissions before deleting them."
       >
         {errorMessage ? <InlineMessage tone="error" message={errorMessage} /> : null}
+        {deletePermissionMutation.isPending && pendingDeleteName ? (
+          <InlineMessage
+            tone="info"
+            message={`Deleting ${pendingDeleteName}...`}
+          />
+        ) : null}
         {loading ? (
           <InlineMessage tone="info" message="Loading permissions and role usage..." />
         ) : (
@@ -249,8 +293,76 @@ export default function PermissionManagementPage() {
                 <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={submitting}>
-                  {submitting ? "Creating..." : "Create permission"}
+                <Button
+                  type="submit"
+                  disabled={createPermissionMutation.isPending}
+                >
+                  {createPermissionMutation.isPending ? "Creating..." : "Create permission"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open);
+          if (!open) {
+            setSelectedPermission(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-xl bg-white">
+          <DialogHeader>
+            <DialogTitle>Edit permission</DialogTitle>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(handleUpdatePermission)} className="space-y-5">
+              <FormField
+                control={editForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Permission name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="CREATE_USER" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe what this permission unlocks"
+                        className="min-h-28"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex items-center justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditOpen(false);
+                    setSelectedPermission(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updatePermissionMutation.isPending}>
+                  {updatePermissionMutation.isPending ? "Saving..." : "Save changes"}
                 </Button>
               </div>
             </form>

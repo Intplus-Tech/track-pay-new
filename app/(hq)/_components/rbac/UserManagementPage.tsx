@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,8 +33,25 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { RowActions, DropdownMenuItem } from "@/components/data-table/RowActions";
-import { fetchJson, mutateJson } from "@/lib/rbac-client";
-import type { RbacBranch, RbacPaginationResponse, RbacRole, RbacUser } from "@/types/rbac";
+import { useBranchesQuery } from "@/hooks/rbac/useBranchesQuery";
+import { useCreateUserMutation } from "@/hooks/rbac/useCreateUserMutation";
+import { useDeleteUserMutation } from "@/hooks/rbac/useDeleteUserMutation";
+import { useRolesQuery } from "@/hooks/rbac/useRolesQuery";
+import { useUpdateUserMutation } from "@/hooks/rbac/useUpdateUserMutation";
+import { useUpdateUserPermissionsMutation } from "@/hooks/rbac/useUpdateUserPermissionsMutation";
+import { useUserQuery } from "@/hooks/rbac/useUserQuery";
+import {
+  DEFAULT_USER_DIRECTORY_QUERY,
+  type UserDirectoryQuery,
+  useUsersQuery,
+} from "@/hooks/rbac/useUsersQuery";
+import { RBAC_MODULE_OPTIONS } from "@/lib/rbac";
+import type {
+  RbacModuleName,
+  RbacModulePermission,
+  RbacUser,
+  UpdateUserPayload,
+} from "@/types/rbac";
 import {
   InlineMessage,
   ManagementPageShell,
@@ -54,34 +71,28 @@ const createUserSchema = z.object({
 
 type CreateUserValues = z.infer<typeof createUserSchema>;
 
+const updateUserSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Enter a valid email address"),
+  password: z
+    .string()
+    .optional()
+    .refine((value) => !value || value.length >= 8, {
+      message: "Password must be at least 8 characters",
+    }),
+  roleId: z.string().optional(),
+  branchId: z.string().optional(),
+  isActive: z.boolean(),
+});
+
+type UpdateUserValues = z.infer<typeof updateUserSchema>;
+
+type PermissionGrid = Record<RbacModuleName, { view: boolean; manage: boolean }>;
+
 interface UserRow extends RbacUser {
   roleName: string;
   branchName: string;
 }
-
-interface UserDirectoryQuery {
-  page: number;
-  limit: number;
-  name: string;
-  email: string;
-  roleId: string;
-  branchId: string;
-  isActive: "all" | "true" | "false";
-  isDeleted: "all" | "true" | "false";
-  order: "ASC" | "DESC";
-}
-
-const DEFAULT_QUERY: UserDirectoryQuery = {
-  page: 1,
-  limit: 100,
-  name: "",
-  email: "",
-  roleId: "all",
-  branchId: "all",
-  isActive: "all",
-  isDeleted: "all",
-  order: "ASC",
-};
 
 function statusVariant(row: RbacUser) {
   if (row.isDeleted) {
@@ -91,18 +102,70 @@ function statusVariant(row: RbacUser) {
   return row.isActive ? "default" : "outline";
 }
 
+function createEmptyPermissionGrid(): PermissionGrid {
+  return RBAC_MODULE_OPTIONS.reduce((grid, option) => {
+    grid[option.module] = { view: false, manage: false };
+    return grid;
+  }, {} as PermissionGrid);
+}
+
+function createPermissionGrid(
+  modulePermissions?: RbacModulePermission[],
+): PermissionGrid {
+  const grid = createEmptyPermissionGrid();
+
+  for (const permission of modulePermissions ?? []) {
+    grid[permission.module] = {
+      view: permission.view || permission.manage,
+      manage: permission.manage,
+    };
+  }
+
+  return grid;
+}
+
+function serializePermissionGrid(grid: PermissionGrid): RbacModulePermission[] {
+  return RBAC_MODULE_OPTIONS.flatMap((option) => {
+    const permission = grid[option.module];
+
+    if (!permission.view && !permission.manage) {
+      return [];
+    }
+
+    return [
+      {
+        module: option.module,
+        view: permission.view || permission.manage,
+        manage: permission.manage,
+      },
+    ];
+  });
+}
+
 export default function UserManagementPage() {
-  const [users, setUsers] = useState<RbacUser[]>([]);
-  const [roles, setRoles] = useState<RbacRole[]>([]);
-  const [branches, setBranches] = useState<RbacBranch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [tableLoading, setTableLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [query, setQuery] = useState<UserDirectoryQuery>(DEFAULT_QUERY);
-  const [pendingQuery, setPendingQuery] = useState<UserDirectoryQuery>(DEFAULT_QUERY);
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [permissionsOpen, setPermissionsOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+  const [permissionGrid, setPermissionGrid] = useState<PermissionGrid>(() => createEmptyPermissionGrid());
+  const [query, setQuery] = useState<UserDirectoryQuery>(DEFAULT_USER_DIRECTORY_QUERY);
+  const [pendingQuery, setPendingQuery] = useState<UserDirectoryQuery>(DEFAULT_USER_DIRECTORY_QUERY);
+
+  const usersQuery = useUsersQuery(query);
+  const rolesQuery = useRolesQuery();
+  const branchesQuery = useBranchesQuery();
+  const createUserMutation = useCreateUserMutation();
+  const deleteUserMutation = useDeleteUserMutation();
+  const updateUserMutation = useUpdateUserMutation();
+  const updateUserPermissionsMutation = useUpdateUserPermissionsMutation();
+  const userDetailQuery = useUserQuery(editingUser?.id ?? null, editDialogOpen);
+
+  const totalUsers = usersQuery.data?.total ?? 0;
+  const loading = usersQuery.isLoading || rolesQuery.isLoading || branchesQuery.isLoading;
+  const tableLoading = usersQuery.isFetching;
+  const errorMessage =
+    usersQuery.error?.message ?? rolesQuery.error?.message ?? branchesQuery.error?.message ?? null;
 
   const form = useForm<CreateUserValues>({
     resolver: zodResolver(createUserSchema),
@@ -116,126 +179,139 @@ export default function UserManagementPage() {
     },
   });
 
-  const buildQueryString = useCallback((nextQuery: UserDirectoryQuery) => {
-    const params = new URLSearchParams({
-      page: String(nextQuery.page),
-      limit: String(nextQuery.limit),
-    });
-
-    // Preserve backend default ordering unless the user explicitly requests DESC.
-    if (nextQuery.order === "DESC") {
-      params.set("order", nextQuery.order);
-    }
-
-    if (nextQuery.name.trim().length > 0) {
-      params.set("name", nextQuery.name.trim());
-    }
-
-    if (nextQuery.email.trim().length > 0) {
-      params.set("email", nextQuery.email.trim());
-    }
-
-    if (nextQuery.roleId !== "all") {
-      params.set("roleId", nextQuery.roleId);
-    }
-
-    if (nextQuery.branchId !== "all") {
-      params.set("branchId", nextQuery.branchId);
-    }
-
-    if (nextQuery.isActive !== "all") {
-      params.set("isActive", nextQuery.isActive);
-    }
-
-    if (nextQuery.isDeleted !== "all") {
-      params.set("isDeleted", nextQuery.isDeleted);
-    }
-
-    return params.toString();
-  }, []);
-
-  const loadReferenceData = useCallback(async () => {
-    const [rolesResponse, branchesResponse] = await Promise.all([
-      fetchJson<RbacRole[]>("/api/roles", "Unable to load roles."),
-      fetchJson<RbacBranch[]>("/api/branches", "Unable to load branches."),
-    ]);
-
-    setRoles(rolesResponse);
-    setBranches(branchesResponse);
-  }, []);
-
-  const loadUsers = useCallback(async (nextQuery: UserDirectoryQuery) => {
-    setTableLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const usersResponse = await fetchJson<RbacPaginationResponse<RbacUser>>(
-        `/api/users?${buildQueryString(nextQuery)}`,
-        "Unable to load users.",
-      );
-
-      setUsers(usersResponse.data);
-      setTotalUsers(usersResponse.total);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to load user management data.");
-    } finally {
-      setTableLoading(false);
-    }
-  }, [buildQueryString]);
-
-  useEffect(() => {
-    async function initialize() {
-      setLoading(true);
-      setTableLoading(true);
-
-      try {
-        await loadReferenceData();
-        await loadUsers(DEFAULT_QUERY);
-      } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "Unable to load user management data.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void initialize();
-  }, [loadReferenceData, loadUsers]);
+  const editForm = useForm<UpdateUserValues>({
+    resolver: zodResolver(updateUserSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      roleId: "unassigned",
+      branchId: "unassigned",
+      isActive: true,
+    },
+  });
 
   const userRows = useMemo<UserRow[]>(() => {
+    const users = usersQuery.data?.data ?? [];
+    const roles = rolesQuery.data ?? [];
+    const branches = branchesQuery.data ?? [];
+
     return users.map((user) => ({
       ...user,
       roleName: roles.find((role) => role.id === user.roleId)?.name ?? "Unassigned",
       branchName: branches.find((branch) => branch.id === user.branchId)?.name ?? "No branch",
     }));
-  }, [branches, roles, users]);
+  }, [branchesQuery.data, rolesQuery.data, usersQuery.data]);
 
   async function handleDeleteUser(id: string, name: string) {
     try {
-      await mutateJson<null>(`/api/users/${id}`, "DELETE", "Unable to deactivate user.");
+      await deleteUserMutation.mutateAsync(id);
       toast.success(`${name} deactivated.`);
-      await loadUsers(query);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to deactivate user.");
     }
   }
 
-  async function applyFilters() {
+  function openProfileEditor(user: UserRow) {
+    setEditingUser(user);
+    editForm.reset({
+      name: user.name,
+      email: user.email,
+      password: "",
+      roleId: user.roleId ?? "unassigned",
+      branchId: user.branchId ?? "unassigned",
+      isActive: Boolean(user.isActive),
+    });
+    setEditDialogOpen(true);
+  }
+
+  function openPermissionEditor(user: UserRow) {
+    setSelectedUser(user);
+    setPermissionGrid(createPermissionGrid(user.modulePermissions));
+    setPermissionsOpen(true);
+  }
+
+  useEffect(() => {
+    if (!editDialogOpen || !userDetailQuery.data) {
+      return;
+    }
+
+    editForm.reset({
+      name: userDetailQuery.data.name,
+      email: userDetailQuery.data.email,
+      password: "",
+      roleId: userDetailQuery.data.roleId ?? "unassigned",
+      branchId: userDetailQuery.data.branchId ?? "unassigned",
+      isActive: Boolean(userDetailQuery.data.isActive),
+    });
+  }, [editDialogOpen, editForm, userDetailQuery.data]);
+
+  function updatePermissionValue(
+    module: RbacModuleName,
+    field: "view" | "manage",
+    checked: boolean,
+  ) {
+    setPermissionGrid((current) => {
+      const next = {
+        ...current,
+        [module]: {
+          ...current[module],
+        },
+      };
+
+      if (field === "manage") {
+        next[module] = {
+          view: checked ? true : next[module].view,
+          manage: checked,
+        };
+      } else {
+        next[module] = {
+          view: checked,
+          manage: checked ? next[module].manage : false,
+        };
+      }
+
+      if (!next[module].view) {
+        next[module].manage = false;
+      }
+
+      return next;
+    });
+  }
+
+  async function handleSavePermissions() {
+    if (!selectedUser) {
+      return;
+    }
+
+    try {
+      await updateUserPermissionsMutation.mutateAsync({
+        id: selectedUser.id,
+        modulePermissions: serializePermissionGrid(permissionGrid),
+      });
+      toast.success("User permissions updated.");
+      setPermissionsOpen(false);
+      setSelectedUser(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update permissions.");
+    }
+  }
+
+  function applyFilters() {
     const nextQuery: UserDirectoryQuery = {
       ...pendingQuery,
       page: 1,
     };
 
     setQuery(nextQuery);
-    await loadUsers(nextQuery);
   }
 
-  async function resetFilters() {
-    setPendingQuery(DEFAULT_QUERY);
-    setQuery(DEFAULT_QUERY);
-    await loadUsers(DEFAULT_QUERY);
+  function resetFilters() {
+    setPendingQuery(DEFAULT_USER_DIRECTORY_QUERY);
+    setQuery(DEFAULT_USER_DIRECTORY_QUERY);
   }
 
-  async function goToPage(nextPage: number) {
+  function goToPage(nextPage: number) {
     const nextQuery = {
       ...query,
       page: nextPage,
@@ -243,7 +319,6 @@ export default function UserManagementPage() {
 
     setQuery(nextQuery);
     setPendingQuery(nextQuery);
-    await loadUsers(nextQuery);
   }
 
   const columns: ColumnDef<UserRow>[] = [
@@ -293,6 +368,20 @@ export default function UserManagementPage() {
         <RowActions>
           <DropdownMenuItem
             onClick={() => {
+              openProfileEditor(row.original);
+            }}
+          >
+            Edit user profile
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              openPermissionEditor(row.original);
+            }}
+          >
+            View/Edit Permission
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
               void handleDeleteUser(row.original.id, row.original.name);
             }}
           >
@@ -304,13 +393,8 @@ export default function UserManagementPage() {
   ];
 
   async function onSubmit(values: CreateUserValues) {
-    setSubmitting(true);
-
     try {
-      await mutateJson(
-        "/api/users",
-        "POST",
-        "Unable to create user.",
+      await createUserMutation.mutateAsync(
         {
           ...values,
           roleId: values.roleId === "unassigned" ? undefined : values.roleId,
@@ -327,11 +411,38 @@ export default function UserManagementPage() {
         isActive: true,
       });
       setDialogOpen(false);
-      await loadUsers(query);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to create user.");
-    } finally {
-      setSubmitting(false);
+    }
+  }
+
+  async function onEditSubmit(values: UpdateUserValues) {
+    if (!editingUser) {
+      return;
+    }
+
+    const payload: UpdateUserPayload = {
+      name: values.name,
+      email: values.email,
+      roleId: values.roleId === "unassigned" ? undefined : values.roleId,
+      branchId: values.branchId === "unassigned" ? undefined : values.branchId,
+      isActive: values.isActive,
+    };
+
+    if (values.password && values.password.trim().length > 0) {
+      payload.password = values.password;
+    }
+
+    try {
+      await updateUserMutation.mutateAsync({
+        id: editingUser.id,
+        payload,
+      });
+      toast.success("User updated.");
+      setEditDialogOpen(false);
+      setEditingUser(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update user.");
     }
   }
 
@@ -347,17 +458,23 @@ export default function UserManagementPage() {
     },
     {
       label: "Active users",
-      value: String(users.filter((user) => user.isActive && !user.isDeleted).length),
+      value: String(
+        (usersQuery.data?.data ?? []).filter(
+          (user) => user.isActive && !user.isDeleted,
+        ).length,
+      ),
       note: "Currently available for sign-in",
     },
     {
       label: "Assigned roles",
-      value: String(users.filter((user) => user.roleId).length),
+      value: String((usersQuery.data?.data ?? []).filter((user) => user.roleId).length),
       note: "Users linked to a backend role",
     },
     {
       label: "2FA enabled",
-      value: String(users.filter((user) => user.twoFactorEnabled).length),
+      value: String(
+        (usersQuery.data?.data ?? []).filter((user) => user.twoFactorEnabled).length,
+      ),
       note: "Users with multi-factor sign-in enabled",
     },
   ];
@@ -422,7 +539,7 @@ export default function UserManagementPage() {
                   </SelectTrigger>
                   <SelectContent className="bg-white">
                     <SelectItem value="all">All roles</SelectItem>
-                    {roles.map((role) => (
+                    {(rolesQuery.data ?? []).map((role) => (
                       <SelectItem key={role.id} value={role.id}>
                         {role.name}
                       </SelectItem>
@@ -446,7 +563,7 @@ export default function UserManagementPage() {
                   </SelectTrigger>
                   <SelectContent className="bg-white">
                     <SelectItem value="all">All branches</SelectItem>
-                    {branches.map((branch) => (
+                    {(branchesQuery.data ?? []).map((branch) => (
                       <SelectItem key={branch.id} value={branch.id}>
                         {branch.name}
                       </SelectItem>
@@ -649,7 +766,7 @@ export default function UserManagementPage() {
                         </FormControl>
                         <SelectContent className="bg-white">
                           <SelectItem value="unassigned">No role</SelectItem>
-                          {roles.map((role) => (
+                          {(rolesQuery.data ?? []).map((role) => (
                             <SelectItem key={role.id} value={role.id}>
                               {role.name}
                             </SelectItem>
@@ -674,7 +791,7 @@ export default function UserManagementPage() {
                         </FormControl>
                         <SelectContent className="bg-white">
                           <SelectItem value="unassigned">No branch</SelectItem>
-                          {branches.map((branch) => (
+                          {(branchesQuery.data ?? []).map((branch) => (
                             <SelectItem key={branch.id} value={branch.id}>
                               {branch.name}
                             </SelectItem>
@@ -705,12 +822,276 @@ export default function UserManagementPage() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={submitting}>
-                  {submitting ? "Creating..." : "Create user"}
+                <Button type="submit" disabled={createUserMutation.isPending}>
+                  {createUserMutation.isPending ? "Creating..." : "Create user"}
                 </Button>
               </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={editDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditDialogOpen(false);
+            setEditingUser(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl bg-white">
+          <DialogHeader>
+            <DialogTitle>
+              {editingUser ? `Edit user profile: ${editingUser.name}` : "Edit user profile"}
+            </DialogTitle>
+          </DialogHeader>
+
+          {userDetailQuery.isLoading ? (
+            <InlineMessage tone="info" message="Loading latest user details..." />
+          ) : null}
+          {userDetailQuery.error ? (
+            <InlineMessage
+              tone="error"
+              message={
+                userDetailQuery.error instanceof Error
+                  ? userDetailQuery.error.message
+                  : "Unable to load user details."
+              }
+            />
+          ) : null}
+
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Amina Yusuf" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email address</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="amina@trackpay.io" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>New password (optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Leave blank to keep current"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="roleId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Assign a role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-white">
+                          <SelectItem value="unassigned">No role</SelectItem>
+                          {(rolesQuery.data ?? []).map((role) => (
+                            <SelectItem key={role.id} value={role.id}>
+                              {role.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="branchId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Branch</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Assign a branch" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-white">
+                          <SelectItem value="unassigned">No branch</SelectItem>
+                          {(branchesQuery.data ?? []).map((branch) => (
+                            <SelectItem key={branch.id} value={branch.id}>
+                              {branch.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 md:col-span-2">
+                      <div>
+                        <FormLabel>Active account</FormLabel>
+                        <p className="text-sm text-slate-500">Inactive users remain in the system but should not authenticate.</p>
+                      </div>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditDialogOpen(false);
+                    setEditingUser(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateUserMutation.isPending || userDetailQuery.isLoading}
+                >
+                  {updateUserMutation.isPending ? "Saving..." : "Save changes"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={permissionsOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPermissionsOpen(false);
+            setSelectedUser(null);
+          }
+        }}
+      >
+        <DialogContent className="lg:min-w-[800px]">
+          <DialogHeader>
+            <DialogTitle className="px-6 pt-6">
+              {selectedUser ? `Edit permissions for ${selectedUser.name}` : "Edit permissions"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex max-h-[calc(92vh-6rem)] min-h-0 flex-col gap-5 overflow-hidden px-6 pb-6">
+            {selectedUser ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                <div className="font-semibold text-slate-900">{selectedUser.name}</div>
+                <div>{selectedUser.email}</div>
+                <div className="mt-1 break-words text-xs uppercase tracking-[0.16em] text-slate-500">
+                  {selectedUser.roleName} · {selectedUser.branchName}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="grid min-h-0 max-h-[52vh] gap-3 overflow-y-auto pr-1 sm:grid-cols-1 lg:grid-cols-2">
+              {RBAC_MODULE_OPTIONS.map((option) => {
+                const current = permissionGrid[option.module];
+
+                return (
+                  <div
+                    key={option.module}
+                    className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4"
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="break-words text-sm font-semibold leading-snug text-slate-900">
+                        {option.label}
+                      </div>
+                      <div className="break-words text-sm leading-snug text-slate-500">
+                        {option.description}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+                        <Switch
+                          checked={current.view}
+                          onCheckedChange={(checked) =>
+                            updatePermissionValue(option.module, "view", checked)
+                          }
+                        />
+                        <span className="whitespace-nowrap text-sm font-medium text-slate-700">
+                          View
+                        </span>
+                      </label>
+
+                      <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+                        <Switch
+                          checked={current.manage}
+                          onCheckedChange={(checked) =>
+                            updatePermissionValue(option.module, "manage", checked)
+                          }
+                        />
+                        <span className="whitespace-nowrap text-sm font-medium text-slate-700">
+                          Manage
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setPermissionsOpen(false);
+                  setSelectedUser(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={updateUserPermissionsMutation.isPending}
+                onClick={() => void handleSavePermissions()}
+              >
+                {updateUserPermissionsMutation.isPending ? "Saving..." : "Save permissions"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </ManagementPageShell>

@@ -5,11 +5,48 @@ import {
   type CreateRolePayload,
   type CreateUserPayload,
   type RbacBranch,
+  type RbacModuleName,
+  type RbacModulePermission,
   type RbacPaginationResponse,
   type RbacPermission,
   type RbacRole,
   type RbacUser,
 } from "@/types/rbac";
+
+export const RBAC_MODULE_OPTIONS: Array<{
+  module: RbacModuleName;
+  label: string;
+  description: string;
+}> = [
+  { module: "OVERVIEW", label: "Overview", description: "Access dashboard summaries and KPIs" },
+  { module: "TRACKER", label: "Tracker", description: "View and manage repayment tracking" },
+  { module: "ACCOUNTS", label: "Accounts", description: "View and manage accounts" },
+  { module: "LOAN_OFFICERS", label: "Loan Officers", description: "Access loan officer workflows" },
+  { module: "TEAM", label: "Team", description: "View and manage team users" },
+  { module: "SETTINGS", label: "Settings", description: "Access system settings" },
+] as const;
+
+function isRbacModuleName(value: unknown): value is RbacModuleName {
+  return RBAC_MODULE_OPTIONS.some((option) => option.module === value);
+}
+
+function normalizeModulePermission(value: unknown): RbacModulePermission | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  if (!isRbacModuleName(record.module)) {
+    return null;
+  }
+
+  return {
+    module: record.module,
+    view: typeof record.view === "boolean" ? record.view : false,
+    manage: typeof record.manage === "boolean" ? record.manage : false,
+  };
+}
 
 function getRecordId(record: BackendEntity) {
   return record.id ?? record._id ?? "";
@@ -47,6 +84,11 @@ export function normalizeUser(record: Record<string, unknown>): RbacUser {
     twoFactorEnabled: normalizeBoolean(record.twoFactorEnabled),
     roleId: normalizeNullableString(record.roleId),
     branchId: normalizeNullableString(record.branchId),
+    modulePermissions: Array.isArray(record.modulePermissions)
+      ? record.modulePermissions
+        .map(normalizeModulePermission)
+        .filter((value): value is RbacModulePermission => value !== null)
+      : [],
   };
 }
 

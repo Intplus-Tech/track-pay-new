@@ -44,6 +44,21 @@ export interface RbacUser extends NormalizedEntity {
   twoFactorEnabled?: boolean;
   roleId?: string | null;
   branchId?: string | null;
+  modulePermissions?: RbacModulePermission[];
+}
+
+export type RbacModuleName =
+  | "OVERVIEW"
+  | "TRACKER"
+  | "ACCOUNTS"
+  | "LOAN_OFFICERS"
+  | "TEAM"
+  | "SETTINGS";
+
+export interface RbacModulePermission {
+  module: RbacModuleName;
+  view: boolean;
+  manage: boolean;
 }
 
 export interface RbacPaginationResponse<T> {
@@ -57,6 +72,15 @@ export interface CreateUserPayload {
   name: string;
   email: string;
   password: string;
+  roleId?: string;
+  branchId?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateUserPayload {
+  name?: string;
+  email?: string;
+  password?: string;
   roleId?: string;
   branchId?: string;
   isActive?: boolean;
