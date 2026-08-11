@@ -38,6 +38,7 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
     "/home/overview": "Overview",
     "/home/branch-matrix": "Branch Matrix",
     "/home/user-directory": "User Directory",
+    "/home/user-management": "User Management",
     "/home/loan-ledger": "Loan Ledger",
     "/home/team": "Team",
     "/home/settings": "Settings",
@@ -48,6 +49,7 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
 
   const title =
     routeTitles[pathname] ??
+    (pathname.startsWith("/home/user-management/") ? "User Detail" : null) ??
     pathname
       .split("/")
       .filter(Boolean)

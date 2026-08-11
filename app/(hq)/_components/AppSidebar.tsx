@@ -47,11 +47,6 @@ const navItems: NavItem[] = [
     icon: Building2,
   },
   {
-    title: "User Directory",
-    href: "/home/user-directory",
-    icon: UsersRound,
-  },
-  {
     title: "User Management",
     href: "/home/user-management",
     icon: UserCog,

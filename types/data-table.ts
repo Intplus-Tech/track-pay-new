@@ -40,6 +40,7 @@ export interface DataTableProps<TData, TValue> {
   exportConfig?: ExportConfig;
   paginationConfig?: PaginationConfig;
   rowActions?: (row: TData) => ReactNode;
+  onRowClick?: (row: TData) => void;
   title?: string;
 }
 

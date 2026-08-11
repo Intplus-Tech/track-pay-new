@@ -13,26 +13,28 @@ export function ManagementPageShell({
   children,
 }: {
   eyebrow: string;
-  title: string;
-  description: string;
+  title: ReactNode;
+  description?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="space-y-6">
       <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1038f0]">
+            {/* <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
               {eyebrow}
-            </p>
+            </p> */}
             <div className="space-y-1">
               <h1 className="text-3xl font-semibold tracking-[-0.03em] text-slate-950">
                 {title}
               </h1>
-              <p className="max-w-3xl text-sm leading-6 text-slate-600">
-                {description}
-              </p>
+              {description ? (
+                <div className="max-w-3xl text-sm leading-6 text-slate-600">
+                  {description}
+                </div>
+              ) : null}
             </div>
           </div>
           {actions ? <div className="flex items-center gap-3">{actions}</div> : null}

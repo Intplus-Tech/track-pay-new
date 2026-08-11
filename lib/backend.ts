@@ -47,6 +47,22 @@ export async function postBackendJson(
   return fetch(buildBackendUrl(path), requestInit);
 }
 
+export async function postBackendFormData(
+  path: string,
+  body: FormData,
+  init?: RequestInit,
+) {
+  const requestInit: RequestInit = {
+    ...init,
+    method: "POST",
+    cache: "no-store",
+    headers: init?.headers ?? {},
+    body,
+  };
+
+  return fetch(buildBackendUrl(path), requestInit);
+}
+
 export async function putBackendJson(
   path: string,
   body: unknown,

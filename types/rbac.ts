@@ -38,13 +38,105 @@ export interface RbacBranch extends NormalizedEntity {
   parentBranchId?: string | null;
 }
 
+export interface RbacUserRoleSummary {
+  id: string;
+  name: string;
+}
+
+export interface RbacUserBranchSummary {
+  id: string;
+  name: string;
+}
+
 export interface RbacUser extends NormalizedEntity {
+  name: string;
+  email: string;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
+  employeeId?: string | null;
+  phoneNumber?: string | null;
+  availabilityStatus?: string | null;
+  maxAssignedLoans?: number | null;
+  monthlyCollectionTarget?: string | null;
+  twoFactorEnabled?: boolean;
+  roleId?: string | null;
+  branchId?: string | null;
+  role?: RbacUserRoleSummary | null;
+  branch?: RbacUserBranchSummary | null;
+  modulePermissions?: RbacModulePermission[];
+}
+
+export interface RbacUserDetailPermission {
+  _id?: string;
+  id?: string;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+  name: string;
+  description?: string | null;
+}
+
+export interface RbacUserDetailRole {
+  _id?: string;
+  id?: string;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+  name: string;
+  description?: string | null;
+  permissionIds: string[];
+  permissions?: RbacUserDetailPermission[];
+}
+
+export interface RbacUserDetailBranch {
+  _id?: string;
+  id?: string;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+  name: string;
+  code?: string | null;
+  location?: string | null;
+  isHeadOffice?: boolean | null;
+  managerId?: string | null;
+  parentBranchId?: string | null;
+  status?: string | null;
+}
+
+export interface RbacUserDetail {
+  _id?: string;
+  id?: string;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
   name: string;
   email: string;
   twoFactorEnabled?: boolean;
   roleId?: string | null;
   branchId?: string | null;
+  role?: RbacUserDetailRole | null;
+  branch?: RbacUserDetailBranch | null;
+  portfolioAssignments?: unknown[] | null;
+  availabilityStatus?: string | null;
+  employeeId?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  middleName?: string | null;
+  maxAssignedLoans?: number | null;
   modulePermissions?: RbacModulePermission[];
+  monthlyCollectionTarget?: string | null;
+  phoneNumber?: string | null;
+  photoUploadId?: string | null;
+  photoUrl?: string | null;
 }
 
 export type RbacModuleName =
@@ -72,17 +164,34 @@ export interface CreateUserPayload {
   name: string;
   email: string;
   password: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  employeeId?: string;
+  phoneNumber?: string;
   roleId?: string;
+  roleName?: string;
   branchId?: string;
+  modulePermissions?: RbacModulePermission[];
+  maxAssignedLoans?: number;
+  monthlyCollectionTarget?: string;
+  photoUploadId?: string;
   isActive?: boolean;
+  isDeleted?: boolean;
 }
 
 export interface UpdateUserPayload {
   name?: string;
   email?: string;
   password?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  employeeId?: string;
+  phoneNumber?: string;
   roleId?: string;
   branchId?: string;
+  photoUploadId?: string;
   isActive?: boolean;
 }
 

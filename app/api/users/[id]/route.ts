@@ -13,10 +13,34 @@ export async function GET(_: NextRequest, context: RouteContext) {
   try {
     const accessToken = await getAccessTokenOrThrow();
     const { id } = await context.params;
+    const requestPath = `/users/${id}`;
+
+    console.info("[api/users/:id][GET] forwarding request", {
+      path: requestPath,
+    });
+
     const response = await getBackendJson(`/users/${id}`, {
       headers: getAuthHeaders(accessToken),
     });
     const payload = await readBackendBody<unknown>(response);
+
+    console.info(
+      "[api/users/:id][GET] raw backend payload\n%s",
+      JSON.stringify(
+        {
+          path: requestPath,
+          payload,
+        },
+        null,
+        2,
+      ),
+    );
+
+    console.info("[api/users/:id][GET] backend response", {
+      path: requestPath,
+      status: response.status,
+      ok: response.ok,
+    });
 
     return NextResponse.json(payload, { status: response.status });
   } catch (error) {

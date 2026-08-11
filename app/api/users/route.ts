@@ -35,6 +35,18 @@ export async function GET(request: NextRequest) {
     });
     const payload = await readBackendBody<unknown>(response);
 
+    console.info(
+      "[api/users][GET] raw backend payload\n%s",
+      JSON.stringify(
+        {
+          path: requestPath,
+          payload,
+        },
+        null,
+        2,
+      ),
+    );
+
     console.info("[api/users][GET] backend response", {
       path: requestPath,
       status: response.status,

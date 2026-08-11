@@ -44,6 +44,7 @@ export function DataTable<TData, TValue>({
   exportConfig,
   paginationConfig = { enabled: true, pageSizeOptions: [10, 20, 30, 40, 50] },
   // rowActions,
+  onRowClick,
   title,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -193,7 +194,20 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className="hover:bg-gray-50 mb-4"
+                className={onRowClick ? "mb-4 cursor-pointer hover:bg-gray-50" : "mb-4 hover:bg-gray-50"}
+                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                tabIndex={onRowClick ? 0 : undefined}
+                onKeyDown={
+                  onRowClick
+                    ? (event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onRowClick(row.original);
+                      }
+                    }
+                    : undefined
+                }
+                role={onRowClick ? "button" : undefined}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

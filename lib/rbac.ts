@@ -64,6 +64,32 @@ function normalizeNullableString(value: unknown) {
   return typeof value === "string" ? value : null;
 }
 
+function normalizeNullableNumber(value: unknown) {
+  return typeof value === "number" ? value : null;
+}
+
+function normalizeOptionalString(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+}
+
+function normalizeOptionalNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return undefined;
+    }
+
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  return undefined;
+}
+
 function normalizeEntity(record: BackendEntity) {
   return {
     id: getRecordId(record),
@@ -77,13 +103,42 @@ function normalizeEntity(record: BackendEntity) {
 }
 
 export function normalizeUser(record: Record<string, unknown>): RbacUser {
+  const roleRecord =
+    record.role && typeof record.role === "object"
+      ? (record.role as Record<string, unknown>)
+      : null;
+  const branchRecord =
+    record.branch && typeof record.branch === "object"
+      ? (record.branch as Record<string, unknown>)
+      : null;
+
   return {
     ...normalizeEntity(record as BackendEntity),
     name: normalizeString(record.name),
     email: normalizeString(record.email),
+    firstName: normalizeNullableString(record.firstName),
+    middleName: normalizeNullableString(record.middleName),
+    lastName: normalizeNullableString(record.lastName),
+    employeeId: normalizeNullableString(record.employeeId),
+    phoneNumber: normalizeNullableString(record.phoneNumber),
+    availabilityStatus: normalizeNullableString(record.availabilityStatus),
+    maxAssignedLoans: normalizeNullableNumber(record.maxAssignedLoans),
+    monthlyCollectionTarget: normalizeNullableString(record.monthlyCollectionTarget),
     twoFactorEnabled: normalizeBoolean(record.twoFactorEnabled),
     roleId: normalizeNullableString(record.roleId),
     branchId: normalizeNullableString(record.branchId),
+    role: roleRecord
+      ? {
+        id: getRecordId(roleRecord as BackendEntity),
+        name: normalizeString(roleRecord.name),
+      }
+      : null,
+    branch: branchRecord
+      ? {
+        id: getRecordId(branchRecord as BackendEntity),
+        name: normalizeString(branchRecord.name),
+      }
+      : null,
     modulePermissions: Array.isArray(record.modulePermissions)
       ? record.modulePermissions
         .map(normalizeModulePermission)
@@ -176,9 +231,24 @@ export function sanitizeCreateUserPayload(
     name: normalizeString(payload.name),
     email: normalizeString(payload.email),
     password: normalizeString(payload.password),
-    roleId: normalizeString(payload.roleId).trim() || undefined,
-    branchId: normalizeString(payload.branchId).trim() || undefined,
+    firstName: normalizeOptionalString(payload.firstName),
+    middleName: normalizeOptionalString(payload.middleName),
+    lastName: normalizeOptionalString(payload.lastName),
+    employeeId: normalizeOptionalString(payload.employeeId),
+    phoneNumber: normalizeOptionalString(payload.phoneNumber),
+    roleId: normalizeOptionalString(payload.roleId),
+    roleName: normalizeOptionalString(payload.roleName),
+    branchId: normalizeOptionalString(payload.branchId),
+    modulePermissions: Array.isArray(payload.modulePermissions)
+      ? payload.modulePermissions
+        .map(normalizeModulePermission)
+        .filter((value): value is RbacModulePermission => value !== null)
+      : undefined,
+    maxAssignedLoans: normalizeOptionalNumber(payload.maxAssignedLoans),
+    monthlyCollectionTarget: normalizeOptionalString(payload.monthlyCollectionTarget),
+    photoUploadId: normalizeOptionalString(payload.photoUploadId),
     isActive: typeof payload.isActive === "boolean" ? payload.isActive : true,
+    isDeleted: typeof payload.isDeleted === "boolean" ? payload.isDeleted : false,
   };
 }
 
