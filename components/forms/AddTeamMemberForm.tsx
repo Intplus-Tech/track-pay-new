@@ -89,7 +89,7 @@ export function AddTeamMemberForm() {
   };
 
   const onSubmit = (values: FormValues) => {
-    console.log(values);
+
   };
 
   return (

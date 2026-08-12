@@ -20,9 +20,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -31,8 +36,9 @@ import type { DashboardSession } from "@/lib/session";
 
 interface NavItem {
   title: string;
-  href: string;
+  href?: string;
   icon: React.ElementType;
+  subItems?: { title: string; href: string }[];
 }
 
 const navItems: NavItem[] = [
@@ -47,21 +53,6 @@ const navItems: NavItem[] = [
     icon: Building2,
   },
   {
-    title: "User Management",
-    href: "/home/user-management",
-    icon: UserCog,
-  },
-  {
-    title: "Role Management",
-    href: "/home/role-management",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Permission Management",
-    href: "/home/permission-management",
-    icon: KeyRound,
-  },
-  {
     title: "Loan Ledger",
     href: "/home/loan-ledger",
     icon: NotebookText,
@@ -70,6 +61,24 @@ const navItems: NavItem[] = [
     title: "Team",
     href: "/home/team",
     icon: Users,
+  },
+  {
+    title: "Admin",
+    icon: ShieldCheck,
+    subItems: [
+      {
+        title: "User Management",
+        href: "/home/user-management",
+      },
+      {
+        title: "Role Management",
+        href: "/home/role-management",
+      },
+      {
+        title: "Permission Management",
+        href: "/home/permission-management",
+      },
+    ],
   },
 ];
 
@@ -113,13 +122,62 @@ export function AppSidebar({
       <SidebarContent className="px-3 pb-4 pt-8">
         <SidebarMenu className="space-y-1 p-0">
           {navItems.map((item) => {
+            if (item.subItems) {
+              const isActive = item.subItems.some((subItem) => pathname === subItem.href || pathname.startsWith(`${subItem.href}/`));
+
+              return (
+                <Collapsible key={item.title} asChild defaultOpen={isActive} className="group/collapsible">
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        tooltip={item.title}
+                        isActive={isActive}
+                        className={cn(
+                          "h-11 rounded-xl border border-transparent px-3 text-[0.95rem] font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-900 data-[active=true]:border-slate-200 data-[active=true]:bg-white data-[active=true]:text-[#1038f0] data-[active=true]:shadow-[0_8px_24px_rgba(15,23,42,0.08)]",
+                          !open && "justify-center px-0",
+                        )}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="flex size-5 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition-colors group-data-[active=true]/menu-item:bg-[#1038f0]/10 group-data-[active=true]/menu-item:text-[#1038f0]">
+                            <item.icon className="size-3.5" />
+                          </span>
+                          <span className={cn(open ? "inline" : "hidden")}>{item.title}</span>
+                        </span>
+                        {open && (
+                          <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                        )}
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    {open && (
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.subItems.map((subItem) => {
+                            const isSubActive = pathname === subItem.href || pathname.startsWith(`${subItem.href}/`);
+                            return (
+                              <SidebarMenuSubItem key={subItem.href}>
+                                <SidebarMenuSubButton asChild isActive={isSubActive} className={cn("text-slate-500 hover:text-slate-900 data-[active=true]:text-[#1038f0] data-[active=true]:font-semibold")}>
+                                  <Link href={subItem.href}>
+                                    <span>{subItem.title}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    )}
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            }
+
             const isActive =
               item.href === "/"
                 ? pathname === "/"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                : item.href ? pathname === item.href || pathname.startsWith(`${item.href}/`) : false;
 
             return (
-              <SidebarMenuItem key={item.href}>
+              <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
@@ -129,7 +187,7 @@ export function AppSidebar({
                     !open && "justify-center px-0",
                   )}
                 >
-                  <Link href={item.href}>
+                  <Link href={item.href!}>
                     <span className="flex items-center gap-3">
                       <span className="flex size-5 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition-colors group-data-[active=true]/menu-item:bg-[#1038f0]/10 group-data-[active=true]/menu-item:text-[#1038f0]">
                         <item.icon className="size-3.5" />

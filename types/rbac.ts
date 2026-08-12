@@ -65,6 +65,8 @@ export interface RbacUser extends NormalizedEntity {
   role?: RbacUserRoleSummary | null;
   branch?: RbacUserBranchSummary | null;
   modulePermissions?: RbacModulePermission[];
+  photoUploadId?: string | null;
+  photoUrl?: string | null;
 }
 
 export interface RbacUserDetailPermission {
@@ -192,6 +194,7 @@ export interface UpdateUserPayload {
   roleId?: string;
   branchId?: string;
   photoUploadId?: string;
+  photoUrl?: string;
   isActive?: boolean;
 }
 

@@ -9,7 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Attachment } from "@/components/ui/attachment";
+import {
+  Attachment,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+  AttachmentActions,
+  AttachmentAction,
+  AttachmentTrigger
+} from "@/components/ui/attachment";
+import { ImageIcon, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useCreateUserMutation } from "@/hooks/rbac/useCreateUserMutation";
@@ -22,12 +32,11 @@ const createUserSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
-  employeeId: z.string().min(1, "Employee ID is required"),
   email: z.string().email("Enter a valid email address"),
   phoneNumber: z.string().min(1, "Phone number is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  roleId: z.string().optional(),
-  branchId: z.string().optional(),
+  roleId: z.string().min(1, "Role is required").refine((val) => val !== "unassigned", "Role is required"),
+  branchId: z.string().min(1, "Branch is required").refine((val) => val !== "unassigned", "Branch is required"),
   maxAssignedLoans: z.string().optional().refine((value) => !value || Number.isFinite(Number(value)), {
     message: "Max assigned loans must be a valid number",
   }),
@@ -89,7 +98,6 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
       firstName: "",
       middleName: "",
       lastName: "",
-      employeeId: "",
       email: "",
       phoneNumber: "",
       password: "",
@@ -114,7 +122,6 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
       firstName: "",
       middleName: "",
       lastName: "",
-      employeeId: "",
       email: "",
       phoneNumber: "",
       password: "",
@@ -139,12 +146,27 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
 
     try {
       setAvatarUploadPending(true);
-      const upload = await uploadUserAvatar(file);
-      form.setValue("photoUploadId", upload.uploadId, { shouldDirty: true, shouldValidate: true });
+
+
+
+      // Use FileReader (base64 data URL) to avoid CSP blocking blob: URLs
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (typeof e.target?.result === "string") {
+          setAvatarPreviewUrl(e.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
       setAvatarUploadName(file.name);
-      setAvatarPreviewUrl(upload.url);
+
+      const upload = await uploadUserAvatar(file);
+
+
+      form.setValue("photoUploadId", upload.uploadId, { shouldDirty: true, shouldValidate: true });
       toast.success("Photo uploaded.");
     } catch (error) {
+      setAvatarPreviewUrl(null);
+      setAvatarUploadName(null);
       toast.error(error instanceof Error ? error.message : "Unable to upload photo.");
     } finally {
       setAvatarUploadPending(false);
@@ -191,12 +213,11 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
         firstName: values.firstName.trim(),
         middleName: values.middleName?.trim() || undefined,
         lastName: values.lastName.trim(),
-        employeeId: values.employeeId.trim(),
         email: values.email.trim(),
         phoneNumber: values.phoneNumber.trim(),
         password: values.password,
-        roleId: values.roleId === "unassigned" ? undefined : values.roleId,
-        branchId: values.branchId === "unassigned" ? undefined : values.branchId,
+        roleId: values.roleId,
+        branchId: values.branchId,
         maxAssignedLoans: values.maxAssignedLoans?.trim() ? Number(values.maxAssignedLoans) : undefined,
         monthlyCollectionTarget: values.monthlyCollectionTarget?.trim() || undefined,
         photoUploadId: values.photoUploadId?.trim() || undefined,
@@ -209,6 +230,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
       resetCreateDialog();
       onOpenChange(false);
     } catch (error) {
+      console.error("Create User Error:", error);
       toast.error(error instanceof Error ? error.message : "Unable to create user.");
     }
   }
@@ -223,13 +245,13 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
         }
       }}
     >
-      <DialogContent className="w-[min(100vw-1rem,72rem)] max-w-none bg-white">
+      <DialogContent className="min-w-[50vw] max-h-[96vh]">
         <DialogHeader>
           <DialogTitle>Create user</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="max-h-[72vh] space-y-6 overflow-y-auto pr-1">
+            <div className="max-h-[65vh] space-y-6 overflow-y-auto pr-1">
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Identity</p>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -269,15 +291,6 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <FormField control={form.control} name="employeeId" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Employee ID</FormLabel>
-                      <FormControl>
-                        <Input placeholder="LN-30745" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Email address</FormLabel>
@@ -305,18 +318,12 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                       <FormMessage />
                     </FormItem>
                   )} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Access and assignment</p>
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <FormField control={form.control} name="roleId" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Role</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Assign a role" />
                           </SelectTrigger>
                         </FormControl>
@@ -337,7 +344,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                       <FormLabel>Branch</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Assign a branch" />
                           </SelectTrigger>
                         </FormControl>
@@ -353,25 +360,72 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                       <FormMessage />
                     </FormItem>
                   )} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Access and assignment</p>
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 p-10">
+
                   <FormField control={form.control} name="photoUploadId" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Profile photo</FormLabel>
                       <FormControl>
                         <div>
                           <Attachment
-                            label="Upload avatar image"
-                            description="Uploads to the backend and stores the returned upload id automatically."
-                            value={field.value}
-                            previewUrl={avatarPreviewUrl}
-                            fileName={avatarUploadName}
-                            isUploading={avatarUploadPending}
-                            onSelect={(file) => handleCreateAvatarUpload(file)}
-                            onRemove={() => {
-                              form.setValue("photoUploadId", "", { shouldDirty: true, shouldValidate: true });
-                              setAvatarUploadName(null);
-                              setAvatarPreviewUrl(null);
-                            }}
-                          />
+                            state={avatarUploadPending ? "uploading" : field.value ? "done" : "idle"}
+                            className="w-full"
+                          >
+                            <AttachmentMedia variant={avatarPreviewUrl ? "image" : "icon"}>
+                              {avatarPreviewUrl ? (
+                                <img src={avatarPreviewUrl} alt="Avatar" />
+                              ) : (
+                                <ImageIcon />
+                              )}
+                            </AttachmentMedia>
+                            <AttachmentContent>
+                              <AttachmentTitle>{avatarUploadName || "Upload avatar image"}</AttachmentTitle>
+                              <AttachmentDescription>
+                                {avatarUploadName
+                                  ? "Image uploaded successfully."
+                                  : "Uploads to the backend and stores the returned upload id automatically."}
+                              </AttachmentDescription>
+                            </AttachmentContent>
+
+                            {!(field.value || avatarUploadPending) && (
+                              <AttachmentTrigger asChild>
+                                <label className="cursor-pointer">
+                                  <span className="sr-only">Upload</span>
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) handleCreateAvatarUpload(file);
+                                      e.target.value = "";
+                                    }}
+                                  />
+                                </label>
+                              </AttachmentTrigger>
+                            )}
+
+                            {(field.value || avatarUploadPending) && (
+                              <AttachmentActions>
+                                <AttachmentAction
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    form.setValue("photoUploadId", "", { shouldDirty: true, shouldValidate: true });
+                                    setAvatarUploadName(null);
+                                    setAvatarPreviewUrl(null);
+                                  }}
+                                >
+                                  <X />
+                                </AttachmentAction>
+                              </AttachmentActions>
+                            )}
+                          </Attachment>
                         </div>
                       </FormControl>
                       <FormMessage />

@@ -9,6 +9,8 @@ interface RouteContext {
   }>;
 }
 
+import { normalizeUserDetail } from "@/lib/rbac";
+
 export async function GET(_: NextRequest, context: RouteContext) {
   try {
     const accessToken = await getAccessTokenOrThrow();
@@ -42,7 +44,7 @@ export async function GET(_: NextRequest, context: RouteContext) {
       ok: response.ok,
     });
 
-    return NextResponse.json(payload, { status: response.status });
+    return NextResponse.json(normalizeUserDetail(payload as Record<string, unknown>), { status: response.status });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return NextResponse.json({ message: "Unauthorized." }, { status: 401 });

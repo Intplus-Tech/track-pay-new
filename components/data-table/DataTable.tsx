@@ -113,7 +113,7 @@ export function DataTable<TData, TValue>({
   };
 
   const handleExport = (format: string) => {
-    console.log(`Exporting as ${format}`);
+
     // Additional export logic can be added here if needed
   };
 

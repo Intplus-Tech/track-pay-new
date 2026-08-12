@@ -11,6 +11,7 @@ import {
   type RbacPermission,
   type RbacRole,
   type RbacUser,
+  type RbacUserDetail,
 } from "@/types/rbac";
 
 export const RBAC_MODULE_OPTIONS: Array<{
@@ -127,6 +128,8 @@ export function normalizeUser(record: Record<string, unknown>): RbacUser {
     twoFactorEnabled: normalizeBoolean(record.twoFactorEnabled),
     roleId: normalizeNullableString(record.roleId),
     branchId: normalizeNullableString(record.branchId),
+    photoUploadId: normalizeNullableString(record.photoUploadId),
+    photoUrl: record.photoUploadId ? `/api/uploads/${record.photoUploadId}/download` : null,
     role: roleRecord
       ? {
         id: getRecordId(roleRecord as BackendEntity),
@@ -145,6 +148,14 @@ export function normalizeUser(record: Record<string, unknown>): RbacUser {
         .filter((value): value is RbacModulePermission => value !== null)
       : [],
   };
+}
+
+export function normalizeUserDetail(record: Record<string, unknown>): RbacUserDetail {
+  const user = normalizeUser(record);
+  return {
+    ...user,
+    portfolioAssignments: Array.isArray(record.portfolioAssignments) ? record.portfolioAssignments : null,
+  } as RbacUserDetail;
 }
 
 export function normalizeRole(record: Record<string, unknown>): RbacRole {

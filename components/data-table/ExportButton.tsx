@@ -65,7 +65,7 @@ export function ExportButton({
   };
 
   const handleExport = (format: string) => {
-    console.log(`Exporting as ${format}`);
+
 
     switch (format) {
       case "csv":
@@ -76,7 +76,7 @@ export function ExportButton({
         break;
       case "pdf":
         // PDF export would require additional library like jsPDF
-        console.log("PDF export not implemented yet");
+
         break;
       default:
         break;

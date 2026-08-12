@@ -104,6 +104,7 @@ export async function submitJson<T>(
   }
 
   if (!response.ok) {
+    console.error(`submitJson error [${method} ${path}]:`, payload);
     throw new Error(extractMessage(payload, fallbackMessage));
   }
 

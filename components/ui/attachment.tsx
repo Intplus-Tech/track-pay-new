@@ -1,78 +1,204 @@
-"use client";
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { Slot } from "radix-ui"
 
-import * as React from "react";
-import { Upload, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
-interface AttachmentProps {
-  label: string;
-  description: string;
-  value?: string;
-  previewUrl?: string | null;
-  fileName?: string | null;
-  isUploading?: boolean;
-  accept?: string;
-  onSelect: (file: File | null) => void | Promise<void>;
-  onRemove?: () => void;
-  className?: string;
+const attachmentVariants = cva(
+  "group/attachment relative flex w-fit max-w-full min-w-0 shrink-0 flex-wrap rounded-xl border bg-card text-card-foreground transition-colors focus-within:ring-1 focus-within:ring-ring/50 has-[>a,>button]:hover:bg-muted/50 data-[state=error]:border-destructive/30 data-[state=idle]:border-dashed",
+  {
+    variants: {
+      size: {
+        default:
+          "gap-2 text-sm has-data-[slot=attachment-content]:px-2.5 has-data-[slot=attachment-content]:py-2 has-data-[slot=attachment-media]:p-2",
+        sm: "gap-2.5 text-xs has-data-[slot=attachment-content]:px-2 has-data-[slot=attachment-content]:py-1.5 has-data-[slot=attachment-media]:p-1.5",
+        xs: "gap-1.5 rounded-lg text-xs has-data-[slot=attachment-content]:px-1.5 has-data-[slot=attachment-content]:py-1 has-data-[slot=attachment-media]:p-1",
+      },
+      orientation: {
+        horizontal: "min-w-40 items-center",
+        vertical: "w-24 flex-col has-data-[slot=attachment-content]:w-30",
+      },
+    },
+  }
+)
+
+function Attachment({
+  className,
+  state = "done",
+  size = "default",
+  orientation = "horizontal",
+  ...props
+}: React.ComponentProps<"div"> &
+  VariantProps<typeof attachmentVariants> & {
+    state?: "idle" | "uploading" | "processing" | "error" | "done"
+  }) {
+  return (
+    <div
+      data-slot="attachment"
+      data-state={state}
+      data-size={size}
+      data-orientation={orientation}
+      className={cn(attachmentVariants({ size, orientation }), className)}
+      {...props}
+    />
+  )
 }
 
-export function Attachment({
-  label,
-  description,
-  value,
-  previewUrl,
-  fileName,
-  isUploading = false,
-  accept = "image/*",
-  onSelect,
-  onRemove,
+const attachmentMediaVariants = cva(
+  "relative flex aspect-square w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-foreground group-data-[orientation=vertical]/attachment:w-full group-data-[size=sm]/attachment:w-8 group-data-[size=xs]/attachment:w-7 group-data-[size=xs]/attachment:rounded-md group-data-[state=error]/attachment:bg-destructive/10 group-data-[state=error]/attachment:text-destructive group-data-[orientation=vertical]/attachment:*:data-[slot=spinner]:size-6! [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 group-data-[orientation=vertical]/attachment:[&_svg:not([class*='size-'])]:size-6 group-data-[size=xs]/attachment:[&_svg:not([class*='size-'])]:size-3.5",
+  {
+    variants: {
+      variant: {
+        icon: "",
+        image:
+          "opacity-60 group-data-[state=done]/attachment:opacity-100 group-data-[state=idle]/attachment:opacity-100 *:[img]:aspect-square *:[img]:w-full *:[img]:object-cover",
+      },
+    },
+    defaultVariants: {
+      variant: "icon",
+    },
+  }
+)
+
+function AttachmentMedia({
   className,
-}: AttachmentProps) {
-  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  variant = "icon",
+  ...props
+}: React.ComponentProps<"div"> & VariantProps<typeof attachmentMediaVariants>) {
+  return (
+    <div
+      data-slot="attachment-media"
+      data-variant={variant}
+      className={cn(attachmentMediaVariants({ variant }), className)}
+      {...props}
+    />
+  )
+}
+
+function AttachmentContent({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="attachment-content"
+      className={cn(
+        "max-w-full min-w-0 flex-1 leading-tight group-data-[orientation=vertical]/attachment:px-1",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function AttachmentTitle({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="attachment-title"
+      className={cn(
+        "block max-w-full min-w-0 truncate font-medium group-data-[state=processing]/attachment:shimmer group-data-[state=uploading]/attachment:shimmer",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function AttachmentDescription({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="attachment-description"
+      className={cn(
+        "mt-0.5 block min-w-0 truncate text-xs text-muted-foreground group-data-[state=error]/attachment:text-destructive/80",
+        "max-w-full",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function AttachmentActions({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="attachment-actions"
+      className={cn(
+        "relative z-20 flex shrink-0 items-center group-data-[orientation=vertical]/attachment:absolute group-data-[orientation=vertical]/attachment:top-3 group-data-[orientation=vertical]/attachment:right-3 group-data-[orientation=vertical]/attachment:gap-1",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function AttachmentAction({
+  className,
+  variant,
+  size = "icon-xs",
+  ...props
+}: React.ComponentProps<typeof Button>) {
+  return (
+    <Button
+      data-slot="attachment-action"
+      variant={variant ?? "ghost"}
+      size={size}
+      className={cn(className)}
+      {...props}
+    />
+  )
+}
+
+function AttachmentTrigger({
+  className,
+  asChild = false,
+  type,
+  ...props
+}: React.ComponentProps<"button"> & {
+  asChild?: boolean
+}) {
+  const Comp = asChild ? Slot.Root : "button"
 
   return (
-    <div className={cn("rounded-2xl border border-slate-200 bg-slate-50 p-4", className)}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 gap-4">
-          <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-400">
-            {previewUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={previewUrl} alt={fileName ?? label} className="size-full object-cover" />
-            ) : (
-              <Upload className="size-5" />
-            )}
-          </div>
-          <div className="min-w-0 space-y-1">
-            <p className="text-sm font-medium text-slate-900">{label}</p>
-            <p className="text-sm text-slate-500">{description}</p>
-            {fileName ? <p className="truncate text-sm text-slate-700">{fileName}</p> : null}
-            {value ? <p className="break-all text-xs uppercase tracking-[0.14em] text-slate-500">Upload ID: {value}</p> : null}
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <input
-            ref={inputRef}
-            type="file"
-            accept={accept}
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0] ?? null;
-              void onSelect(file);
-              event.target.value = "";
-            }}
-          />
-          <Button type="button" variant="outline" onClick={() => inputRef.current?.click()} disabled={isUploading}>
-            {isUploading ? "Uploading..." : previewUrl || value ? "Replace" : "Upload"}
-          </Button>
-          {onRemove ? (
-            <Button type="button" variant="ghost" size="icon" onClick={onRemove} disabled={isUploading || (!previewUrl && !value)}>
-              <X className="size-4" />
-            </Button>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
+    <Comp
+      data-slot="attachment-trigger"
+      type={asChild ? undefined : (type ?? "button")}
+      className={cn("absolute inset-0 z-10 outline-none", className)}
+      {...props}
+    />
+  )
+}
+
+function AttachmentGroup({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="attachment-group"
+      className={cn(
+        "flex min-w-0 scroll-fade-x snap-x snap-mandatory scroll-px-1 scrollbar-none gap-3 overflow-x-auto overscroll-x-contain py-1 *:data-[slot=attachment]:flex-none *:data-[slot=attachment]:snap-start",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export {
+  Attachment,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentContent,
+  AttachmentTitle,
+  AttachmentDescription,
+  AttachmentActions,
+  AttachmentAction,
+  AttachmentTrigger,
 }
