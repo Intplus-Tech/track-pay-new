@@ -17,32 +17,16 @@ export async function GET(_: NextRequest, context: RouteContext) {
     const { id } = await context.params;
     const requestPath = `/users/${id}`;
 
-    console.info("[api/users/:id][GET] forwarding request", {
-      path: requestPath,
-    });
+
 
     const response = await getBackendJson(`/users/${id}`, {
       headers: getAuthHeaders(accessToken),
     });
     const payload = await readBackendBody<unknown>(response);
 
-    console.info(
-      "[api/users/:id][GET] raw backend payload\n%s",
-      JSON.stringify(
-        {
-          path: requestPath,
-          payload,
-        },
-        null,
-        2,
-      ),
-    );
 
-    console.info("[api/users/:id][GET] backend response", {
-      path: requestPath,
-      status: response.status,
-      ok: response.ok,
-    });
+
+
 
     return NextResponse.json(normalizeUserDetail(payload as Record<string, unknown>), { status: response.status });
   } catch (error) {
@@ -70,34 +54,14 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const accessToken = await getAccessTokenOrThrow();
     const { id } = await context.params;
 
-    console.info(
-      "[api/users/:id][PUT] forwarding request\n%s",
-      JSON.stringify(
-        {
-          path: `/users/${id}`,
-          payload: body,
-        },
-        null,
-        2,
-      ),
-    );
+
 
     const response = await putBackendJson(`/users/${id}`, body, {
       headers: getAuthHeaders(accessToken),
     });
     const payload = await readBackendBody<unknown>(response);
 
-    console.info(
-      "[api/users/:id][PUT] raw backend payload\n%s",
-      JSON.stringify(
-        {
-          path: `/users/${id}`,
-          payload,
-        },
-        null,
-        2,
-      ),
-    );
+
 
     return NextResponse.json(payload, { status: response.status });
   } catch (error) {

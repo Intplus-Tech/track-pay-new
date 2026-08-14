@@ -26,32 +26,16 @@ export async function GET(request: NextRequest) {
     const query = buildUsersQuery(request.nextUrl.searchParams);
     const requestPath = `/users${query}`;
 
-    console.info("[api/users][GET] forwarding request", {
-      path: requestPath,
-    });
+
 
     const response = await getBackendJson(`/users${query}`, {
       headers: getAuthHeaders(accessToken),
     });
     const payload = await readBackendBody<unknown>(response);
 
-    console.info(
-      "[api/users][GET] raw backend payload\n%s",
-      JSON.stringify(
-        {
-          path: requestPath,
-          payload,
-        },
-        null,
-        2,
-      ),
-    );
 
-    console.info("[api/users][GET] backend response", {
-      path: requestPath,
-      status: response.status,
-      ok: response.ok,
-    });
+
+
 
     if (!response.ok) {
       return NextResponse.json(toErrorBody(payload, "Unable to load users."), {
@@ -96,19 +80,14 @@ export async function POST(request: NextRequest) {
   try {
     const accessToken = await getAccessTokenOrThrow();
 
-    console.info("[api/users][POST] forwarding request", {
-      payload,
-    });
+
 
     const response = await postBackendJson("/users", payload, {
       headers: getAuthHeaders(accessToken),
     });
     const responsePayload = await readBackendBody<unknown>(response);
 
-    console.info("[api/users][POST] backend response", {
-      status: response.status,
-      ok: response.ok,
-    });
+
 
     if (!response.ok) {
       return NextResponse.json(toErrorBody(responsePayload, "Unable to create user."), {

@@ -128,7 +128,7 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
                 aria-label="Open user menu"
               >
                 <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
+                  {session?.user.photoUrl ? <AvatarImage src={session.user.photoUrl} alt={session.user.name} /> : null}
                   <AvatarFallback>{getInitials(session?.user.name)}</AvatarFallback>
                 </Avatar>
               </button>

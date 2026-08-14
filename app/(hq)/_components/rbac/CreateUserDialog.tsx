@@ -226,7 +226,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
       resetCreateDialog();
       onOpenChange(false);
     } catch (error) {
-      console.error("Create User Error:", error);
+
       toast.error(error instanceof Error ? error.message : "Unable to create user.");
     }
   }

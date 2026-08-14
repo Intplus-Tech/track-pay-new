@@ -29,8 +29,6 @@ export const dynamic = "force-dynamic";
 
 interface ProfileResponse {
   _id: string;
-  name?: string;
-  fullName?: string;
   firstName?: string;
   lastName?: string;
   middleName?: string;
@@ -96,7 +94,11 @@ export default async function ProfilePage() {
     );
   }
 
-  const displayName = profile.fullName || profile.name || "TrackPay User";
+  const displayName =
+    [profile.firstName, profile.middleName, profile.lastName]
+      .filter((part): part is string => Boolean(part))
+      .join(" ")
+      .trim() || profile.email.split("@")[0] || "TrackPay User";
 
   const initials =
     profile.firstName && profile.lastName

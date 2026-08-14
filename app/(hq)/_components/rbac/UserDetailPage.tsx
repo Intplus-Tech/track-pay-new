@@ -1,11 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { InlineMessage, ManagementPageShell, Panel } from "./shared";
 import { useBranchesQuery } from "@/hooks/rbac/useBranchesQuery";
+import { useActivateUserMutation } from "@/hooks/rbac/useActivateUserMutation";
+import { useDeactivateUserMutation } from "@/hooks/rbac/useDeactivateUserMutation";
 import { useDeleteUserMutation } from "@/hooks/rbac/useDeleteUserMutation";
 import { useRolesQuery } from "@/hooks/rbac/useRolesQuery";
 import { useUserDetailQuery } from "@/hooks/rbac/useUserDetailQuery";
@@ -51,10 +56,13 @@ function renderDate(value?: string | null) {
 }
 
 export default function UserDetailPage({ userId }: { userId: string }) {
+  const router = useRouter();
   const userQuery = useUserDetailQuery(userId);
   const rolesQuery = useRolesQuery();
   const branchesQuery = useBranchesQuery();
   const deleteUserMutation = useDeleteUserMutation();
+  const activateUserMutation = useActivateUserMutation();
+  const deactivateUserMutation = useDeactivateUserMutation();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const user = userQuery.data;
@@ -65,9 +73,33 @@ export default function UserDetailPage({ userId }: { userId: string }) {
   async function onDeactivate() {
     try {
       await deleteUserMutation.mutateAsync(userId);
-      toast.success("User deactivated.");
+      toast.success("User deleted successfully.");
+      router.push("/home/user-management");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to deactivate user.");
+      toast.error(error instanceof Error ? error.message : "Unable to delete user.");
+    }
+  }
+
+  async function onToggleActive() {
+    if (!user) {
+      return;
+    }
+
+    try {
+      if (user.isActive) {
+        await deactivateUserMutation.mutateAsync({ id: userId });
+        toast.success("User deactivated successfully.");
+      } else {
+        await activateUserMutation.mutateAsync({ id: userId });
+        toast.success("User activated successfully.");
+      }
+      await userQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : `Unable to ${user.isActive ? "deactivate" : "activate"} user.`,
+      );
     }
   }
 
@@ -77,14 +109,12 @@ export default function UserDetailPage({ userId }: { userId: string }) {
       title={
         user ? (
           <div className="flex min-w-0 items-start gap-4">
-            <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white text-lg font-semibold text-slate-700">
-              {photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoUrl} alt={user.name} className="size-full object-cover" />
-              ) : (
-                <span>{user.name.slice(0, 2).toUpperCase()}</span>
-              )}
-            </div>
+            <Avatar className="size-24">
+              {photoUrl ? <AvatarImage src={photoUrl} alt={user.name} /> : null}
+              <AvatarFallback >
+                {user.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="break-words">{user.name}</span>
@@ -99,12 +129,26 @@ export default function UserDetailPage({ userId }: { userId: string }) {
         )
       }
       actions={
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => setEditDialogOpen(true)} disabled={!user}>
             Edit profile
           </Button>
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+            <span className="text-sm font-medium text-slate-600">
+              {activateUserMutation.isPending || deactivateUserMutation.isPending
+                ? "Updating..."
+                : user?.isActive
+                  ? "Active"
+                  : "Inactive"}
+            </span>
+            <Switch
+              checked={user?.isActive ?? false}
+              onCheckedChange={() => void onToggleActive()}
+              disabled={activateUserMutation.isPending || deactivateUserMutation.isPending || !user}
+            />
+          </div>
           <Button variant="destructive" onClick={() => void onDeactivate()} disabled={deleteUserMutation.isPending || !user}>
-            {deleteUserMutation.isPending ? "Deactivating..." : "Deactivate user"}
+            {deleteUserMutation.isPending ? "Deleting..." : "Delete user"}
           </Button>
         </div>
       }
@@ -119,7 +163,7 @@ export default function UserDetailPage({ userId }: { userId: string }) {
 
       {user ? (
         <div className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4">
             {[
               // { key: "mongoId", label: "Mongo ID", value: user._id ?? user.id },
               { key: "employeeId", label: "Employee ID", value: user.employeeId },
@@ -137,10 +181,10 @@ export default function UserDetailPage({ userId }: { userId: string }) {
             ))}
           </div>
 
-          <Section title="Identity and timestamps" description="Account lifecycle and audit markers returned by the backend.">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Section title="Identity and timestamps" description="Account lifecycle and audit markers.">
+            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3">
               {[
-                { key: "internalId", label: "Internal ID", value: user.id },
+                // { key: "internalId", label: "Internal ID", value: user.id },
                 { key: "createdAt", label: "Created at", value: renderDate(user.createdAt) },
                 { key: "updatedAt", label: "Updated at", value: renderDate(user.updatedAt) },
                 { key: "deletedAt", label: "Deleted at", value: renderDate(user.deletedAt) },
@@ -153,7 +197,7 @@ export default function UserDetailPage({ userId }: { userId: string }) {
             </div>
           </Section>
 
-          <Section title="Organization" description="Role and branch context with the raw backend summaries.">
+          <Section title="Organization" description="Role and branch context.">
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-900">Role</p>

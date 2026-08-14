@@ -68,11 +68,7 @@ export async function POST(request: NextRequest) {
 
     const safePayload = sanitizeAuthPayloadForLogs(payload);
 
-    console.info("[auth/2fa-login] backend response", {
-      status: backendResponse.status,
-      ok: backendResponse.ok,
-      payload: safePayload,
-    });
+
 
     if (!backendResponse.ok) {
       return NextResponse.json(payload ?? { message: "2FA login failed." }, {
@@ -102,9 +98,7 @@ export async function POST(request: NextRequest) {
     return unexpectedResponse;
 
   } catch (error) {
-    console.error("[auth/2fa-login] upstream request failed", {
-      error,
-    });
+
 
     return NextResponse.json(
       { message: "Unable to reach the authentication service." },

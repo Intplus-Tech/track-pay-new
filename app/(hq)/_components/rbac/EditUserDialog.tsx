@@ -264,10 +264,12 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                           </AttachmentDescription>
                         </AttachmentContent>
 
-                        {!(field.value || avatarUploadPending) && (
+                        {!avatarUploadPending && (
                           <AttachmentTrigger asChild>
                             <label className="cursor-pointer">
-                              <span className="sr-only">Upload</span>
+                              <span className="sr-only">
+                                {field.value || avatarPreviewUrl ? "Replace avatar image" : "Upload avatar image"}
+                              </span>
                               <input
                                 type="file"
                                 className="hidden"
@@ -282,7 +284,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                           </AttachmentTrigger>
                         )}
 
-                        {(field.value || avatarUploadPending) && (
+                        {(field.value || avatarPreviewUrl || avatarUploadPending) && (
                           <AttachmentActions>
                             <AttachmentAction
                               type="button"
@@ -316,10 +318,10 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
               )} />
             </div>
             <div className="flex items-center justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={avatarUploadPending}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={updateUserMutation.isPending}>
+              <Button type="submit" disabled={updateUserMutation.isPending || avatarUploadPending}>
                 {updateUserMutation.isPending ? "Saving..." : "Save profile"}
               </Button>
             </div>

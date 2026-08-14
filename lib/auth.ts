@@ -14,6 +14,7 @@ export interface AuthUser {
   email: string;
   name: string;
   fullName?: string | null;
+  photoUrl?: string | null;
   twoFactorEnabled: boolean;
   roleId?: string | null;
   branchId?: string | null;
@@ -140,6 +141,7 @@ export function normalizeLoginSuccessPayload(
   const firstName = rawUser && getString(rawUser.firstName);
   const middleName = rawUser && getString(rawUser.middleName);
   const lastName = rawUser && getString(rawUser.lastName);
+  const photoUrl = rawUser && getString(rawUser.photoUrl);
 
   const derivedName = [firstName, middleName, lastName]
     .filter((value): value is string => Boolean(value))
@@ -173,6 +175,7 @@ export function normalizeLoginSuccessPayload(
       email,
       name,
       fullName: name,
+      photoUrl: photoUrl ?? null,
       twoFactorEnabled,
       roleId,
       branchId,

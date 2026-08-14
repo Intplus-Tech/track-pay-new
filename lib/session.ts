@@ -37,6 +37,7 @@ interface BackendUserProfile {
   roleId?: string | null;
   branchId?: string | null;
   twoFactorEnabled?: boolean;
+  photoUrl?: string | null;
 }
 
 interface BackendRole {
@@ -110,6 +111,7 @@ export async function resolveDashboardSession(
       id: getRecordId(userProfile ?? fallbackUser) ?? fallbackUser.id,
       name: derivedName || fallbackUser.name,
       fullName: derivedName || fallbackUser.fullName || fallbackUser.name,
+      photoUrl: userProfile?.photoUrl ?? fallbackUser.photoUrl ?? null,
       email: userProfile?.email ?? fallbackUser.email,
       roleId: userProfile?.roleId ?? fallbackUser.roleId ?? null,
       branchId: userProfile?.branchId ?? fallbackUser.branchId ?? null,

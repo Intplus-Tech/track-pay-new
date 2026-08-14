@@ -17,7 +17,7 @@ export function useUpdateUserMutation() {
     mutationFn: ({ id, payload }: UpdateUserArgs) =>
       submitJson<RbacUser>(`/api/users/${id}`, "PUT", "Unable to update user.", payload),
     onSuccess: async (data, variables) => {
-      console.log("Edit user API response:", data);
+
       await queryClient.invalidateQueries({ queryKey: rbacKeys.users() });
       await queryClient.invalidateQueries({ queryKey: rbacKeys.user(variables.id) });
     },

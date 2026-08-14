@@ -63,12 +63,7 @@ export async function POST(request: NextRequest) {
 
     const safePayload = sanitizeAuthPayloadForLogs(payload);
 
-    console.info("[auth/login] backend response", {
-      status: backendResponse.status,
-      ok: backendResponse.ok,
-      payload: safePayload,
-      email: body.email,
-    });
+
 
     if (!backendResponse.ok) {
       return NextResponse.json(payload ?? { message: "Login failed." }, {
@@ -127,10 +122,7 @@ export async function POST(request: NextRequest) {
     return unexpectedResponse;
 
   } catch (error) {
-    console.error("[auth/login] upstream request failed", {
-      email: body.email,
-      error,
-    });
+
 
     return NextResponse.json(
       { message: "Unable to reach the authentication service." },
