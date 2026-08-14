@@ -13,7 +13,7 @@ function encodeSessionValue(value: unknown) {
   return encodeURIComponent(JSON.stringify(value));
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname === "/auth/sign-in/reset-password") {
     const authUserId = request.nextUrl.searchParams.get("authUserId");
     const token = request.nextUrl.searchParams.get("token");
@@ -47,7 +47,7 @@ export function middleware(request: NextRequest) {
     const now = Math.floor(Date.now() / 1000);
 
     if (claims?.exp && claims.exp < now) {
-      // JWT has expired — clear auth cookies and redirect to sign-in
+      // JWT has expired - clear auth cookies and redirect to sign-in
       const expiredResponse = NextResponse.redirect(
         new URL("/auth/sign-in", request.url),
       );

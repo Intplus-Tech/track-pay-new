@@ -17,7 +17,7 @@ const Logo = ({ width = 90, height = 80, priority = false }: LogoProps) => {
         height={height}
         priority={priority}
         sizes={`(max-width: 768px) ${width / 2}px, ${width}px`} // Adjust as needed
-        className=""
+        className="h-auto"
       />
     </div>
   );
