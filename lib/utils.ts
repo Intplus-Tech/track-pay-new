@@ -1,14 +1,15 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
-export const formatCurrency = (amount: number) => {
+export function formatCurrency(value: unknown) {
+  const amount = typeof value === "number" ? value : Number(value)
+
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
-    minimumFractionDigits: 0,
-  }).format(amount);
-};
+  }).format(Number.isFinite(amount) ? amount : 0)
+}
