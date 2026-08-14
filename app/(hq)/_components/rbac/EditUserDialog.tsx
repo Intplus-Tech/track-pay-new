@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   Attachment,
   AttachmentContent,
   AttachmentDescription,
@@ -94,9 +94,9 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
     }
     try {
       setAvatarUploadPending(true);
-      
 
-      
+
+
       // Use FileReader (base64 data URL) to avoid CSP blocking blob: URLs
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -109,7 +109,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
 
       const upload = await uploadUserAvatar(file);
 
-      
+
       form.setValue("photoUploadId", upload.uploadId, { shouldDirty: true, shouldValidate: true });
       toast.success("Photo uploaded.");
     } catch (error) {
@@ -258,12 +258,12 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                         <AttachmentContent>
                           <AttachmentTitle>{avatarUploadName || "Upload avatar image"}</AttachmentTitle>
                           <AttachmentDescription>
-                            {avatarUploadName 
-                              ? "Image uploaded successfully." 
+                            {avatarUploadName
+                              ? "Image uploaded successfully."
                               : "Uploads to the backend and updates the stored upload id for this user profile."}
                           </AttachmentDescription>
                         </AttachmentContent>
-                        
+
                         {!(field.value || avatarUploadPending) && (
                           <AttachmentTrigger asChild>
                             <label className="cursor-pointer">
