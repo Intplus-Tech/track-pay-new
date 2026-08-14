@@ -86,9 +86,9 @@ export async function POST(request: NextRequest) {
 
   const payload = sanitizeCreateUserPayload(body);
 
-  if (!payload.name || !payload.email || !payload.password) {
+  if (!payload.firstName || !payload.lastName || !payload.email || !payload.password) {
     return NextResponse.json(
-      { message: "Name, email, and password are required." },
+      { message: "First name, last name, email, and password are required." },
       { status: 400 },
     );
   }

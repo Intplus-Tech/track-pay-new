@@ -31,7 +31,7 @@ The Swagger document applies an undeclared `bearer` security scheme to several a
 
 ### User
 
-In addition to common fields, `User` requires `name`, `firstName`, `middleName`, `lastName`, `employeeId`, `email`, `phoneNumber`, `twoFactorEnabled`, nullable `roleId`, nullable `branchId`, `availabilityStatus` (`ACTIVE` or `UNAVAILABLE`), `maxAssignedLoans`, `monthlyCollectionTarget`, `modulePermissions`, `photoUrl`, and nullable `photoUploadId`.
+The backend user payload is based on `firstName`, `middleName`, and `lastName`. The app should derive the display name from those fields; the legacy `name` field is discontinued and should not be relied on. The payload also includes `employeeId`, `email`, `phoneNumber`, `twoFactorEnabled`, nullable `roleId`, nullable `branchId`, `availabilityStatus` (`ACTIVE` or `UNAVAILABLE`), `maxAssignedLoans`, `monthlyCollectionTarget`, `modulePermissions`, `photoUrl`, and nullable `photoUploadId`.
 
 `modulePermissions` is an array of `{ module, view, manage }`, where `module` is one of `OVERVIEW`, `TRACKER`, `ACCOUNTS`, `LOAN_OFFICERS`, `TEAM`, or `SETTINGS`. `manage` implies `view`.
 
@@ -63,7 +63,7 @@ Login returns either `{ accessToken, user }` or `{ twoFactorRequired, authUserId
 
 ### Users and RBAC
 
-`POST /api/v1/users` accepts `email` and `password` (both required), plus optional `name`, name parts, `employeeId`, `phoneNumber`, `roleId`, `roleName`, `branchId`, `modulePermissions`, `maxAssignedLoans`, `monthlyCollectionTarget`, `photoUploadId`, `isActive`, and `isDeleted`. If `roleId` is omitted, `roleName` can create or select a role.
+`POST /api/v1/users` accepts `email` and `password` (both required), plus optional `firstName`, `middleName`, `lastName`, `employeeId`, `phoneNumber`, `roleId`, `roleName`, `branchId`, `modulePermissions`, `maxAssignedLoans`, `monthlyCollectionTarget`, `photoUploadId`, `isActive`, and `isDeleted`. The discontinued `name` field must not be sent. If `roleId` is omitted, `roleName` can create or select a role.
 
 `PATCH /api/v1/users/{id}/permissions` requires `{ modulePermissions }`. `PATCH /api/v1/users/{id}/activate` and `/deactivate` accept optional `{ reason }`.
 

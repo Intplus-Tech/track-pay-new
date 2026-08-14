@@ -103,6 +103,19 @@ function normalizeEntity(record: BackendEntity) {
   };
 }
 
+function normalizeUserName(record: Record<string, unknown>) {
+  const personalName = [
+    normalizeOptionalString(record.firstName),
+    normalizeOptionalString(record.middleName),
+    normalizeOptionalString(record.lastName),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(" ")
+    .trim();
+
+  return personalName || "TrackPay User";
+}
+
 export function normalizeUser(record: Record<string, unknown>): RbacUser {
   const roleRecord =
     record.role && typeof record.role === "object"
@@ -113,9 +126,12 @@ export function normalizeUser(record: Record<string, unknown>): RbacUser {
       ? (record.branch as Record<string, unknown>)
       : null;
 
+  const eventualName = normalizeUserName(record);
+
   return {
     ...normalizeEntity(record as BackendEntity),
-    name: normalizeString(record.name),
+    name: eventualName,
+    fullName: eventualName,
     email: normalizeString(record.email),
     firstName: normalizeNullableString(record.firstName),
     middleName: normalizeNullableString(record.middleName),
@@ -129,7 +145,9 @@ export function normalizeUser(record: Record<string, unknown>): RbacUser {
     roleId: normalizeNullableString(record.roleId),
     branchId: normalizeNullableString(record.branchId),
     photoUploadId: normalizeNullableString(record.photoUploadId),
-    photoUrl: record.photoUploadId ? `/api/uploads/${record.photoUploadId}/download` : null,
+    photoUrl:
+      normalizeNullableString(record.photoUrl) ??
+      (record.photoUploadId ? `/api/uploads/${record.photoUploadId}/download` : null),
     role: roleRecord
       ? {
         id: getRecordId(roleRecord as BackendEntity),
@@ -239,7 +257,6 @@ export function sanitizeCreateUserPayload(
   payload: Record<string, unknown>,
 ): CreateUserPayload {
   return {
-    name: normalizeString(payload.name),
     email: normalizeString(payload.email),
     password: normalizeString(payload.password),
     firstName: normalizeOptionalString(payload.firstName),

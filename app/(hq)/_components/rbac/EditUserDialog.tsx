@@ -25,7 +25,6 @@ import { uploadUserAvatar } from "@/lib/query/upload";
 import type { UpdateUserPayload, RbacUserDetail, RbacRole, RbacBranch } from "@/types/rbac";
 import { useUpdateUserMutation } from "@/hooks/rbac/useUpdateUserMutation";
 const updateUserSchema = z.object({
-  name: z.string().min(1, "Name is required"),
   email: z.string().email("Enter a valid email address"),
   firstName: z.string().optional(),
   middleName: z.string().optional(),
@@ -58,7 +57,6 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
   const form = useForm<UpdateUserValues>({
     resolver: zodResolver(updateUserSchema),
     defaultValues: {
-      name: "",
       email: "",
       firstName: "",
       middleName: "",
@@ -76,7 +74,6 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
       return;
     }
     form.reset({
-      name: user.name ?? "",
       email: user.email ?? "",
       firstName: user.firstName ?? "",
       middleName: user.middleName ?? "",
@@ -128,7 +125,6 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
       return;
     }
     const payload: UpdateUserPayload = {
-      name: values.name,
       email: values.email,
       firstName: values.firstName?.trim() || undefined,
       middleName: values.middleName?.trim() || undefined,
@@ -159,13 +155,6 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSave)} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full name</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
               <FormField control={form.control} name="email" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email address</FormLabel>

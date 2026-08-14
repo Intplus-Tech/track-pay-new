@@ -13,6 +13,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
+  fullName?: string | null;
   twoFactorEnabled: boolean;
   roleId?: string | null;
   branchId?: string | null;
@@ -46,6 +47,7 @@ type AuthTokenClaims = {
   _id?: string;
   email?: string;
   name?: string;
+  fullName?: string;
   twoFactorEnabled?: boolean;
   roleId?: string;
   branchId?: string;
@@ -81,6 +83,7 @@ export function decodeJwtClaims(token: string): AuthTokenClaims | null {
       _id: getString(claims._id) ?? undefined,
       email: getString(claims.email) ?? undefined,
       name: getString(claims.name) ?? undefined,
+      fullName: getString(claims.fullName) ?? undefined,
       twoFactorEnabled: getBoolean(claims.twoFactorEnabled) ?? undefined,
       roleId: getString(claims.roleId) ?? undefined,
       branchId: getString(claims.branchId) ?? undefined,
@@ -134,10 +137,18 @@ export function normalizeLoginSuccessPayload(
     return null;
   }
 
+  const firstName = rawUser && getString(rawUser.firstName);
+  const middleName = rawUser && getString(rawUser.middleName);
+  const lastName = rawUser && getString(rawUser.lastName);
+
+  const derivedName = [firstName, middleName, lastName]
+    .filter((value): value is string => Boolean(value))
+    .join(" ")
+    .trim();
+
   const name =
-    (rawUser && getString(rawUser.name)) ??
-    claims?.name ??
-    email.split("@")[0] ??
+    derivedName ||
+    email.split("@")[0] ||
     "TrackPay User";
 
   const twoFactorEnabled =
@@ -161,6 +172,7 @@ export function normalizeLoginSuccessPayload(
       id,
       email,
       name,
+      fullName: name,
       twoFactorEnabled,
       roleId,
       branchId,

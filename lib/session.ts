@@ -30,7 +30,9 @@ export interface DashboardSession {
 interface BackendUserProfile {
   _id?: string;
   id?: string;
-  name?: string;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
   email?: string;
   roleId?: string | null;
   branchId?: string | null;
@@ -98,10 +100,16 @@ export async function resolveDashboardSession(
 
     const userProfile = await readJsonOrNull<BackendUserProfile>(userResponse);
 
+    const derivedName = [userProfile?.firstName, userProfile?.middleName, userProfile?.lastName]
+      .filter((value): value is string => Boolean(value))
+      .join(" ")
+      .trim();
+
     const resolvedUser: DashboardUser = {
       ...fallbackUser,
       id: getRecordId(userProfile ?? fallbackUser) ?? fallbackUser.id,
-      name: userProfile?.name ?? fallbackUser.name,
+      name: derivedName || fallbackUser.name,
+      fullName: derivedName || fallbackUser.fullName || fallbackUser.name,
       email: userProfile?.email ?? fallbackUser.email,
       roleId: userProfile?.roleId ?? fallbackUser.roleId ?? null,
       branchId: userProfile?.branchId ?? fallbackUser.branchId ?? null,

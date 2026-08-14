@@ -50,6 +50,7 @@ export interface RbacUserBranchSummary {
 
 export interface RbacUser extends NormalizedEntity {
   name: string;
+  fullName?: string | null;
   email: string;
   firstName?: string | null;
   middleName?: string | null;
@@ -121,6 +122,7 @@ export interface RbacUserDetail {
   updatedAt?: string;
   deletedAt?: string | null;
   name: string;
+  fullName?: string | null;
   email: string;
   twoFactorEnabled?: boolean;
   roleId?: string | null;
@@ -163,7 +165,6 @@ export interface RbacPaginationResponse<T> {
 }
 
 export interface CreateUserPayload {
-  name: string;
   email: string;
   password: string;
   firstName?: string;
@@ -183,7 +184,6 @@ export interface CreateUserPayload {
 }
 
 export interface UpdateUserPayload {
-  name?: string;
   email?: string;
   password?: string;
   firstName?: string;

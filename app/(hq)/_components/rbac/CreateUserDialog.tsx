@@ -28,7 +28,6 @@ import { uploadUserAvatar } from "@/lib/query/upload";
 import type { CreateUserPayload, RbacModuleName, RbacModulePermission, RbacRole, RbacBranch } from "@/types/rbac";
 
 const createUserSchema = z.object({
-  name: z.string().min(1, "Name is required"),
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
@@ -94,7 +93,6 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
   const form = useForm<CreateUserValues>({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
-      name: "",
       firstName: "",
       middleName: "",
       lastName: "",
@@ -118,7 +116,6 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
 
   function resetCreateDialog() {
     form.reset({
-      name: "",
       firstName: "",
       middleName: "",
       lastName: "",
@@ -209,7 +206,6 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
   async function onSubmit(values: CreateUserValues) {
     try {
       const payload: CreateUserPayload = {
-        name: values.name.trim(),
         firstName: values.firstName.trim(),
         middleName: values.middleName?.trim() || undefined,
         lastName: values.lastName.trim(),
@@ -255,15 +251,6 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Identity</p>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Amina Yusuf" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
                   <FormField control={form.control} name="firstName" render={({ field }) => (
                     <FormItem>
                       <FormLabel>First name</FormLabel>

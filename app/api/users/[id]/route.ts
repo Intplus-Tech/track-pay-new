@@ -69,10 +69,35 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const accessToken = await getAccessTokenOrThrow();
     const { id } = await context.params;
+
+    console.info(
+      "[api/users/:id][PUT] forwarding request\n%s",
+      JSON.stringify(
+        {
+          path: `/users/${id}`,
+          payload: body,
+        },
+        null,
+        2,
+      ),
+    );
+
     const response = await putBackendJson(`/users/${id}`, body, {
       headers: getAuthHeaders(accessToken),
     });
     const payload = await readBackendBody<unknown>(response);
+
+    console.info(
+      "[api/users/:id][PUT] raw backend payload\n%s",
+      JSON.stringify(
+        {
+          path: `/users/${id}`,
+          payload,
+        },
+        null,
+        2,
+      ),
+    );
 
     return NextResponse.json(payload, { status: response.status });
   } catch (error) {
