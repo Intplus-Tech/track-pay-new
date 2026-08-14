@@ -1,7 +1,7 @@
 import React from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AUTH_ACCESS_TOKEN_COOKIE } from "@/lib/auth";
+import { AUTH_ACCESS_TOKEN_COOKIE, AUTH_USER_COOKIE, decodeSessionValue, type AuthUser } from "@/lib/auth";
 import { getBackendJson, readBackendBody } from "@/lib/backend";
 import {
   User,
@@ -54,26 +54,44 @@ interface ProfileResponse {
   };
 }
 
-async function getProfile(accessToken: string): Promise<ProfileResponse | null> {
+async function getProfile(accessToken: string, userId?: string): Promise<ProfileResponse | null> {
   try {
     const res = await getBackendJson("/api/v1/auth/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+    const data = await readBackendBody<ProfileResponse | string | null>(res);
+
+
+    if (res.status === 401 && userId) {
+      // /auth/me rejected this token — fall back to /users/:id which uses the same token
+      const fallbackRes = await getBackendJson(`/api/v1/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const fallbackData = await readBackendBody<ProfileResponse | string | null>(fallbackRes);
+
+      if (!fallbackRes.ok || !fallbackData || typeof fallbackData === "string") {
+        return null;
+      }
+      return fallbackData;
+    }
+
     if (!res.ok) {
       return null;
     }
-    const data = await readBackendBody<ProfileResponse | string | null>(res);
     if (!data || typeof data === "string") {
       return null;
     }
 
     return data;
-  } catch (err) {
+  } catch {
     return null;
   }
 }
+
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
@@ -83,7 +101,11 @@ export default async function ProfilePage() {
     redirect("/auth/sign-in");
   }
 
-  const profile = await getProfile(accessToken);
+  // Decode the user cookie to get the userId for the /users/:id fallback
+  const currentUser = decodeSessionValue<AuthUser>(cookieStore.get(AUTH_USER_COOKIE)?.value);
+
+  const profile = await getProfile(accessToken, currentUser?.id ?? undefined);
+
 
   if (!profile) {
     return (
