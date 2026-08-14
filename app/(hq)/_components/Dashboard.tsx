@@ -1,15 +1,23 @@
 "use client";
 
+import { useState } from "react";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
+import { useBranchesQuery } from "@/hooks/rbac/useBranchesQuery";
+import { useDashboardPerformanceChartQuery } from "@/hooks/useDashboardPerformanceChartQuery";
+import { useDashboardTodayQuery } from "@/hooks/useDashboardTodayQuery";
+import { useDashboardOverviewQuery } from "@/hooks/useDashboardOverviewQuery";
 import {
   AlertTriangle,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Link2,
-  Search,
   Square,
 } from "lucide-react";
+import type {
+  DashboardMetric,
+  DashboardPerformanceChartFilters,
+} from "@/types/dashboard";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 interface StatCard {
   title: string;
@@ -21,118 +29,177 @@ interface StatCard {
   valueTone?: "default" | "success" | "danger";
 }
 
-interface BranchRow {
-  branch: string;
-  zone: string;
-  manager: string;
-  activeLoanees: string;
-  disbursedVolume: string;
-  collectionRate: number;
-  overdueMilestones: number;
+function formatAmount(value: string) {
+  return value.startsWith("N") ? value : `N${value}`;
 }
 
-const statCards: StatCard[] = [
-  {
-    title: "TOTAL PORTFOLIO VALUE",
-    value: "N45,230,000.00",
-    subtitle: "Aggregated Principal Balance",
-    icon: Square,
-    trend: "+2.4%",
-    trendTone: "positive",
-    valueTone: "default",
-  },
-  {
-    title: "COLLECTION RATE",
-    value: "96.4%",
-    subtitle: "Institutional Success Index",
-    icon: CheckCircle2,
-    valueTone: "success",
-  },
-  {
-    title: "PORTFOLIO AT RISK (PAR 30)",
-    value: "N2,100,000.00",
-    subtitle: "Outstanding Overdue 30+ Days",
-    icon: AlertTriangle,
-    trend: "High Risk",
-    trendTone: "alert",
-    valueTone: "danger",
-  },
-  {
-    title: "SQUADCO WALLET",
-    value: "N12,450,000.00",
-    subtitle: "Settlement Account Balance",
-    icon: Link2,
-    trend: "Live Mirror",
-    trendTone: "neutral",
-    valueTone: "default",
-  },
-];
-
-const branchRows: BranchRow[] = [
-  {
-    branch: "Lagos Mainland",
-    zone: "Zone A-01",
-    manager: "Babajide Sanwo",
-    activeLoanees: "1,245",
-    disbursedVolume: "N12.4M",
-    collectionRate: 98.2,
-    overdueMilestones: 0,
-  },
-  {
-    branch: "Abuja FCT",
-    zone: "Zone C-04",
-    manager: "Amina Dikko",
-    activeLoanees: "892",
-    disbursedVolume: "N9.8M",
-    collectionRate: 95.4,
-    overdueMilestones: 2,
-  },
-  {
-    branch: "Port Harcourt",
-    zone: "Zone S-09",
-    manager: "Ifeanyi Okowa",
-    activeLoanees: "750",
-    disbursedVolume: "N7.2M",
-    collectionRate: 88.7,
-    overdueMilestones: 12,
-  },
-  {
-    branch: "Kano City",
-    zone: "Zone N-12",
-    manager: "Rabiu Kwankwaso",
-    activeLoanees: "1,102",
-    disbursedVolume: "N8.5M",
-    collectionRate: 92.1,
-    overdueMilestones: 0,
-  },
-  {
-    branch: "Enugu Metro",
-    zone: "Zone E-02",
-    manager: "Uchenna Nnaji",
-    activeLoanees: "450",
-    disbursedVolume: "N4.1M",
-    collectionRate: 96.8,
-    overdueMilestones: 1,
-  },
-];
-
-function collectionBarTone(rate: number) {
-  return rate < 90 ? "bg-amber-500" : "bg-emerald-500";
-}
-
-function milestoneTone(count: number) {
-  if (count >= 10) {
-    return "bg-rose-100 text-rose-700";
+function buildStatCards(overview?: {
+  overallLoan: DashboardMetric;
+  activeLoan: DashboardMetric;
+  overdue: DashboardMetric;
+  recentLoans: unknown[];
+}): StatCard[] {
+  if (!overview) {
+    return [];
   }
 
-  return "bg-slate-100 text-slate-500";
+  return [
+    {
+      title: "TOTAL LOAN PORTFOLIO",
+      value: formatAmount(overview.overallLoan.value),
+      subtitle: `${overview.overallLoan.count} loans in the portfolio`,
+      icon: Square,
+      trend: `${overview.overallLoan.changePercent >= 0 ? "+" : ""}${overview.overallLoan.changePercent}%`,
+      trendTone: overview.overallLoan.changePercent >= 0 ? "positive" : "alert",
+      valueTone: "default",
+    },
+    {
+      title: "ACTIVE LOANS",
+      value: formatAmount(overview.activeLoan.value),
+      subtitle: `${overview.activeLoan.count} active loans`,
+      icon: CheckCircle2,
+      valueTone: "success",
+    },
+    {
+      title: "OVERDUE LOANS",
+      value: formatAmount(overview.overdue.value),
+      subtitle: `${overview.overdue.count} overdue loans`,
+      icon: AlertTriangle,
+      trend: overview.overdue.count > 0 ? "Requires attention" : "Up to date",
+      trendTone: overview.overdue.count > 0 ? "alert" : "positive",
+      valueTone: "danger",
+    },
+    {
+      title: "RECENT LOAN ACTIVITY",
+      value: `${overview.recentLoans.length}`,
+      subtitle: "Loans in the latest activity feed",
+      icon: Link2,
+      trend: "Live data",
+      trendTone: "neutral",
+      valueTone: "default",
+    },
+  ];
 }
 
 const Dashboard = () => {
+  const [draftFilters, setDraftFilters] = useState({
+    branchId: "",
+    loanOfficerId: "",
+    recentLimit: "",
+    endDate: "",
+  });
+  const [appliedFilters, setAppliedFilters] = useState<DashboardPerformanceChartFilters>({});
+  const overviewQuery = useDashboardOverviewQuery(appliedFilters);
+  const branchesQuery = useBranchesQuery();
+  const performanceChartQuery = useDashboardPerformanceChartQuery(appliedFilters);
+  const todayQuery = useDashboardTodayQuery(appliedFilters);
+  const statCards = buildStatCards(overviewQuery.data);
+  const cards: Array<StatCard | undefined> = overviewQuery.isPending
+    ? Array.from({ length: 4 }, () => undefined)
+    : statCards;
+  const performanceData = performanceChartQuery.data?.map((point) => ({
+    ...point,
+    disbursedValue: Number(point.disbursed),
+    collectedValue: Number(point.collected),
+  })) ?? [];
+
   return (
     <div className="space-y-6">
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+        <form
+          className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setAppliedFilters({
+              branchId: draftFilters.branchId || undefined,
+              loanOfficerId: draftFilters.loanOfficerId || undefined,
+              recentLimit: draftFilters.recentLimit
+                ? Number(draftFilters.recentLimit)
+                : undefined,
+              endDate: draftFilters.endDate || undefined,
+            });
+          }}
+        >
+          <select
+            value={draftFilters.branchId}
+            onChange={(event) =>
+              setDraftFilters((current) => ({ ...current, branchId: event.target.value }))
+            }
+            className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-[#1156e8]"
+            aria-label="Filter by branch"
+          >
+            <option value="">All branches</option>
+            {branchesQuery.data?.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+              </option>
+            ))}
+          </select>
+          <Input
+            value={draftFilters.loanOfficerId}
+            onChange={(event) =>
+              setDraftFilters((current) => ({ ...current, loanOfficerId: event.target.value }))
+            }
+            placeholder="Loan officer ID"
+            aria-label="Filter by loan officer ID"
+            className="h-10 border-slate-300 shadow-none"
+          />
+          <Input
+            type="date"
+            value={draftFilters.endDate}
+            onChange={(event) =>
+              setDraftFilters((current) => ({ ...current, endDate: event.target.value }))
+            }
+            aria-label="Chart end date"
+            className="h-10 border-slate-300 shadow-none"
+          />
+          <Input
+            type="number"
+            min="1"
+            value={draftFilters.recentLimit}
+            onChange={(event) =>
+              setDraftFilters((current) => ({ ...current, recentLimit: event.target.value }))
+            }
+            placeholder="Recent limit"
+            aria-label="Recent activity limit"
+            className="h-10 border-slate-300 shadow-none"
+          />
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="h-10 flex-1 rounded-md bg-[#1156e8] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#0d43b2]"
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              className="h-10 rounded-md border border-slate-300 px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+              onClick={() => {
+                setDraftFilters({ branchId: "", loanOfficerId: "", recentLimit: "", endDate: "" });
+                setAppliedFilters({});
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        </form>
+      </section>
+      {overviewQuery.isError ? (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {overviewQuery.error.message}
+        </div>
+      ) : null}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {statCards.map((card) => {
+        {cards.map((card, index) => {
+          if (!card) {
+            return (
+              <article
+                key={`dashboard-card-skeleton-${index}`}
+                className="h-[156px] animate-pulse rounded-2xl border border-slate-200 bg-slate-100"
+              />
+            );
+          }
+
           const Icon = card.icon;
 
           return (
@@ -184,121 +251,110 @@ const Dashboard = () => {
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
-        <header className="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <header className="border-b border-slate-200 p-4">
           <h2 className="text-[1.9rem] font-semibold leading-none tracking-[-0.03em] text-slate-900">
-            Branch Performance Rankings
+            Today&apos;s Collection Position
           </h2>
-          <label className="relative w-full max-w-[300px]">
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <Input
-              placeholder="Search portfolio..."
-              className="h-10 rounded-full border-slate-300 bg-white pl-9 text-sm shadow-none placeholder:text-slate-400"
-            />
-          </label>
+          <p className="mt-2 text-sm text-slate-500">
+            Collection activity and accounts requiring attention today.
+          </p>
         </header>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-[980px] w-full border-collapse">
-            <thead className="bg-slate-50">
-              <tr className="text-left text-xs font-bold tracking-wide text-slate-500">
-                <th className="px-6 py-4">BRANCH NAME</th>
-                <th className="px-6 py-4">OPERATING MANAGER</th>
-                <th className="px-6 py-4">ACTIVE LOANEES</th>
-                <th className="px-6 py-4">DISBURSED VOLUME</th>
-                <th className="px-6 py-4">COLLECTION RATE</th>
-                <th className="px-6 py-4">OVERDUE</th>
-                <th className="px-6 py-4" />
-              </tr>
-            </thead>
-            <tbody>
-              {branchRows.map((branch) => (
-                <tr key={branch.branch} className="border-t border-slate-200 align-top">
-                  <td className="px-6 py-4">
-                    <p className="text-base font-semibold leading-5 text-slate-900">{branch.branch}</p>
-                    <p className="mt-1 text-xs text-slate-500">{branch.zone}</p>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-semibold text-slate-700">{branch.manager}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-slate-700">{branch.activeLoanees}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-slate-900">{branch.disbursedVolume}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-1.5 w-14 rounded-full bg-slate-200">
-                        <div
-                          className={`h-full rounded-full ${collectionBarTone(branch.collectionRate)}`}
-                          style={{ width: `${branch.collectionRate}%` }}
-                        />
-                      </div>
-                      <span
-                        className={`text-sm font-semibold ${branch.collectionRate < 90 ? "text-amber-500" : "text-emerald-500"}`}
-                      >
-                        {branch.collectionRate.toFixed(1)}%
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${milestoneTone(
-                        branch.overdueMilestones,
-                      )}`}
-                    >
-                      {branch.overdueMilestones} {branch.overdueMilestones === 1 ? "Milestone" : "Milestones"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button
-                      type="button"
-                      className="text-sm font-semibold text-[#1156e8] transition-colors hover:text-[#0d43b2]"
-                    >
-                      View Branch Ledger
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <footer className="flex items-center justify-between border-t border-slate-200 px-4 py-3">
-          <p className="text-sm font-semibold text-slate-500">Showing 5 of 24 Branches</p>
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
-            <button
-              type="button"
-              className="inline-flex size-7 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <button
-              type="button"
-              className="inline-flex size-7 items-center justify-center rounded-full text-slate-900"
-            >
-              1
-            </button>
-            <button
-              type="button"
-              className="inline-flex size-7 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
-            >
-              2
-            </button>
-            <button
-              type="button"
-              className="inline-flex size-7 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
-            >
-              3
-            </button>
-            <button
-              type="button"
-              className="inline-flex size-7 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
-              aria-label="Next page"
-            >
-              <ChevronRight className="size-4" />
-            </button>
+        {todayQuery.isError ? (
+          <div className="px-4 py-8 text-sm text-rose-700">{todayQuery.error.message}</div>
+        ) : todayQuery.isPending ? (
+          <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div
+                key={`today-card-skeleton-${index}`}
+                className="h-28 animate-pulse rounded-xl bg-slate-100"
+              />
+            ))}
           </div>
-        </footer>
+        ) : (
+          <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              {
+                label: "TOTAL DUE TODAY",
+                value: formatAmount(todayQuery.data.totalDueToday),
+                tone: "text-slate-900",
+              },
+              {
+                label: "COLLECTED TODAY",
+                value: formatAmount(todayQuery.data.collectedToday),
+                tone: "text-emerald-600",
+              },
+              {
+                label: "CLIENTS DUE TODAY",
+                value: todayQuery.data.clientsDueToday.toLocaleString(),
+                tone: "text-slate-900",
+              },
+              {
+                label: "OVERDUE ACCOUNTS",
+                value: todayQuery.data.overdueAccounts.toLocaleString(),
+                tone: todayQuery.data.overdueAccounts > 0 ? "text-rose-600" : "text-slate-900",
+              },
+            ].map((card) => (
+              <article key={card.label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-semibold tracking-[0.06em] text-slate-500">{card.label}</p>
+                <p className={`mt-2 text-2xl font-bold ${card.tone}`}>{card.value}</p>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
+
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
+        <header className="border-b border-slate-200 p-4">
+          <h2 className="text-[1.9rem] font-semibold leading-none tracking-[-0.03em] text-slate-900">
+            Loan Performance
+          </h2>
+          <p className="mt-2 text-sm text-slate-500">
+            Monthly disbursements compared with collections over the last twelve months.
+          </p>
+        </header>
+        {performanceChartQuery.isError ? (
+          <div className="px-4 py-8 text-sm text-rose-700">{performanceChartQuery.error.message}</div>
+        ) : performanceChartQuery.isPending ? (
+          <div className="m-4 h-[320px] animate-pulse rounded-xl bg-slate-100" />
+        ) : (
+          <ChartContainer
+            config={{
+              disbursedValue: { label: "Disbursed", color: "#1156e8" },
+              collectedValue: { label: "Collected", color: "#10b981" },
+            }}
+            className="h-[320px] w-full p-4"
+          >
+            <LineChart data={performanceData} margin={{ top: 12, right: 12, left: 12, bottom: 8 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `N${Number(value).toLocaleString()}`}
+              />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line
+                type="monotone"
+                dataKey="disbursedValue"
+                name="Disbursed"
+                stroke="var(--color-disbursedValue)"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="collectedValue"
+                name="Collected"
+                stroke="var(--color-collectedValue)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ChartContainer>
+        )}
+      </section>
+
     </div>
   );
 };
