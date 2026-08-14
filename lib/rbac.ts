@@ -2,9 +2,12 @@ import {
   type AssignRolePermissionsPayload,
   type BackendEntity,
   type CreatePermissionPayload,
+  type CreateBranchPayload,
   type CreateRolePayload,
   type CreateUserPayload,
   type RbacBranch,
+  type RbacBranchManager,
+  type RbacBranchStatus,
   type RbacModuleName,
   type RbacModulePermission,
   type RbacPaginationResponse,
@@ -89,6 +92,10 @@ function normalizeOptionalNumber(value: unknown) {
   }
 
   return undefined;
+}
+
+function normalizeBranchStatus(value: unknown): RbacBranchStatus | null {
+  return value === "ACTIVE" || value === "CLOSED" ? value : null;
 }
 
 function normalizeEntity(record: BackendEntity) {
@@ -198,6 +205,22 @@ export function normalizePermission(
 }
 
 export function normalizeBranch(record: Record<string, unknown>): RbacBranch {
+  const managerRecord =
+    record.manager && typeof record.manager === "object"
+      ? (record.manager as Record<string, unknown>)
+      : null;
+
+  const manager: RbacBranchManager | null = managerRecord
+    ? {
+      id: getRecordId(managerRecord as BackendEntity),
+      firstName: normalizeNullableString(managerRecord.firstName),
+      middleName: normalizeNullableString(managerRecord.middleName),
+      lastName: normalizeNullableString(managerRecord.lastName),
+      fullName: normalizeNullableString(managerRecord.fullName),
+      email: normalizeNullableString(managerRecord.email),
+    }
+    : null;
+
   return {
     ...normalizeEntity(record as BackendEntity),
     name: normalizeString(record.name),
@@ -206,7 +229,9 @@ export function normalizeBranch(record: Record<string, unknown>): RbacBranch {
     isHeadOffice:
       typeof record.isHeadOffice === "boolean" ? record.isHeadOffice : null,
     managerId: normalizeNullableString(record.managerId),
+    manager,
     parentBranchId: normalizeNullableString(record.parentBranchId),
+    status: normalizeBranchStatus(record.status),
   };
 }
 
@@ -299,6 +324,16 @@ export function sanitizeCreatePermissionPayload(
     description: normalizeString(payload.description).trim() || undefined,
     isActive: typeof payload.isActive === "boolean" ? payload.isActive : true,
     isDeleted: typeof payload.isDeleted === "boolean" ? payload.isDeleted : false,
+  };
+}
+
+export function sanitizeCreateBranchPayload(
+  payload: Record<string, unknown>,
+): CreateBranchPayload {
+  return {
+    name: normalizeString(payload.name).trim(),
+    location: normalizeOptionalString(payload.location),
+    isActive: typeof payload.isActive === "boolean" ? payload.isActive : true,
   };
 }
 

@@ -29,13 +29,26 @@ export interface RbacRole extends NormalizedEntity {
   permissionIds: string[];
 }
 
+export type RbacBranchStatus = "ACTIVE" | "CLOSED";
+
+export interface RbacBranchManager {
+  id: string;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
+  fullName?: string | null;
+  email?: string | null;
+}
+
 export interface RbacBranch extends NormalizedEntity {
   name: string;
   code?: string | null;
   location?: string | null;
   isHeadOffice?: boolean | null;
   managerId?: string | null;
+  manager?: RbacBranchManager | null;
   parentBranchId?: string | null;
+  status?: RbacBranchStatus | null;
 }
 
 export interface RbacUserRoleSummary {
@@ -210,6 +223,12 @@ export interface CreatePermissionPayload {
   description?: string;
   isActive?: boolean;
   isDeleted?: boolean;
+}
+
+export interface CreateBranchPayload {
+  name: string;
+  location?: string;
+  isActive?: boolean;
 }
 
 export interface AssignRolePermissionsPayload {
