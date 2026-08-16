@@ -31,13 +31,13 @@ The Swagger document applies an undeclared `bearer` security scheme to several a
 
 ### User
 
-The backend user payload is based on `firstName`, `middleName`, and `lastName`. The app should derive the display name from those fields; the legacy `name` field is discontinued and should not be relied on. The payload also includes `employeeId`, `email`, `phoneNumber`, `twoFactorEnabled`, nullable `roleId`, nullable `branchId`, `availabilityStatus` (`ACTIVE` or `UNAVAILABLE`), `maxAssignedLoans`, `monthlyCollectionTarget`, `modulePermissions`, `photoUrl`, and nullable `photoUploadId`.
+The backend user payload includes a stored `fullName` display value alongside `firstName`, `middleName`, and `lastName`. The legacy `name` field is discontinued and should not be sent or relied on. The payload also includes `employeeId`, `email`, `phoneNumber`, `twoFactorEnabled`, nullable `roleId`, nullable `branchId`, `availabilityStatus` (`ACTIVE` or `UNAVAILABLE`), `maxAssignedLoans`, `monthlyCollectionTarget`, `modulePermissions`, `photoUrl`, and nullable `photoUploadId`.
 
 `modulePermissions` is an array of `{ module, view, manage }`, where `module` is one of `OVERVIEW`, `TRACKER`, `ACCOUNTS`, `LOAN_OFFICERS`, `TEAM`, or `SETTINGS`. `manage` implies `view`.
 
 ### Branch
 
-`Branch` also requires `name`, `code`, `location`, `isHeadOffice`, nullable `managerId`, nullable `parentBranchId`, and `status` (`ACTIVE` or `CLOSED`).
+`Branch` also requires `name`, `code`, `location`, `addressLabel`, `city`, `state`, `country`, nullable `latitude` and `longitude`, `regionalZone`, `type` (`PHYSICAL` or `VIRTUAL`), `isHeadOffice`, nullable `managerId`, nullable `parentBranchId`, and `status` (`ACTIVE`, `PENDING_ACTIVATION`, `SUSPENDED`, or `CLOSED`).
 
 ### Upload
 
@@ -63,7 +63,7 @@ Login returns either `{ accessToken, user }` or `{ twoFactorRequired, authUserId
 
 ### Users and RBAC
 
-`POST /api/v1/users` accepts `email` and `password` (both required), plus optional `firstName`, `middleName`, `lastName`, `employeeId`, `phoneNumber`, `roleId`, `roleName`, `branchId`, `modulePermissions`, `maxAssignedLoans`, `monthlyCollectionTarget`, `photoUploadId`, `isActive`, and `isDeleted`. The discontinued `name` field must not be sent. If `roleId` is omitted, `roleName` can create or select a role.
+`POST /api/v1/users` accepts `email` and `password` (both required), plus optional `fullName`, `firstName`, `middleName`, `lastName`, `employeeId`, `phoneNumber`, `roleId`, `roleName`, `branchId`, `modulePermissions`, `maxAssignedLoans`, `monthlyCollectionTarget`, `photoUploadId`, `isActive`, and `isDeleted`. `fullName` is stored and recomposed from the name parts on writes; the discontinued `name` field must not be sent. If `roleId` is omitted, `roleName` can create or select a role.
 
 `PATCH /api/v1/users/{id}/permissions` requires `{ modulePermissions }`. `PATCH /api/v1/users/{id}/activate` and `/deactivate` accept optional `{ reason }`.
 
@@ -73,9 +73,13 @@ Login returns either `{ accessToken, user }` or `{ twoFactorRequired, authUserId
 
 ### Branches
 
-`POST /api/v1/branches` accepts `{ name, location?, isActive? }`. `PATCH /api/v1/branches/{id}/status` requires `{ status: "ACTIVE" | "CLOSED", reason? }`.
+`POST /api/v1/branches` requires `name` and accepts `location`, `addressLabel`, `city`, `state`, `country`, `latitude`, `longitude`, `regionalZone`, `type` (`PHYSICAL` or `VIRTUAL`), `status` (`ACTIVE`, `PENDING_ACTIVATION`, `SUSPENDED`, or `CLOSED`), `parentBranchId`, `isHeadOffice`, and legacy `isActive`.
 
-`UpdateBranchDto` has no defined properties; confirm the writable branch fields before using `PATCH /api/v1/branches/{id}`.
+`PATCH /api/v1/branches/{id}/status` requires `{ status: "ACTIVE" | "PENDING_ACTIVATION" | "SUSPENDED" | "CLOSED", reason? }`.
+
+`PATCH /api/v1/branches/{id}/manager` requires `{ userId }` and accepts `transferFromCurrentBranch`, `allowMultipleBranches`, and `reason`. `DELETE /api/v1/branches/{id}/manager` accepts `removeFromBranch` and `reason` in its JSON body.
+
+`UpdateBranchDto` accepts the same branch identity fields as creation: `name`, `location`, `addressLabel`, `city`, `state`, `country`, `latitude`, `longitude`, `regionalZone`, `type`, `status`, `parentBranchId`, `isHeadOffice`, and `isActive`. Operating status should normally be changed through the audited status endpoint.
 
 ### Uploads and accounts
 
@@ -89,7 +93,7 @@ Login returns either `{ accessToken, user }` or `{ twoFactorRequired, authUserId
 
 | Payload | Required fields | Optional fields |
 | --- | --- | --- |
-| `CreateLoaneeDto` | `loaneeNumber`, `firstName`, `lastName`, `email` | `middleName`, `phoneNumber`, `photoUrl` |
+| `CreateLoaneeDto` | `loaneeNumber` (number), `firstName`, `lastName`, `email` | `middleName`, `phoneNumber`, `photoUrl` |
 | `CreateLoanPortfolioDto` | `loaneeId`, `principal`, `tenureMonths`, `interestRate` | `status`, `interestType`, `loanOfficerId`, `nextDueDate` |
 | `CreateLoanRepaymentDto` | `portfolioId`, `amount` | `currency` (default `NGN`), `paidAt`, `provider`, `providerReference` |
 | Apply payment | `amount` | none |
@@ -155,10 +159,15 @@ Unless noted, endpoints in this section require `JWT-auth`.
 | `GET`, `POST` | `/api/v1/branches` | List or create branches |
 | `GET`, `PATCH`, `DELETE` | `/api/v1/branches/{id}` | Detail, update, delete |
 | `GET` | `/api/v1/branches/configuration` | Settings branch configuration table |
-| `PATCH` | `/api/v1/branches/{id}/status` | Open or close a branch |
+| `PATCH` | `/api/v1/branches/{id}/status` | Open, suspend, or close a branch |
+| `GET` | `/api/v1/branches/{id}/overview` | Branch detail header, metrics, leadership, location, and recent transactions |
+| `GET` | `/api/v1/branches/{id}/transactions` | Paginated branch transaction feed; supports `total`, `page`, and `limit` |
+| `PATCH`, `DELETE` | `/api/v1/branches/{id}/manager` | Assign or unassign the branch manager |
 | `GET` | `/api/v1/audit-logs` | Paginated institutional audit trail |
 | `GET` | `/api/v1/audit-logs/{entityType}/{entityId}` | Audit history for one entity |
 | `GET` | `/api/v1/logs/{index}/search` | Search `error`, `http`, or `event` logs |
+
+Branch configuration returns live figures including `activeOfficers`, `activeLoans`, `totalExposure`, `collectionRate`, manager information, and the expanded branch status/type values. The branch overview returns `metrics`, `leadership`, a structured `location`, and capped `recentTransactions`; transaction rows contain `timestamp`, `type` (`REPAYMENT`, `DISBURSEMENT`, or `FEE_PAYMENT`), loan and loanee identifiers, amount, and status.
 
 Audit-log filters are `total`, `page`, `limit`, `actorId`, `action`, `entityType`, `entityId`, `branchId`, `dateFrom`, `dateTo`, and `order` (default `DESC`). Log search accepts `service_name`, `action_name`, `type`, `user_id`, `from`, and `to`.
 
@@ -239,7 +248,7 @@ Reconciliation payment statuses are `UNMATCHED`, `MATCHED`, `AMBIGUOUS`, `DUPLIC
 ## Open questions
 
 1. What is the production API base URL?
-2. Which fields are accepted by `UpdateUserDto`, `UpdateRoleDto`, `UpdatePermissionDto`, `UpdateBranchDto`, and `UpdateLoaneeDto`?
+2. Which fields are accepted by `UpdateUserDto`, `UpdateRoleDto`, `UpdatePermissionDto`, and `UpdateLoaneeDto`?
 3. Is the undeclared `bearer` security requirement on authentication routes intentional, and which authentication endpoints must actually have `JWT-auth` enforced?
 4. Is `PaginationResponseDto.limit` a page size or a total-page count?
 5. What exact JSON shapes are returned by list and detail endpoints whose Swagger responses only have a description?

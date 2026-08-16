@@ -95,7 +95,15 @@ function normalizeOptionalNumber(value: unknown) {
 }
 
 function normalizeBranchStatus(value: unknown): RbacBranchStatus | null {
-  return value === "ACTIVE" || value === "CLOSED" ? value : null;
+  return ["ACTIVE", "PENDING_ACTIVATION", "SUSPENDED", "CLOSED"].includes(
+    String(value),
+  )
+    ? (value as RbacBranchStatus)
+    : null;
+}
+
+function normalizeBranchType(value: unknown): RbacBranchType | null {
+  return value === "PHYSICAL" || value === "VIRTUAL" ? value : null;
 }
 
 function normalizeEntity(record: BackendEntity) {
@@ -226,6 +234,14 @@ export function normalizeBranch(record: Record<string, unknown>): RbacBranch {
     name: normalizeString(record.name),
     code: normalizeNullableString(record.code),
     location: normalizeNullableString(record.location),
+    addressLabel: normalizeNullableString(record.addressLabel),
+    city: normalizeNullableString(record.city),
+    state: normalizeNullableString(record.state),
+    country: normalizeNullableString(record.country),
+    latitude: normalizeNullableNumber(record.latitude),
+    longitude: normalizeNullableNumber(record.longitude),
+    regionalZone: normalizeNullableString(record.regionalZone),
+    type: normalizeBranchType(record.type),
     isHeadOffice:
       typeof record.isHeadOffice === "boolean" ? record.isHeadOffice : null,
     managerId: normalizeNullableString(record.managerId),
@@ -332,8 +348,31 @@ export function sanitizeCreateBranchPayload(
 ): CreateBranchPayload {
   return {
     name: normalizeString(payload.name).trim(),
+    code: normalizeOptionalString(payload.code),
     location: normalizeOptionalString(payload.location),
+    addressLabel: normalizeOptionalString(payload.addressLabel),
+    city: normalizeOptionalString(payload.city),
+    state: normalizeOptionalString(payload.state),
+    country: normalizeOptionalString(payload.country),
+    latitude: normalizeOptionalNumber(payload.latitude),
+    longitude: normalizeOptionalNumber(payload.longitude),
+    regionalZone: normalizeOptionalString(payload.regionalZone),
+    type:
+      payload.type === "PHYSICAL" || payload.type === "VIRTUAL"
+        ? payload.type
+        : undefined,
+    status:
+      payload.status === "ACTIVE" ||
+        payload.status === "PENDING_ACTIVATION" ||
+        payload.status === "SUSPENDED" ||
+        payload.status === "CLOSED"
+        ? payload.status
+        : undefined,
+    parentBranchId: normalizeOptionalString(payload.parentBranchId),
+    isHeadOffice: typeof payload.isHeadOffice === "boolean" ? payload.isHeadOffice : undefined,
+    managerId: normalizeOptionalString(payload.managerId),
     isActive: typeof payload.isActive === "boolean" ? payload.isActive : true,
+    isDeleted: typeof payload.isDeleted === "boolean" ? payload.isDeleted : false,
   };
 }
 

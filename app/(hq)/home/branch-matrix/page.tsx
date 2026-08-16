@@ -9,6 +9,7 @@ import { InlineMessage } from "@/app/(hq)/_components/rbac/shared";
 import { AddBranchManagerDialog } from "@/app/(hq)/_components/rbac/AddBranchManagerDialog";
 import { BranchDetailsDialog } from "@/app/(hq)/_components/rbac/BranchDetailsDialog";
 import { CreateBranchDialog } from "@/app/(hq)/_components/rbac/CreateBranchDialog";
+import { useBranchConfigurationQuery } from "@/hooks/rbac/useBranchConfigurationQuery";
 import { useBranchesQuery } from "@/hooks/rbac/useBranchesQuery";
 import type { RbacBranch } from "@/types/rbac";
 
@@ -27,24 +28,41 @@ function getManagerName(branch: RbacBranch) {
   return personalName || branch.managerId || "Unassigned";
 }
 
+function getBranchLocation(branch: RbacBranch) {
+  const segments = [branch.addressLabel, branch.city, branch.state, branch.country]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .map((value) => value.trim());
+
+  if (segments.length > 0) {
+    return segments.join(", ");
+  }
+
+  return branch.location || "Location unavailable";
+}
+
+function getBranchTypeLabel(branch: RbacBranch) {
+  return branch.type ? branch.type.replace("_", " ") : "Not specified";
+}
+
 function getBranchStatus(branch: RbacBranch) {
   return branch.status ?? (branch.isActive === false ? "CLOSED" : "ACTIVE");
 }
 
-function StatusBadge({ status }: { status: "ACTIVE" | "CLOSED" }) {
-  const isActive = status === "ACTIVE";
+function StatusBadge({ status }: { status: "ACTIVE" | "PENDING_ACTIVATION" | "SUSPENDED" | "CLOSED" }) {
+  const statusMeta = {
+    ACTIVE: { label: "Active", icon: CheckCircle2, className: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+    PENDING_ACTIVATION: { label: "Pending activation", icon: XCircle, className: "border-amber-200 bg-amber-50 text-amber-700" },
+    SUSPENDED: { label: "Suspended", icon: XCircle, className: "border-orange-200 bg-orange-50 text-orange-700" },
+    CLOSED: { label: "Closed", icon: XCircle, className: "border-slate-200 bg-slate-100 text-slate-600" },
+  } satisfies Record<string, { label: string; icon: typeof CheckCircle2; className: string }>;
+
+  const meta = statusMeta[status] ?? statusMeta.CLOSED;
+  const Icon = meta.icon;
 
   return (
-    <Badge
-      variant="outline"
-      className={
-        isActive
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-slate-200 bg-slate-100 text-slate-600"
-      }
-    >
-      {isActive ? <CheckCircle2 /> : <XCircle />}
-      {isActive ? "Active" : "Closed"}
+    <Badge variant="outline" className={meta.className}>
+      <Icon />
+      {meta.label}
     </Badge>
   );
 }
@@ -55,6 +73,47 @@ const BranchMatrixPage = () => {
   const [selectedBranch, setSelectedBranch] = useState<RbacBranch | null>(null);
   const [managerBranch, setManagerBranch] = useState<RbacBranch | null>(null);
   const { data: branches = [], isLoading, isError, refetch } = useBranchesQuery();
+  const { data: branchConfiguration = [] } = useBranchConfigurationQuery();
+
+  const selectedBranchDetails = useMemo(() => {
+    if (!selectedBranch) {
+      return null;
+    }
+
+    const branchConfigMatch = branchConfiguration.find((item) => {
+      const configRecord = item as Record<string, unknown>;
+      const configBranchId = typeof configRecord.branchId === "string" ? configRecord.branchId : undefined;
+      const configId = typeof configRecord.id === "string" ? configRecord.id : undefined;
+      return Boolean(
+        (configBranchId && (configBranchId === selectedBranch.id || configBranchId === selectedBranch._id)) ||
+        (configId && (configId === selectedBranch.id || configId === selectedBranch._id)),
+      );
+    });
+
+    if (!branchConfigMatch) {
+      return selectedBranch;
+    }
+
+    const configRecord = branchConfigMatch as Record<string, unknown>;
+
+    return {
+      ...selectedBranch,
+      location: typeof configRecord.location === "string" ? configRecord.location : selectedBranch.location,
+      regionalZone: typeof configRecord.regionalZone === "string" ? configRecord.regionalZone : selectedBranch.regionalZone,
+      managerId: typeof configRecord.managerId === "string" ? configRecord.managerId : selectedBranch.managerId,
+      managerName: typeof configRecord.managerName === "string" ? configRecord.managerName : selectedBranch.managerName,
+      activeOfficers: typeof configRecord.activeOfficers === "number" ? configRecord.activeOfficers : selectedBranch.activeOfficers,
+      activeLoans: typeof configRecord.activeLoans === "number" ? configRecord.activeLoans : selectedBranch.activeLoans,
+      totalExposure:
+        typeof configRecord.totalExposure === "string" || typeof configRecord.totalExposure === "number"
+          ? configRecord.totalExposure
+          : selectedBranch.totalExposure,
+      collectionRate:
+        typeof configRecord.collectionRate === "number" ? configRecord.collectionRate : selectedBranch.collectionRate,
+      status: typeof configRecord.status === "string" ? (configRecord.status as RbacBranch["status"]) : selectedBranch.status,
+      statusLabel: typeof configRecord.statusLabel === "string" ? configRecord.statusLabel : selectedBranch.statusLabel,
+    } satisfies RbacBranch;
+  }, [branchConfiguration, selectedBranch]);
 
   const filteredBranches = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -133,11 +192,29 @@ const BranchMatrixPage = () => {
                   <div className="space-y-3 text-xs text-slate-600">
                     <div className="flex items-start gap-2">
                       <MapPin className="mt-0.5 size-3.5 shrink-0 text-slate-400" />
-                      <span className="line-clamp-2">{branch.location || "Location unavailable"}</span>
+                      <span className="line-clamp-2">{getBranchLocation(branch)}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <UserRound className="mt-0.5 size-3.5 shrink-0 text-slate-400" />
                       <span className="line-clamp-2">{getManagerName(branch)}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-slate-500">
+                      <div>
+                        <div className="font-medium text-slate-400">Type</div>
+                        <div>{getBranchTypeLabel(branch)}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-400">Region</div>
+                        <div>{branch.regionalZone || "Not specified"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-400">Country</div>
+                        <div>{branch.country || "Not specified"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-400">Parent</div>
+                        <div>{branch.parentBranchId || "N/A"}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -174,7 +251,7 @@ const BranchMatrixPage = () => {
         }}
       />
       <BranchDetailsDialog
-        branch={selectedBranch}
+        branch={selectedBranchDetails}
         onOpenChange={(open) => {
           if (!open) {
             setSelectedBranch(null);

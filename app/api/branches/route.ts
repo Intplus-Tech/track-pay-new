@@ -4,6 +4,10 @@ import { getAccessTokenOrThrow, getAuthHeaders } from "@/lib/api-auth";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { normalizeBranch, sanitizeCreateBranchPayload } from "@/lib/rbac";
 
+function isUnauthorizedError(error: unknown) {
+  return error instanceof Error && error.message === "UNAUTHORIZED";
+}
+
 export async function GET() {
   try {
     const accessToken = await getAccessTokenOrThrow();
@@ -28,7 +32,7 @@ export async function GET() {
 
     return NextResponse.json(branches, { status: 200 });
   } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+    if (isUnauthorizedError(error)) {
       return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
     }
 

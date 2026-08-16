@@ -29,7 +29,13 @@ export interface RbacRole extends NormalizedEntity {
   permissionIds: string[];
 }
 
-export type RbacBranchStatus = "ACTIVE" | "CLOSED";
+export type RbacBranchStatus =
+  | "ACTIVE"
+  | "PENDING_ACTIVATION"
+  | "SUSPENDED"
+  | "CLOSED";
+
+export type RbacBranchType = "PHYSICAL" | "VIRTUAL";
 
 export interface RbacBranchManager {
   id: string;
@@ -40,13 +46,44 @@ export interface RbacBranchManager {
   email?: string | null;
 }
 
+export interface RbacBranchConfiguration {
+  id?: string | null;
+  branchId?: string | null;
+  name?: string | null;
+  location?: string | null;
+  regionalZone?: string | null;
+  type?: RbacBranchType | null;
+  managerId?: string | null;
+  managerName?: string | null;
+  activeOfficers?: number | null;
+  activeLoans?: number | null;
+  totalExposure?: string | number | null;
+  collectionRate?: number | null;
+  status?: RbacBranchStatus | null;
+  statusLabel?: string | null;
+}
+
 export interface RbacBranch extends NormalizedEntity {
   name: string;
   code?: string | null;
   location?: string | null;
+  addressLabel?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  regionalZone?: string | null;
+  type?: RbacBranchType | null;
   isHeadOffice?: boolean | null;
   managerId?: string | null;
   manager?: RbacBranchManager | null;
+  managerName?: string | null;
+  activeOfficers?: number | null;
+  activeLoans?: number | null;
+  totalExposure?: string | number | null;
+  collectionRate?: number | null;
+  statusLabel?: string | null;
   parentBranchId?: string | null;
   status?: RbacBranchStatus | null;
 }
@@ -227,9 +264,25 @@ export interface CreatePermissionPayload {
 
 export interface CreateBranchPayload {
   name: string;
+  code?: string;
   location?: string;
+  addressLabel?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  regionalZone?: string;
+  type?: RbacBranchType;
+  status?: RbacBranchStatus;
+  parentBranchId?: string;
+  isHeadOffice?: boolean;
+  managerId?: string;
   isActive?: boolean;
+  isDeleted?: boolean;
 }
+
+export type UpdateBranchPayload = Partial<CreateBranchPayload>;
 
 export interface AssignRolePermissionsPayload {
   permissionIds: string[];
