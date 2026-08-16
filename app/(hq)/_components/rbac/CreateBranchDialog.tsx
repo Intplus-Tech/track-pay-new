@@ -20,7 +20,7 @@ type CreateBranchValues = z.infer<typeof createBranchSchema>;
 interface CreateBranchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated?: () => Promise<void> | void;
+  onCreated?: (response?: any) => Promise<void> | void;
 }
 
 export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBranchDialogProps) {
@@ -32,12 +32,12 @@ export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBran
 
   async function handleCreateBranch(values: CreateBranchValues) {
     try {
-      await createBranchMutation.mutateAsync({
+      const response = await createBranchMutation.mutateAsync({
         name: values.name,
         location: values.location || undefined,
         isActive: true,
       });
-      await onCreated?.();
+      await onCreated?.(response);
       toast.success("Branch created.");
       form.reset();
       onOpenChange(false);

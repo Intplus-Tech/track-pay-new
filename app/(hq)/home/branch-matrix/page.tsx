@@ -1,15 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Building2, CheckCircle2, Landmark, MapPin, Search, UserRound, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { InlineMessage } from "@/app/(hq)/_components/rbac/shared";
-import { AddBranchManagerDialog } from "@/app/(hq)/_components/rbac/AddBranchManagerDialog";
-import { BranchDetailsDialog } from "@/app/(hq)/_components/rbac/BranchDetailsDialog";
 import { CreateBranchDialog } from "@/app/(hq)/_components/rbac/CreateBranchDialog";
-import { useBranchConfigurationQuery } from "@/hooks/rbac/useBranchConfigurationQuery";
 import { useBranchesQuery } from "@/hooks/rbac/useBranchesQuery";
 import type { RbacBranch } from "@/types/rbac";
 
@@ -68,52 +66,10 @@ function StatusBadge({ status }: { status: "ACTIVE" | "PENDING_ACTIVATION" | "SU
 }
 
 const BranchMatrixPage = () => {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [selectedBranch, setSelectedBranch] = useState<RbacBranch | null>(null);
-  const [managerBranch, setManagerBranch] = useState<RbacBranch | null>(null);
   const { data: branches = [], isLoading, isError, refetch } = useBranchesQuery();
-  const { data: branchConfiguration = [] } = useBranchConfigurationQuery();
-
-  const selectedBranchDetails = useMemo(() => {
-    if (!selectedBranch) {
-      return null;
-    }
-
-    const branchConfigMatch = branchConfiguration.find((item) => {
-      const configRecord = item as Record<string, unknown>;
-      const configBranchId = typeof configRecord.branchId === "string" ? configRecord.branchId : undefined;
-      const configId = typeof configRecord.id === "string" ? configRecord.id : undefined;
-      return Boolean(
-        (configBranchId && (configBranchId === selectedBranch.id || configBranchId === selectedBranch._id)) ||
-        (configId && (configId === selectedBranch.id || configId === selectedBranch._id)),
-      );
-    });
-
-    if (!branchConfigMatch) {
-      return selectedBranch;
-    }
-
-    const configRecord = branchConfigMatch as Record<string, unknown>;
-
-    return {
-      ...selectedBranch,
-      location: typeof configRecord.location === "string" ? configRecord.location : selectedBranch.location,
-      regionalZone: typeof configRecord.regionalZone === "string" ? configRecord.regionalZone : selectedBranch.regionalZone,
-      managerId: typeof configRecord.managerId === "string" ? configRecord.managerId : selectedBranch.managerId,
-      managerName: typeof configRecord.managerName === "string" ? configRecord.managerName : selectedBranch.managerName,
-      activeOfficers: typeof configRecord.activeOfficers === "number" ? configRecord.activeOfficers : selectedBranch.activeOfficers,
-      activeLoans: typeof configRecord.activeLoans === "number" ? configRecord.activeLoans : selectedBranch.activeLoans,
-      totalExposure:
-        typeof configRecord.totalExposure === "string" || typeof configRecord.totalExposure === "number"
-          ? configRecord.totalExposure
-          : selectedBranch.totalExposure,
-      collectionRate:
-        typeof configRecord.collectionRate === "number" ? configRecord.collectionRate : selectedBranch.collectionRate,
-      status: typeof configRecord.status === "string" ? (configRecord.status as RbacBranch["status"]) : selectedBranch.status,
-      statusLabel: typeof configRecord.statusLabel === "string" ? configRecord.statusLabel : selectedBranch.statusLabel,
-    } satisfies RbacBranch;
-  }, [branchConfiguration, selectedBranch]);
 
   const filteredBranches = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -225,7 +181,7 @@ const BranchMatrixPage = () => {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-[11px] text-blue-700 hover:bg-blue-50 hover:text-blue-800"
-                      onClick={() => setSelectedBranch(branch)}
+                      onClick={() => router.push(`/home/branch-matrix/${branch.id || branch._id}`)}
                     >
                       View details
                     </Button>
@@ -246,29 +202,6 @@ const BranchMatrixPage = () => {
       <CreateBranchDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        onCreated={async () => {
-          await refetch();
-        }}
-      />
-      <BranchDetailsDialog
-        branch={selectedBranchDetails}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSelectedBranch(null);
-          }
-        }}
-        onAddManager={(branch) => {
-          setSelectedBranch(null);
-          setManagerBranch(branch);
-        }}
-      />
-      <AddBranchManagerDialog
-        branch={managerBranch}
-        onOpenChange={(open) => {
-          if (!open) {
-            setManagerBranch(null);
-          }
-        }}
         onCreated={async () => {
           await refetch();
         }}

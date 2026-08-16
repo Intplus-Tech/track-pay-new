@@ -279,7 +279,6 @@ export interface CreateBranchPayload {
   isHeadOffice?: boolean;
   managerId?: string;
   isActive?: boolean;
-  isDeleted?: boolean;
 }
 
 export type UpdateBranchPayload = Partial<CreateBranchPayload>;

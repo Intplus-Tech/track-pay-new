@@ -372,7 +372,6 @@ export function sanitizeCreateBranchPayload(
     isHeadOffice: typeof payload.isHeadOffice === "boolean" ? payload.isHeadOffice : undefined,
     managerId: normalizeOptionalString(payload.managerId),
     isActive: typeof payload.isActive === "boolean" ? payload.isActive : true,
-    isDeleted: typeof payload.isDeleted === "boolean" ? payload.isDeleted : false,
   };
 }
 
