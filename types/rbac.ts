@@ -88,6 +88,22 @@ export interface RbacBranch extends NormalizedEntity {
   status?: RbacBranchStatus | null;
 }
 
+export type RbacBranchTransactionType = "REPAYMENT" | "DISBURSEMENT" | "FEE_PAYMENT";
+export type RbacBranchTransactionStatus = "COMPLETED" | "PENDING";
+
+export interface RbacBranchTransaction {
+  id: string;
+  timestamp: string;
+  type: RbacBranchTransactionType;
+  typeLabel?: string | null;
+  loaneeName?: string | null;
+  loanId?: string | null;
+  portfolioId?: string | null;
+  amount?: string | number | null;
+  status?: RbacBranchTransactionStatus | null;
+  statusLabel?: string | null;
+}
+
 export interface RbacUserRoleSummary {
   id: string;
   name: string;

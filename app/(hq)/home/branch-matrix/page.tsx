@@ -26,20 +26,47 @@ function getManagerName(branch: RbacBranch) {
   return personalName || branch.managerId || "Unassigned";
 }
 
+/**
+ * Normalises a raw location string from the backend:
+ * – Adds a space after every comma that isn't already followed by one.
+ * – Converts the result to Title Case, handling camelCase boundaries
+ *   (e.g. "Lagos MainLand" → "Lagos Mainland").
+ */
+function formatLocationString(raw: string): string {
+  // Insert space after commas where missing
+  const spaced = raw.replace(/,(?!\s)/g, ", ");
+  // Split on camelCase boundaries so "MainLand" → "Main Land"
+  const separated = spaced.replace(/([a-z])([A-Z])/g, "$1 $2");
+  // Title-case each word
+  return separated
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
 function getBranchLocation(branch: RbacBranch) {
   const segments = [branch.addressLabel, branch.city, branch.state, branch.country]
     .filter((value): value is string => Boolean(value?.trim()))
-    .map((value) => value.trim());
+    .map((value) => formatLocationString(value.trim()));
 
   if (segments.length > 0) {
     return segments.join(", ");
   }
 
-  return branch.location || "Location unavailable";
+  const fallback = branch.location;
+  return fallback ? formatLocationString(fallback) : "Location unavailable";
 }
 
 function getBranchTypeLabel(branch: RbacBranch) {
-  return branch.type ? branch.type.replace("_", " ") : "Not specified";
+  return branch.type ? branch.type.replace(/_/g, " ") : null;
+}
+
+/** Returns value if it is a non-empty, meaningful string; otherwise "—". */
+function nullish(value: string | null | undefined): string {
+  if (!value) return "\u2014";
+  const trimmed = value.trim();
+  if (trimmed === "" || trimmed === "Not specified" || trimmed === "N/A") return "\u2014";
+  return trimmed;
 }
 
 function getBranchStatus(branch: RbacBranch) {
@@ -48,10 +75,10 @@ function getBranchStatus(branch: RbacBranch) {
 
 function StatusBadge({ status }: { status: "ACTIVE" | "PENDING_ACTIVATION" | "SUSPENDED" | "CLOSED" }) {
   const statusMeta = {
-    ACTIVE: { label: "Active", icon: CheckCircle2, className: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-    PENDING_ACTIVATION: { label: "Pending activation", icon: XCircle, className: "border-amber-200 bg-amber-50 text-amber-700" },
-    SUSPENDED: { label: "Suspended", icon: XCircle, className: "border-orange-200 bg-orange-50 text-orange-700" },
-    CLOSED: { label: "Closed", icon: XCircle, className: "border-slate-200 bg-slate-100 text-slate-600" },
+    ACTIVE: { label: "Active", icon: CheckCircle2, className: "border-primary/30 bg-primary/10 text-primary" },
+    PENDING_ACTIVATION: { label: "Pending activation", icon: XCircle, className: "border-destructive/30 bg-destructive/10 text-destructive" },
+    SUSPENDED: { label: "Suspended", icon: XCircle, className: "border-destructive/20 bg-destructive/10 text-destructive" },
+    CLOSED: { label: "Closed", icon: XCircle, className: "border-border bg-muted text-muted-foreground" },
   } satisfies Record<string, { label: string; icon: typeof CheckCircle2; className: string }>;
 
   const meta = statusMeta[status] ?? statusMeta.CLOSED;
@@ -85,33 +112,26 @@ const BranchMatrixPage = () => {
   }, [branches, search]);
 
   return (
-    <section className="min-h-full space-y-5 bg-[#f7f9fd] -m-6 p-4 sm:p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-950">Branch Matrix</h1>
-          <p className="mt-1 text-sm text-slate-500">Manage your institution&apos;s branch network.</p>
-        </div>
-        <Button
-          type="button"
-          onClick={() => setCreateDialogOpen(true)}
-          className="hidden h-10 rounded-lg bg-[#075ee8] px-4 text-xs font-semibold text-white shadow-sm hover:bg-[#0452cc] sm:inline-flex"
-        >
-          <Building2 className="size-4" />
-          Create New Branch
-        </Button>
-      </div>
-
-      <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
-        <div className="relative max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+    <section className="min-h-full space-y-5 -m-6 p-4 sm:p-6">
+      <p className="text-sm text-muted-foreground">Manage your institution&apos;s branch network.</p>
+      <div className="flex items-center justify-between bg-background p-4 rounded-md border">
+        <div className="relative flex gap-2 items-center w-1/2">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search name, state..."
             aria-label="Search branches"
-            className="h-10 rounded-lg border-slate-200 pl-10 text-xs"
+            className="pl-9"
           />
         </div>
+        <Button
+          type="button"
+          onClick={() => setCreateDialogOpen(true)}
+        >
+          <Building2 />
+          Create New Branch
+        </Button>
       </div>
 
       {isLoading ? (
@@ -123,21 +143,21 @@ const BranchMatrixPage = () => {
       ) : filteredBranches.length === 0 ? (
         <InlineMessage tone="info" message={`No branches match “${search}”.`} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3  xl:grid-cols-3">
           {filteredBranches.map((branch) => {
             const status = getBranchStatus(branch);
             return (
               <article
                 key={branch.id || branch._id || branch.name}
-                className="flex min-h-[230px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                className="flex min-h-[230px] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-4">
+                <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-5">
                   <div className="min-w-0">
-                    <h2 className="truncate text-sm font-bold uppercase text-slate-950">{branch.name}</h2>
-                    <p className="mt-1 truncate text-xs text-slate-500">{branch.code || "No branch code"}</p>
+                    <h2 className="truncate text-sm font-bold uppercase text-card-foreground">{branch.name}</h2>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">{branch.code || "No branch code"}</p>
                   </div>
                   {branch.isHeadOffice ? (
-                    <Badge variant="outline" className="border-blue-200 bg-blue-50 text-[10px] text-blue-700">
+                    <Badge variant="outline" className="border-primary/30 bg-primary/10 text-[10px] text-primary">
                       <Landmark />
                       Head office
                     </Badge>
@@ -145,42 +165,42 @@ const BranchMatrixPage = () => {
                 </div>
 
                 <div className="flex flex-1 flex-col justify-between gap-4 px-4 py-4">
-                  <div className="space-y-3 text-xs text-slate-600">
+                  <div className="space-y-3 text-xs">
                     <div className="flex items-start gap-2">
-                      <MapPin className="mt-0.5 size-3.5 shrink-0 text-slate-400" />
+                      <MapPin className="mt-0.5 size-3.5 shrink-0" />
                       <span className="line-clamp-2">{getBranchLocation(branch)}</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <UserRound className="mt-0.5 size-3.5 shrink-0 text-slate-400" />
+                      <UserRound className="mt-0.5 size-3.5 shrink-0" />
                       <span className="line-clamp-2">{getManagerName(branch)}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-slate-500">
+                    <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-muted-foreground">
                       <div>
-                        <div className="font-medium text-slate-400">Type</div>
-                        <div>{getBranchTypeLabel(branch)}</div>
+                        <div className="font-medium">Type</div>
+                        <div>{nullish(getBranchTypeLabel(branch))}</div>
                       </div>
                       <div>
-                        <div className="font-medium text-slate-400">Region</div>
-                        <div>{branch.regionalZone || "Not specified"}</div>
+                        <div className="font-medium">Region</div>
+                        <div>{nullish(branch.regionalZone)}</div>
                       </div>
                       <div>
-                        <div className="font-medium text-slate-400">Country</div>
-                        <div>{branch.country || "Not specified"}</div>
+                        <div className="font-medium">Country</div>
+                        <div>{nullish(branch.country)}</div>
                       </div>
                       <div>
-                        <div className="font-medium text-slate-400">Parent</div>
-                        <div>{branch.parentBranchId || "N/A"}</div>
+                        <div className="font-medium">Parent</div>
+                        <div>{nullish(branch.parentBranchId)}</div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                  <div className="flex items-center justify-between border-t border-border pt-3">
                     <StatusBadge status={status} />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-[11px] text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+                      className="h-7 px-2 text-[11px] text-primary hover:bg-primary/10 hover:text-primary"
                       onClick={() => router.push(`/home/branch-matrix/${branch.id || branch._id}`)}
                     >
                       View details
@@ -194,7 +214,7 @@ const BranchMatrixPage = () => {
       )}
 
       {!isLoading && !isError && filteredBranches.length > 0 ? (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Showing {filteredBranches.length} of {branches.length} {branches.length === 1 ? "branch" : "branches"}
         </p>
       ) : null}

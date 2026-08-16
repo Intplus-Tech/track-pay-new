@@ -105,7 +105,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+      <section className="rounded-2xl border bg bg-background p-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
         <form
           className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5"
           onSubmit={(event) => {

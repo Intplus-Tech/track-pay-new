@@ -32,11 +32,11 @@ const createBranchSchema = z.object({
   state: z.string().trim().optional(),
   country: z.string().trim().optional(),
   regionalZone: z.string().trim().optional(),
-  type: z.enum(["PHYSICAL", "VIRTUAL"]).default("PHYSICAL"),
-  status: z.enum(["ACTIVE", "PENDING_ACTIVATION", "SUSPENDED", "CLOSED"]).default("ACTIVE"),
+  type: z.enum(["PHYSICAL", "VIRTUAL"]),
+  status: z.enum(["ACTIVE", "PENDING_ACTIVATION", "SUSPENDED", "CLOSED"]),
   parentBranchId: z.string().trim().optional(),
-  isHeadOffice: z.boolean().default(false),
-  isActive: z.boolean().default(true),
+  isHeadOffice: z.boolean(),
+  isActive: z.boolean(),
 });
 
 type CreateBranchValues = z.infer<typeof createBranchSchema>;

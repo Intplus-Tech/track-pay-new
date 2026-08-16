@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Bell, Search, Settings } from "lucide-react";
+import { ArrowLeft, Bell, Search, Settings } from "lucide-react";
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { DashboardSession } from "@/lib/session";
@@ -47,15 +47,21 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
     "/home/tracker": "Loan Ledger",
   };
 
+  const isBranchDetail =
+    /^\/home\/branch-matrix\/[^/]+$/.test(pathname);
+
   const title =
     routeTitles[pathname] ??
     (pathname.startsWith("/home/user-management/") ? "User Detail" : null) ??
-    pathname
-      .split("/")
-      .filter(Boolean)
-      .pop()
-      ?.replace(/-/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase()) ??
+    (isBranchDetail ? "Branch Detail" : null) ??
+    (!isBranchDetail
+      ? pathname
+          .split("/")
+          .filter(Boolean)
+          .pop()
+          ?.replace(/-/g, " ")
+          .replace(/\b\w/g, (char) => char.toUpperCase()) ?? "Dashboard"
+      : null) ??
     "Dashboard";
 
   async function handleLogout() {
@@ -89,32 +95,51 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-slate-100/85 px-6 py-3 backdrop-blur-sm">
+    <header className="sticky top-0 z-20 border-b border-border bg-sidebar px-6 py-3 backdrop-blur-sm">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-[2rem] font-semibold leading-none tracking-[-0.03em] text-slate-900">
-          {title}
-        </h1>
+        {isBranchDetail ? (
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => router.push("/home/branch-matrix")}
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              aria-label="Back to Branch Matrix"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs text-muted-foreground leading-none">Branch Matrix</span>
+              <h1 className="text-base font-semibold leading-tight tracking-tight text-foreground truncate">
+                Branch Details
+              </h1>
+            </div>
+          </div>
+        ) : (
+          <h1 className="text-[2rem] font-semibold leading-none tracking-[-0.03em] text-foreground">
+            {title}
+          </h1>
+        )}
         <div className="flex items-center gap-3">
           <label className="relative hidden w-[320px] md:block">
             <Search
               size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               placeholder="Search portfolio..."
-              className="h-9 rounded-full border-slate-300 bg-white pl-9 text-sm shadow-none placeholder:text-slate-400"
+              className="h-9 rounded-full pl-9 text-sm shadow-none"
             />
           </label>
           <button
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
+            className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             aria-label="Notifications"
           >
             <Bell size={18} />
           </button>
           <Link
             href="/home/settings"
-            className="inline-flex size-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
+            className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             aria-label="Settings"
             title="Settings"
           >

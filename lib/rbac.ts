@@ -8,6 +8,7 @@ import {
   type RbacBranch,
   type RbacBranchManager,
   type RbacBranchStatus,
+  type RbacBranchType,
   type RbacModuleName,
   type RbacModulePermission,
   type RbacPaginationResponse,

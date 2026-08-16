@@ -66,22 +66,28 @@ export function BranchConfiguration() {
                       ? branchRecord.city
                       : "Not available";
                 const managerValue = branchRecord.manager;
-                const managerName =
-                  typeof managerValue === "string"
-                    ? managerValue
-                    : managerValue && typeof managerValue === "object"
-                      ? (
-                        (managerValue as Record<string, unknown>).fullName ||
-                        [
-                          (managerValue as Record<string, unknown>).firstName,
-                          (managerValue as Record<string, unknown>).middleName,
-                          (managerValue as Record<string, unknown>).lastName,
-                        ]
-                          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-                          .join(" ") ||
-                        "Unassigned"
-                      )
-                      : "Unassigned";
+                const managerName = (() => {
+                  if (typeof managerValue === "string") {
+                    return managerValue;
+                  }
+
+                  if (managerValue && typeof managerValue === "object") {
+                    const managerRecord = managerValue as Record<string, unknown>;
+                    const fullName =
+                      typeof managerRecord.fullName === "string" ? managerRecord.fullName.trim() : "";
+                    const firstName =
+                      typeof managerRecord.firstName === "string" ? managerRecord.firstName.trim() : "";
+                    const middleName =
+                      typeof managerRecord.middleName === "string" ? managerRecord.middleName.trim() : "";
+                    const lastName =
+                      typeof managerRecord.lastName === "string" ? managerRecord.lastName.trim() : "";
+
+                    const assembledName = [firstName, middleName, lastName].filter(Boolean).join(" ");
+                    return fullName || assembledName || "Unassigned";
+                  }
+
+                  return "Unassigned";
+                })();
                 const activeLoans = typeof branchRecord.activeLoans === "number" ? branchRecord.activeLoans : 0;
                 const status = normalizeBranchConfigStatus(branchRecord.status ?? branchRecord.branchStatus);
                 const type = normalizeBranchConfigStatus(branchRecord.type);

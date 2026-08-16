@@ -204,19 +204,20 @@ export function AppSidebar({
       <SidebarFooter className="px-3 pb-4 pt-0">
         <div className="relative overflow-hidden rounded-[1.35rem] bg-[linear-gradient(135deg,#1837dd_0%,#0f2cc7_52%,#102dbf_100%)] p-4 text-white shadow-[0_18px_40px_rgba(16,45,191,0.28)]">
           <div className="pointer-events-none absolute inset-0 opacity-45 [background-image:radial-gradient(circle_at_100%_100%,rgba(255,255,255,0.28)_0,rgba(255,255,255,0.12)_24%,transparent_25%),radial-gradient(circle_at_85%_90%,rgba(255,255,255,0.18)_0,rgba(255,255,255,0.1)_14%,transparent_15%),radial-gradient(circle_at_70%_100%,rgba(255,255,255,0.18)_0,rgba(255,255,255,0.08)_18%,transparent_19%)]" />
-          <div className="relative flex items-start gap-3">
+          <div className="relative flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
               <Logo width={22} height={22} priority />
             </div>
-            <div className="min-w-0">
-              <div className="text-[1.15rem] font-semibold leading-none tracking-[-0.03em]">
-                {footerLabel}
-              </div>
-              <p className="mt-2 max-w-[8.5rem] text-[0.82rem] leading-5 text-white/92">
-                Micro Investment Support Services
-              </p>
-              <p className="mt-1 text-[0.72rem] text-white/72">www.misleasing.com</p>
+            <div className="text-[1.15rem] font-semibold leading-none tracking-[-0.03em]">
+              {footerLabel}
             </div>
+
+          </div>
+          <div className="min-w-0">
+            <p className="mt-2 max-w-[8.5rem] text-[0.82rem] leading-5 text-white/92">
+              Micro Investment Support Services
+            </p>
+            <p className="mt-1 text-[0.72rem] text-white/72">www.misleasing.com</p>
           </div>
         </div>
       </SidebarFooter>
