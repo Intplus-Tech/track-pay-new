@@ -11,5 +11,5 @@ export const STATUS_META: Record<RbacBranchStatus, { label: string; className: s
   ACTIVE: { label: "Active", className: "border-emerald-200 bg-emerald-50 text-emerald-700" },
   PENDING_ACTIVATION: { label: "Pending activation", className: "border-amber-200 bg-amber-50 text-amber-700" },
   SUSPENDED: { label: "Suspended", className: "border-orange-200 bg-orange-50 text-orange-700" },
-  CLOSED: { label: "Closed", className: "border-slate-200 bg-slate-100 text-slate-600" },
+  CLOSED: { label: "Closed", className: "border-border bg-muted text-muted-foreground" },
 };

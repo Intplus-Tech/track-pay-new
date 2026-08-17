@@ -22,9 +22,9 @@ export function UserManagementFilters({
   onReset,
 }: UserManagementFiltersProps) {
   return (
-    <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 rounded-2xl border border-border bg-muted p-4 md:grid-cols-2 xl:grid-cols-4">
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Name</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Name</p>
         <Input
           value={pendingQuery.name}
           placeholder="Filter by name"
@@ -37,7 +37,7 @@ export function UserManagementFilters({
         />
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Email</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email</p>
         <Input
           value={pendingQuery.email}
           placeholder="Filter by email"
@@ -50,7 +50,7 @@ export function UserManagementFilters({
         />
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Role</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Role</p>
         <Select
           value={pendingQuery.roleId}
           onValueChange={(value) =>
@@ -63,7 +63,7 @@ export function UserManagementFilters({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="All roles" />
           </SelectTrigger>
-          <SelectContent className="bg-white">
+          <SelectContent className="bg-card">
             <SelectItem value="all">All roles</SelectItem>
             {roles.map((role) => (
               <SelectItem key={role.id} value={role.id}>
@@ -74,7 +74,7 @@ export function UserManagementFilters({
         </Select>
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Branch</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Branch</p>
         <Select
           value={pendingQuery.branchId}
           onValueChange={(value) =>
@@ -87,7 +87,7 @@ export function UserManagementFilters({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="All branches" />
           </SelectTrigger>
-          <SelectContent className="bg-white">
+          <SelectContent className="bg-card">
             <SelectItem value="all">All branches</SelectItem>
             {branches.map((branch) => (
               <SelectItem key={branch.id} value={branch.id}>
@@ -98,7 +98,7 @@ export function UserManagementFilters({
         </Select>
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Active</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Active</p>
         <Select
           value={pendingQuery.isActive}
           onValueChange={(value: "all" | "true" | "false") =>
@@ -111,7 +111,7 @@ export function UserManagementFilters({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Any" />
           </SelectTrigger>
-          <SelectContent className="bg-white">
+          <SelectContent className="bg-card">
             <SelectItem value="all">Any</SelectItem>
             <SelectItem value="true">Active only</SelectItem>
             <SelectItem value="false">Inactive only</SelectItem>
@@ -119,7 +119,7 @@ export function UserManagementFilters({
         </Select>
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Deleted</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Deleted</p>
         <Select
           value={pendingQuery.isDeleted}
           onValueChange={(value: "all" | "true" | "false") =>
@@ -132,7 +132,7 @@ export function UserManagementFilters({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Any" />
           </SelectTrigger>
-          <SelectContent className="bg-white">
+          <SelectContent className="bg-card">
             <SelectItem value="all">Any</SelectItem>
             <SelectItem value="false">Not deleted</SelectItem>
             <SelectItem value="true">Deleted only</SelectItem>
@@ -140,7 +140,7 @@ export function UserManagementFilters({
         </Select>
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Sort order</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Sort order</p>
         <Select
           value={pendingQuery.order}
           onValueChange={(value: "ASC" | "DESC") =>
@@ -153,14 +153,14 @@ export function UserManagementFilters({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="ASC" />
           </SelectTrigger>
-          <SelectContent className="bg-white">
+          <SelectContent className="bg-card">
             <SelectItem value="ASC">Ascending</SelectItem>
             <SelectItem value="DESC">Descending</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Page size</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Page size</p>
         <Select
           value={String(pendingQuery.limit)}
           onValueChange={(value) =>
@@ -173,7 +173,7 @@ export function UserManagementFilters({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="20" />
           </SelectTrigger>
-          <SelectContent className="bg-white">
+          <SelectContent className="bg-card">
             <SelectItem value="10">10</SelectItem>
             <SelectItem value="20">20</SelectItem>
             <SelectItem value="50">50</SelectItem>

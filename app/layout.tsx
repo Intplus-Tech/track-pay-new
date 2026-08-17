@@ -32,7 +32,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", inter.variable, nunitoSansHeading.variable)}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F4F7FE]`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-surface-tint`}
       >
         <Providers>
           {children}

@@ -107,12 +107,12 @@ export function EditProfileModal({ profile }: { profile: any }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-auto bg-white hover:bg-slate-50">
+        <Button variant="outline" size="sm" className="ml-auto bg-card hover:bg-muted">
           <Edit2 className="w-4 h-4 mr-2" />
           Edit
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent className="sm:max-w-[425px] bg-card">
         <DialogHeader>
           <DialogTitle>Edit Personal Information</DialogTitle>
         </DialogHeader>

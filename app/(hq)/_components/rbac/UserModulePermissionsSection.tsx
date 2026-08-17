@@ -70,13 +70,13 @@ export function UserModulePermissionsSection({ user }: UserModulePermissionsSect
       <div className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-2">
           {modulePermissionSummary(permissionGrid).map(({ option, current }) => (
-            <div key={option.module} className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div key={option.module} className="rounded-2xl border border-border bg-card p-4">
               <div className="space-y-1">
-                <p className="font-semibold text-slate-900">{option.label}</p>
-                <p className="text-sm text-slate-500">{option.description}</p>
+                <p className="font-semibold text-foreground">{option.label}</p>
+                <p className="text-sm text-muted-foreground">{option.description}</p>
               </div>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+                <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-border px-3 py-2">
                   <Switch
                     checked={current.view}
                     onCheckedChange={(checked) =>
@@ -89,9 +89,9 @@ export function UserModulePermissionsSection({ user }: UserModulePermissionsSect
                       }))
                     }
                   />
-                  <span className="whitespace-nowrap text-sm font-medium text-slate-700">View</span>
+                  <span className="whitespace-nowrap text-sm font-medium text-foreground">View</span>
                 </label>
-                <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+                <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-border px-3 py-2">
                   <Switch
                     checked={current.manage}
                     onCheckedChange={(checked) =>
@@ -104,7 +104,7 @@ export function UserModulePermissionsSection({ user }: UserModulePermissionsSect
                       }))
                     }
                   />
-                  <span className="whitespace-nowrap text-sm font-medium text-slate-700">Manage</span>
+                  <span className="whitespace-nowrap text-sm font-medium text-foreground">Manage</span>
                 </label>
               </div>
             </div>

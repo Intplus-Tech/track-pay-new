@@ -35,7 +35,7 @@ const STATUS_OPTIONS: { value: RbacBranchStatus; label: string; description: str
   { value: "ACTIVE", label: "Active", description: "Branch is open and accepting accounts" },
   { value: "PENDING_ACTIVATION", label: "Pending activation", description: "Branch is set up but not yet trading" },
   { value: "SUSPENDED", label: "Suspended", description: "Operations paused; data is preserved" },
-  { value: "CLOSED", label: "Closed", description: "Permanent — branch stops accepting new accounts" },
+  { value: "CLOSED", label: "Closed", description: "Permanent ΓÇö branch stops accepting new accounts" },
 ];
 
 function getManagerName(branch: RbacBranch) {
@@ -128,10 +128,10 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
 
   return (
     <Dialog open={Boolean(branch)} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden bg-white p-0 sm:max-w-2xl">
-        <DialogHeader className="shrink-0 border-b border-slate-200 px-6 py-5">
+      <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden bg-card p-0 sm:max-w-2xl">
+        <DialogHeader className="shrink-0 border-b border-border px-6 py-5">
           <div className="flex items-start gap-3 pr-6">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Building2 className="size-5" />
             </div>
             <div className="min-w-0">
@@ -151,39 +151,39 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
         {branch ? (
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
             <div className="space-y-5">
-              <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:grid-cols-4">
+              <div className="grid gap-3 rounded-xl border border-border bg-card p-3 sm:grid-cols-4">
                 {configCards.map((item) => (
-                  <div key={item.label} className="min-w-0 border-b border-slate-100 px-2 py-2 last:border-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-                    <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">{item.label}</p>
-                    <p className="mt-2 break-words text-lg font-semibold tracking-tight text-slate-900">{item.value}</p>
-                    <p className="mt-1 text-[10px] text-slate-400">Branch performance</p>
+                  <div key={item.label} className="min-w-0 border-b border-border/60 px-2 py-2 last:border-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+                    <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{item.label}</p>
+                    <p className="mt-2 break-words text-lg font-semibold tracking-tight text-foreground">{item.value}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Branch performance</p>
                   </div>
                 ))}
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Location</p>
-                  <p className="mt-2 flex items-start gap-2 text-sm font-medium text-slate-800">
-                    <MapPin className="mt-0.5 size-4 shrink-0 text-slate-400" />
+                <div className="rounded-xl border border-border bg-muted p-4">
+                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Location</p>
+                  <p className="mt-2 flex items-start gap-2 text-sm font-medium text-foreground">
+                    <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                     {getBranchAddress(branch)}
                   </p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Branch type</p>
-                  <p className="mt-2 flex items-center gap-2 text-sm font-medium text-slate-800">
-                    {branch.isHeadOffice ? <Landmark className="size-4 text-blue-600" /> : <Building2 className="size-4 text-slate-400" />}
+                <div className="rounded-xl border border-border bg-muted p-4">
+                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Branch type</p>
+                  <p className="mt-2 flex items-center gap-2 text-sm font-medium text-foreground">
+                    {branch.isHeadOffice ? <Landmark className="size-4 text-primary" /> : <Building2 className="size-4 text-muted-foreground" />}
                     {branch.type ? branch.type.replace("_", " ") : branch.isHeadOffice ? "Head office" : "Branch"}
                   </p>
                 </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 p-4 text-sm sm:col-span-2">
+                <div className="rounded-xl border border-border p-4 text-sm sm:col-span-2">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Status</p>
-                      <p className="mt-2 font-medium text-slate-800">{branch.statusLabel || branch.status || "ACTIVE"}</p>
+                      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Status</p>
+                      <p className="mt-2 font-medium text-foreground">{branch.statusLabel || branch.status || "ACTIVE"}</p>
                     </div>
                     <AlertDialog open={statusDialogOpen} onOpenChange={(open) => { setStatusDialogOpen(open); if (!open) { setPendingStatus(""); setStatusReason(""); } }}>
                       <AlertDialogTrigger asChild>
@@ -205,18 +205,18 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
                               <SelectTrigger id="branch-status-select">
                                 <SelectValue placeholder="Select a status" />
                               </SelectTrigger>
-                              <SelectContent className="bg-white">
+                              <SelectContent className="bg-card">
                                 {STATUS_OPTIONS.filter((o) => o.value !== branch.status).map((opt) => (
                                   <SelectItem key={opt.value} value={opt.value}>
                                     <span className="font-medium">{opt.label}</span>
-                                    <span className="ml-2 text-xs text-slate-400">{opt.description}</span>
+                                    <span className="ml-2 text-xs text-muted-foreground">{opt.description}</span>
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="branch-status-reason">Reason <span className="text-slate-400">(optional)</span></Label>
+                            <Label htmlFor="branch-status-reason">Reason <span className="text-muted-foreground">(optional)</span></Label>
                             <Input
                               id="branch-status-reason"
                               placeholder="e.g. Consolidating operations into Lagos Mainland"
@@ -225,7 +225,7 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
                             />
                           </div>
                           {statusMutation.isError ? (
-                            <p className="text-sm text-red-600">{statusMutation.error.message}</p>
+                            <p className="text-sm text-destructive">{statusMutation.error.message}</p>
                           ) : null}
                         </div>
                         <AlertDialogFooter>
@@ -253,34 +253,34 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
                     </AlertDialog>
                   </div>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 text-sm">
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Regional zone</p>
-                  <p className="mt-2 font-medium text-slate-800">{branch.regionalZone || "Not specified"}</p>
+                <div className="rounded-xl border border-border p-4 text-sm">
+                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Regional zone</p>
+                  <p className="mt-2 font-medium text-foreground">{branch.regionalZone || "Not specified"}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 text-sm">
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">City</p>
-                  <p className="mt-2 font-medium text-slate-800">{branch.city || "Not specified"}</p>
+                <div className="rounded-xl border border-border p-4 text-sm">
+                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">City</p>
+                  <p className="mt-2 font-medium text-foreground">{branch.city || "Not specified"}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 text-sm">
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Country</p>
-                  <p className="mt-2 font-medium text-slate-800">{branch.country || "Not specified"}</p>
+                <div className="rounded-xl border border-border p-4 text-sm">
+                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Country</p>
+                  <p className="mt-2 font-medium text-foreground">{branch.country || "Not specified"}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 text-sm sm:col-span-2">
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Parent branch</p>
-                  <p className="mt-2 font-medium text-slate-800">{branch.parentBranchId || "Not assigned"}</p>
+                <div className="rounded-xl border border-border p-4 text-sm sm:col-span-2">
+                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Parent branch</p>
+                  <p className="mt-2 font-medium text-foreground">{branch.parentBranchId || "Not assigned"}</p>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 p-4">
+              <div className="rounded-xl border border-border p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Branch manager</p>
-                    <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      <UserRound className="size-4 text-slate-400" />
+                    <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Branch manager</p>
+                    <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <UserRound className="size-4 text-muted-foreground" />
                       {managerName}
                     </p>
                     {branch.manager?.email ? (
-                      <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                      <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                         <Mail className="size-3.5" />
                         {branch.manager.email}
                       </p>
@@ -293,7 +293,7 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
                     {hasManager ? (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-600 hover:bg-red-50 hover:text-red-700">
+                          <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive">
                             Unassign
                           </Button>
                         </AlertDialogTrigger>
@@ -330,7 +330,7 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
                 {!hasManager ? (
                   <Button
                     type="button"
-                    className="mt-4 w-full bg-[#075ee8] hover:bg-[#0452cc]"
+                    className="mt-4 w-full bg-brand hover:bg-brand-hover"
                     onClick={() => onAddManager(branch)}
                   >
                     <UserRound className="size-4" />
@@ -343,11 +343,11 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
           </div>
         ) : null}
 
-        <DialogFooter className="shrink-0 border-t border-slate-200 px-6 py-4 sm:justify-between">
+        <DialogFooter className="shrink-0 border-t border-border px-6 py-4 sm:justify-between">
           {branch ? (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button type="button" variant="destructive" className="text-red-600 hover:bg-red-50 hover:text-red-700">
+                <Button type="button" variant="destructive" className="text-destructive hover:bg-destructive/10 hover:text-destructive">
                   <Trash2 className="size-4" />
                   Delete branch
                 </Button>
@@ -360,7 +360,7 @@ export function BranchDetailsDialog({ branch, onOpenChange, onAddManager }: Bran
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 {deleteBranchMutation.isError ? (
-                  <p className="text-sm text-red-600">{deleteBranchMutation.error.message}</p>
+                  <p className="text-sm text-destructive">{deleteBranchMutation.error.message}</p>
                 ) : null}
                 <AlertDialogFooter>
                   <AlertDialogCancel disabled={deleteBranchMutation.isPending}>Cancel</AlertDialogCancel>

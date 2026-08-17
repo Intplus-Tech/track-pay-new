@@ -115,7 +115,7 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
             </div>
           </div>
         ) : (
-          <h1 className="text-[2rem] font-semibold leading-none tracking-[-0.03em] text-foreground">
+          <h1 className="text-3xl font-semibold leading-none tracking-tight text-foreground">
             {title}
           </h1>
         )}

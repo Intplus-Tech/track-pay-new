@@ -66,7 +66,7 @@ export default function BranchDetailPage({ branchId }: { branchId: string }) {
 
   return (
     <>
-      <div className="min-h-full bg-[#f7f9fd] -m-6 p-4 sm:p-6 space-y-4">
+      <div className="min-h-full bg-surface-tint -m-6 p-4 sm:p-6 space-y-4">
         <BranchHeader
           branch={branch}
           onEditClick={() => setEditDialogOpen(true)}

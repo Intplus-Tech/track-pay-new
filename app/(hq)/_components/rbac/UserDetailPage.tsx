@@ -31,9 +31,9 @@ function fieldValue(value: string | number | boolean | null | undefined) {
 
 function fieldCard({ label, value }: { label: string; value: string | number | boolean | null | undefined }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
-      <p className="mt-1 break-words text-sm font-medium text-slate-900">{fieldValue(value)}</p>
+    <div className="rounded-2xl border border-border bg-muted px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="mt-1 break-words text-sm font-medium text-foreground">{fieldValue(value)}</p>
     </div>
   );
 }
@@ -121,7 +121,7 @@ export default function UserDetailPage({ userId }: { userId: string }) {
                 <Badge variant={user.isActive ? "default" : "outline"}>{user.isActive ? "Active" : "Inactive"}</Badge>
                 <Badge variant={user.isDeleted ? "destructive" : "outline"}>{user.isDeleted ? "Deleted" : "Available"}</Badge>
               </div>
-              <div className="break-all text-sm font-normal leading-6 text-slate-600">{user.email}</div>
+              <div className="break-all text-sm font-normal leading-6 text-muted-foreground">{user.email}</div>
             </div>
           </div>
         ) : (
@@ -133,8 +133,8 @@ export default function UserDetailPage({ userId }: { userId: string }) {
           <Button onClick={() => setEditDialogOpen(true)} disabled={!user}>
             Edit profile
           </Button>
-          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
-            <span className="text-sm font-medium text-slate-600">
+          <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
+            <span className="text-sm font-medium text-muted-foreground">
               {activateUserMutation.isPending || deactivateUserMutation.isPending
                 ? "Updating..."
                 : user?.isActive
@@ -199,8 +199,8 @@ export default function UserDetailPage({ userId }: { userId: string }) {
 
           <Section title="Organization" description="Role and branch context.">
             <div className="grid gap-4 lg:grid-cols-2">
-              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">Role</p>
+              <div className="space-y-3 rounded-2xl border border-border bg-muted p-4">
+                <p className="text-sm font-semibold text-foreground">Role</p>
                 <div className="grid gap-3 md:grid-cols-2">
                   {[
                     { key: "roleName", label: "Role name", value: role?.name },
@@ -213,8 +213,8 @@ export default function UserDetailPage({ userId }: { userId: string }) {
                   ))}
                 </div>
               </div>
-              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">Branch</p>
+              <div className="space-y-3 rounded-2xl border border-border bg-muted p-4">
+                <p className="text-sm font-semibold text-foreground">Branch</p>
                 <div className="grid gap-3 md:grid-cols-2">
                   {[
                     { key: "branchName", label: "Branch name", value: branch?.name },
@@ -233,13 +233,13 @@ export default function UserDetailPage({ userId }: { userId: string }) {
             </div>
           </Section>
 
-          <Section title="Role permissions" description="The permissions attached to the user’s role, as returned by the backend.">
+          <Section title="Role permissions" description="The permissions attached to the user's role, as returned by the backend.">
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {(role?.permissions ?? []).map((permission) => (
-                  <div key={permission._id ?? permission.id ?? permission.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="font-semibold text-slate-900">{permission.name}</p>
-                    <p className="mt-2 text-sm text-slate-600">{permission.description ?? "No description"}</p>
+                  <div key={permission._id ?? permission.id ?? permission.name} className="rounded-2xl border border-border bg-muted p-4">
+                    <p className="font-semibold text-foreground">{permission.name}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{permission.description ?? "No description"}</p>
                   </div>
                 ))}
                 {!role?.permissions?.length ? <InlineMessage tone="info" message="No role permissions returned by the backend." /> : null}

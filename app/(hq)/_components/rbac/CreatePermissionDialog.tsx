@@ -47,7 +47,7 @@ export function CreatePermissionDialog({ open, onOpenChange }: CreatePermissionD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl bg-white">
+      <DialogContent className="max-w-xl bg-card">
         <DialogHeader>
           <DialogTitle>Create permission</DialogTitle>
         </DialogHeader>

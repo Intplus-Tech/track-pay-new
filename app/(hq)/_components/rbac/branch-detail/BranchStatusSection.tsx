@@ -42,7 +42,7 @@ export function BranchStatusSection({
     <Section title="Status">
       <div className="space-y-2 py-3">
         <div className="flex items-center justify-between gap-2">
-          <Badge variant="outline" className={`${statusMeta.className} text-[11px]`}>
+          <Badge variant="outline" className={`${statusMeta.className} text-xs`}>
             {branch.statusLabel || statusMeta.label}
           </Badge>
           <AlertDialog
@@ -60,7 +60,7 @@ export function BranchStatusSection({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[11px] text-primary hover:bg-primary/10"
+                className="h-6 px-2 text-xs text-primary hover:bg-primary/10"
               >
                 Change
               </Button>
@@ -82,11 +82,11 @@ export function BranchStatusSection({
                     <SelectTrigger id="branch-status-select">
                       <SelectValue placeholder="Select a status" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-card">
                       {STATUS_OPTIONS.filter((o) => o.value !== branch.status).map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           <span className="font-medium">{opt.label}</span>
-                          <span className="ml-2 text-xs text-slate-400">{opt.description}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">{opt.description}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -94,7 +94,7 @@ export function BranchStatusSection({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="branch-status-reason">
-                    Reason <span className="text-slate-400">(optional)</span>
+                    Reason <span className="text-muted-foreground">(optional)</span>
                   </Label>
                   <Input
                     id="branch-status-reason"
@@ -104,7 +104,7 @@ export function BranchStatusSection({
                   />
                 </div>
                 {statusMutation.isError ? (
-                  <p className="text-sm text-red-600">{statusMutation.error.message}</p>
+                  <p className="text-sm text-destructive">{statusMutation.error.message}</p>
                 ) : null}
               </div>
               <AlertDialogFooter>
@@ -132,7 +132,7 @@ export function BranchStatusSection({
             </AlertDialogContent>
           </AlertDialog>
         </div>
-        <p className="text-[11px] leading-5 text-muted-foreground">
+        <p className="text-xs leading-5 text-muted-foreground">
           {STATUS_OPTIONS.find((o) => o.value === branchStatus)?.description}
         </p>
       </div>

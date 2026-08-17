@@ -24,7 +24,7 @@ interface EditRoleDialogProps {
 
 export function EditRoleDialog({ open, onOpenChange, role, permissions }: EditRoleDialogProps) {
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
-  
+
   const updateRoleMutation = useUpdateRoleMutation();
   const assignPermissionsMutation = useAssignRolePermissionsMutation();
 
@@ -116,8 +116,8 @@ export function EditRoleDialog({ open, onOpenChange, role, permissions }: EditRo
 
             <div className="space-y-3">
               <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-slate-900">Permissions</h3>
-                <p className="text-sm text-slate-500">
+                <h3 className="text-sm font-semibold text-foreground">Permissions</h3>
+                <p className="text-sm text-muted-foreground">
                   Select the permissions that should be attached to this role.
                 </p>
               </div>
@@ -127,7 +127,7 @@ export function EditRoleDialog({ open, onOpenChange, role, permissions }: EditRo
                   return (
                     <label
                       key={permission.id}
-                      className="flex w-full min-w-0 cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 p-4"
+                      className="flex w-full min-w-0 cursor-pointer items-start gap-3 rounded-2xl border border-border p-4"
                     >
                       <Checkbox
                         checked={checked}
@@ -144,10 +144,10 @@ export function EditRoleDialog({ open, onOpenChange, role, permissions }: EditRo
                         }}
                       />
                       <div className="min-w-0 space-y-1">
-                        <div className="break-words text-sm font-medium leading-snug text-slate-900">
+                        <div className="break-words text-sm font-medium leading-snug text-foreground">
                           {permission.name}
                         </div>
-                        <div className="break-words text-sm leading-snug text-slate-500">
+                        <div className="break-words text-sm leading-snug text-muted-foreground">
                           {permission.description || "No description"}
                         </div>
                       </div>

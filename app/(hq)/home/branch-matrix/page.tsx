@@ -28,14 +28,14 @@ function getManagerName(branch: RbacBranch) {
 
 /**
  * Normalises a raw location string from the backend:
- * – Adds a space after every comma that isn't already followed by one.
- * – Converts the result to Title Case, handling camelCase boundaries
- *   (e.g. "Lagos MainLand" → "Lagos Mainland").
+ * - Adds a space after every comma that isn't already followed by one.
+ * - Converts the result to Title Case, handling camelCase boundaries
+ *   (e.g. "Lagos MainLand" -> "Lagos Mainland").
  */
 function formatLocationString(raw: string): string {
   // Insert space after commas where missing
   const spaced = raw.replace(/,(?!\s)/g, ", ");
-  // Split on camelCase boundaries so "MainLand" → "Main Land"
+  // Split on camelCase boundaries so "MainLand" -> "Main Land"
   const separated = spaced.replace(/([a-z])([A-Z])/g, "$1 $2");
   // Title-case each word
   return separated
@@ -61,7 +61,7 @@ function getBranchTypeLabel(branch: RbacBranch) {
   return branch.type ? branch.type.replace(/_/g, " ") : null;
 }
 
-/** Returns value if it is a non-empty, meaningful string; otherwise "—". */
+/** Returns value if it is a non-empty, meaningful string; otherwise "-". */
 function nullish(value: string | null | undefined): string {
   if (!value) return "\u2014";
   const trimmed = value.trim();
@@ -141,7 +141,7 @@ const BranchMatrixPage = () => {
       ) : branches.length === 0 ? (
         <InlineMessage tone="info" message="No branches are available yet." />
       ) : filteredBranches.length === 0 ? (
-        <InlineMessage tone="info" message={`No branches match “${search}”.`} />
+        <InlineMessage tone="info" message={`No branches match "${search}".`} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-3  xl:grid-cols-3">
           {filteredBranches.map((branch) => {
@@ -157,7 +157,7 @@ const BranchMatrixPage = () => {
                     <p className="mt-1 truncate text-xs text-muted-foreground">{branch.code || "No branch code"}</p>
                   </div>
                   {branch.isHeadOffice ? (
-                    <Badge variant="outline" className="border-primary/30 bg-primary/10 text-[10px] text-primary">
+                    <Badge variant="outline" className="border-primary/30 bg-primary/10 text-xs text-primary">
                       <Landmark />
                       Head office
                     </Badge>
@@ -174,7 +174,7 @@ const BranchMatrixPage = () => {
                       <UserRound className="mt-0.5 size-3.5 shrink-0" />
                       <span className="line-clamp-2">{getManagerName(branch)}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-muted-foreground">
+                    <div className="grid grid-cols-2 gap-2 pt-1 text-xs text-muted-foreground">
                       <div>
                         <div className="font-medium">Type</div>
                         <div>{nullish(getBranchTypeLabel(branch))}</div>
@@ -200,7 +200,7 @@ const BranchMatrixPage = () => {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-[11px] text-primary hover:bg-primary/10 hover:text-primary"
+                      className="h-7 px-2 text-xs text-primary hover:bg-primary/10 hover:text-primary"
                       onClick={() => router.push(`/home/branch-matrix/${branch.id || branch._id}`)}
                     >
                       View details

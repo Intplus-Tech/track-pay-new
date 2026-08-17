@@ -140,7 +140,7 @@ export function EditBranchDialog({ open, onOpenChange, branch }: EditBranchDialo
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="bg-white sm:max-w-2xl">
+      <DialogContent className="bg-card sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit branch</DialogTitle>
           <DialogDescription>Update the branch details and operating settings.</DialogDescription>
@@ -248,7 +248,7 @@ export function EditBranchDialog({ open, onOpenChange, branch }: EditBranchDialo
                           <SelectValue placeholder={branchesQuery.isLoading ? "Loading branches..." : "Select a parent branch"} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-card">
                         <SelectItem value="none">No parent branch</SelectItem>
                         {branchOptions.map((candidate) => (
                           <SelectItem key={candidate.id} value={candidate.id}>
@@ -274,7 +274,7 @@ export function EditBranchDialog({ open, onOpenChange, branch }: EditBranchDialo
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-card">
                         {branchTypeOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
@@ -299,7 +299,7 @@ export function EditBranchDialog({ open, onOpenChange, branch }: EditBranchDialo
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-card">
                         {branchStatusOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
@@ -313,7 +313,7 @@ export function EditBranchDialog({ open, onOpenChange, branch }: EditBranchDialo
               />
             </div>
 
-            <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="space-y-3 rounded-lg border border-border bg-muted p-4">
               <FormField
                 control={form.control}
                 name="isHeadOffice"
@@ -324,7 +324,7 @@ export function EditBranchDialog({ open, onOpenChange, branch }: EditBranchDialo
                         type="checkbox"
                         checked={field.value}
                         onChange={field.onChange}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                       />
                     </FormControl>
                     <FormLabel className="font-normal">This is the head office</FormLabel>
@@ -342,7 +342,7 @@ export function EditBranchDialog({ open, onOpenChange, branch }: EditBranchDialo
                         type="checkbox"
                         checked={field.value}
                         onChange={field.onChange}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                       />
                     </FormControl>
                     <FormLabel className="font-normal">Branch is active</FormLabel>

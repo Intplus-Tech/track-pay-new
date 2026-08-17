@@ -128,7 +128,7 @@ export function AddBranchManagerDialog({
         onOpenChange(open);
       }}
     >
-      <DialogContent className="bg-white sm:max-w-lg">
+      <DialogContent className="bg-card sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Assign branch manager</DialogTitle>
           <DialogDescription>
@@ -155,7 +155,7 @@ export function AddBranchManagerDialog({
                         <SelectValue placeholder={usersQuery.isLoading ? "Loading users..." : "Select a user"} />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-card">
                       {eligibleUsers.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.fullName || user.name} · {user.email}
@@ -167,7 +167,7 @@ export function AddBranchManagerDialog({
                 </FormItem>
               )}
             />
-            <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="space-y-3 rounded-lg border border-border bg-muted p-4">
               <FormField
                 control={form.control}
                 name="transferFromCurrentBranch"
@@ -176,7 +176,7 @@ export function AddBranchManagerDialog({
                     <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} /></FormControl>
                     <FormLabel className="font-normal">Transfer the user from their current branch</FormLabel>
                     <Tooltip>
-                      <TooltipTrigger type="button" className="text-slate-400 hover:text-slate-600">
+                      <TooltipTrigger type="button" className="text-muted-foreground hover:text-foreground">
                         <Info className="size-4" />
                       </TooltipTrigger>
                       <TooltipContent>
@@ -194,7 +194,7 @@ export function AddBranchManagerDialog({
                     <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} /></FormControl>
                     <FormLabel className="font-normal">Allow the user to manage multiple branches</FormLabel>
                     <Tooltip>
-                      <TooltipTrigger type="button" className="text-slate-400 hover:text-slate-600">
+                      <TooltipTrigger type="button" className="text-muted-foreground hover:text-foreground">
                         <Info className="size-4" />
                       </TooltipTrigger>
                       <TooltipContent>

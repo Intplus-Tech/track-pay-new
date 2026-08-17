@@ -59,8 +59,8 @@ export default function RoleManagementPage() {
       header: "Role",
       cell: ({ row }) => (
         <div className="space-y-1">
-          <div className="font-medium text-slate-900">{row.original.name}</div>
-          <div className="text-xs text-slate-500">{row.original.description || "No description"}</div>
+          <div className="font-medium text-foreground">{row.original.name}</div>
+          <div className="text-xs text-muted-foreground">{row.original.description || "No description"}</div>
         </div>
       ),
     },

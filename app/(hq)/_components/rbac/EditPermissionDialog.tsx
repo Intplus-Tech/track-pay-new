@@ -58,7 +58,7 @@ export function EditPermissionDialog({ open, onOpenChange, permission }: EditPer
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl bg-white">
+      <DialogContent className="max-w-xl bg-card">
         <DialogHeader>
           <DialogTitle>Edit permission</DialogTitle>
         </DialogHeader>

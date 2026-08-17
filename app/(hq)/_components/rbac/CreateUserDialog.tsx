@@ -249,7 +249,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="max-h-[65vh] space-y-6 overflow-y-auto pr-1">
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Identity</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Identity</p>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <FormField control={form.control} name="firstName" render={({ field }) => (
                     <FormItem>
@@ -314,7 +314,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                             <SelectValue placeholder="Assign a role" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white">
+                        <SelectContent className="bg-card">
                           <SelectItem value="unassigned">No role</SelectItem>
                           {roles.map((role) => (
                             <SelectItem key={role.id} value={role.id}>
@@ -335,7 +335,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                             <SelectValue placeholder="Assign a branch" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white">
+                        <SelectContent className="bg-card">
                           <SelectItem value="unassigned">No branch</SelectItem>
                           {branches.map((branch) => (
                             <SelectItem key={branch.id} value={branch.id}>
@@ -351,7 +351,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Access and assignment</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Access and assignment</p>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 p-10">
 
                   <FormField control={form.control} name="photoUploadId" render={({ field }) => (
@@ -419,10 +419,10 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="isActive" render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 md:col-span-2 xl:col-span-3">
+                    <FormItem className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 md:col-span-2 xl:col-span-3">
                       <div>
                         <FormLabel>Active account</FormLabel>
-                        <p className="text-sm text-slate-500">Inactive users remain in the system but should not authenticate.</p>
+                        <p className="text-sm text-muted-foreground">Inactive users remain in the system but should not authenticate.</p>
                       </div>
                       <FormControl>
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -434,7 +434,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
 
               {isLoanOfficerRole ? (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Capacity targets</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Capacity targets</p>
                   <div className="grid gap-4 md:grid-cols-2">
                     <FormField control={form.control} name="maxAssignedLoans" render={({ field }) => (
                       <FormItem>
@@ -458,14 +458,14 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                 </div>
               ) : null}
 
-              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="space-y-3 rounded-2xl border border-border bg-muted p-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">Direct module permissions</p>
-                    <p className="text-sm text-slate-500">Leave this off to inherit permissions from the selected role. Enable it only when this specific user needs exceptions beyond role-based access.</p>
+                    <p className="text-sm font-semibold text-foreground">Direct module permissions</p>
+                    <p className="text-sm text-muted-foreground">Leave this off to inherit permissions from the selected role. Enable it only when this specific user needs exceptions beyond role-based access.</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-slate-600">Enable overrides</span>
+                    <span className="text-sm text-muted-foreground">Enable overrides</span>
                     <Switch checked={moduleOverridesEnabled} onCheckedChange={setModuleOverridesEnabled} />
                   </div>
                 </div>
@@ -476,25 +476,25 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                       const current = createPermissionGridState[option.module];
 
                       return (
-                        <div key={option.module} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div key={option.module} className="rounded-2xl border border-border bg-card p-4">
                           <div className="space-y-1">
-                            <p className="font-semibold text-slate-900">{option.label}</p>
-                            <p className="text-sm text-slate-500">{option.description}</p>
+                            <p className="font-semibold text-foreground">{option.label}</p>
+                            <p className="text-sm text-muted-foreground">{option.description}</p>
                           </div>
                           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+                            <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-border px-3 py-2">
                               <Switch
                                 checked={current.view}
                                 onCheckedChange={(checked) => updateCreatePermissionValue(option.module, "view", checked)}
                               />
-                              <span className="whitespace-nowrap text-sm font-medium text-slate-700">View</span>
+                              <span className="whitespace-nowrap text-sm font-medium text-foreground">View</span>
                             </label>
-                            <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+                            <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-border px-3 py-2">
                               <Switch
                                 checked={current.manage}
                                 onCheckedChange={(checked) => updateCreatePermissionValue(option.module, "manage", checked)}
                               />
-                              <span className="whitespace-nowrap text-sm font-medium text-slate-700">Manage</span>
+                              <span className="whitespace-nowrap text-sm font-medium text-foreground">Manage</span>
                             </label>
                           </div>
                         </div>
@@ -505,7 +505,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
+            <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>

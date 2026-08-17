@@ -44,7 +44,7 @@ export function BranchManagerSection({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[11px] text-red-500 hover:bg-red-50 hover:text-red-600"
+                className="h-6 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 Unassign
               </Button>
@@ -82,7 +82,7 @@ export function BranchManagerSection({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-[11px] text-blue-600 hover:bg-blue-50"
+            className="h-6 px-2 text-xs text-primary hover:bg-primary/10"
             onClick={onAssignClick}
           >
             Assign
@@ -96,13 +96,13 @@ export function BranchManagerSection({
           <span>{managerName}</span>
         </div>
         {branch.manager?.email ? (
-          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Mail className="size-3 shrink-0" />
             {branch.manager.email}
           </p>
         ) : null}
         {/* {hasManager ? (
-          <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-[10px]">
+          <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-xs">
             Assigned
           </Badge>
         ) : null} */}

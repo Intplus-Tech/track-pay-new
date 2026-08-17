@@ -118,7 +118,7 @@ export function VerificationForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col justify-center gap-y-6 max-w-[500px] w-full h-screen sm:h-fit bg-[#2C2C2C]/75 p-8 border border-muted-foreground rounded-md"
+        className="flex flex-col justify-center gap-y-6 max-w-[500px] w-full h-screen sm:h-fit bg-auth-overlay/75 p-8 border border-muted-foreground rounded-md"
       >
         <div className="lg:hidden flex">
           <span className="flex items-center gap-2">
@@ -192,7 +192,7 @@ export function VerificationForm({
         </div>
 
         {errorMessage ? (
-          <p className="text-sm text-red-400">{errorMessage}</p>
+          <p className="text-sm text-destructive">{errorMessage}</p>
         ) : null}
 
         <Button

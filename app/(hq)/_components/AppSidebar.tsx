@@ -58,6 +58,11 @@ const navItems: NavItem[] = [
     icon: NotebookText,
   },
   {
+    title: "Loan Officers",
+    href: "/home/loan-officer",
+    icon: NotebookText,
+  },
+  {
     title: "Team",
     href: "/home/team",
     icon: Users,
@@ -97,21 +102,21 @@ export function AppSidebar({
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r border-slate-200 bg-white text-slate-900 shadow-[0_24px_60px_rgba(15,23,42,0.08)]"
+      className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-elevated-lg"
       {...props}
     >
       <SidebarHeader className="px-4 pb-2 pt-5">
         <Link
           href="/home/overview"
           className={cn(
-            "flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-slate-50",
+            "flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-sidebar-accent",
             !open && "justify-center px-0",
           )}
         >
           <Logo width={34} height={34} priority />
           <span
             className={cn(
-              "text-[1.55rem] font-semibold tracking-[-0.03em] text-[#1038f0] transition-all duration-200",
+              "text-2xl font-semibold tracking-tight text-brand transition-all duration-200",
               open ? "opacity-100" : "hidden opacity-0",
             )}
           >
@@ -133,12 +138,12 @@ export function AppSidebar({
                         tooltip={item.title}
                         isActive={isActive}
                         className={cn(
-                          "h-11 rounded-xl border border-transparent px-3 text-[0.95rem] font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-900 data-[active=true]:border-slate-200 data-[active=true]:bg-white data-[active=true]:text-[#1038f0] data-[active=true]:shadow-[0_8px_24px_rgba(15,23,42,0.08)]",
+                          "h-11 rounded-xl border border-transparent px-3 text-sm font-medium text-sidebar-foreground/70 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground data-[active=true]:border-sidebar-border data-[active=true]:bg-sidebar data-[active=true]:text-brand data-[active=true]:shadow-elevated-sm",
                           !open && "justify-center px-0",
                         )}
                       >
                         <span className="flex items-center gap-3">
-                          <span className="flex size-5 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition-colors group-data-[active=true]/menu-item:bg-[#1038f0]/10 group-data-[active=true]/menu-item:text-[#1038f0]">
+                          <span className="flex size-5 items-center justify-center rounded-md bg-sidebar-accent text-sidebar-foreground/70 transition-colors group-data-[active=true]/menu-item:bg-brand/10 group-data-[active=true]/menu-item:text-brand">
                             <item.icon className="size-3.5" />
                           </span>
                           <span className={cn(open ? "inline" : "hidden")}>{item.title}</span>
@@ -155,7 +160,7 @@ export function AppSidebar({
                             const isSubActive = pathname === subItem.href || pathname.startsWith(`${subItem.href}/`);
                             return (
                               <SidebarMenuSubItem key={subItem.href}>
-                                <SidebarMenuSubButton asChild isActive={isSubActive} className={cn("text-slate-500 hover:text-slate-900 data-[active=true]:text-[#1038f0] data-[active=true]:font-semibold")}>
+                                <SidebarMenuSubButton asChild isActive={isSubActive} className={cn("text-sidebar-foreground/70 hover:text-sidebar-foreground data-[active=true]:text-brand data-[active=true]:font-semibold")}>
                                   <Link href={subItem.href}>
                                     <span>{subItem.title}</span>
                                   </Link>
@@ -183,13 +188,13 @@ export function AppSidebar({
                   isActive={isActive}
                   tooltip={item.title}
                   className={cn(
-                    "h-11 rounded-xl border border-transparent px-3 text-[0.95rem] font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-900 data-[active=true]:border-slate-200 data-[active=true]:bg-white data-[active=true]:text-[#1038f0] data-[active=true]:shadow-[0_8px_24px_rgba(15,23,42,0.08)]",
+                    "h-11 rounded-xl border border-transparent px-3 text-sm font-medium text-sidebar-foreground/70 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground data-[active=true]:border-sidebar-border data-[active=true]:bg-sidebar data-[active=true]:text-brand data-[active=true]:shadow-elevated-sm",
                     !open && "justify-center px-0",
                   )}
                 >
                   <Link href={item.href!}>
                     <span className="flex items-center gap-3">
-                      <span className="flex size-5 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition-colors group-data-[active=true]/menu-item:bg-[#1038f0]/10 group-data-[active=true]/menu-item:text-[#1038f0]">
+                      <span className="flex size-5 items-center justify-center rounded-md bg-sidebar-accent text-sidebar-foreground/70 transition-colors group-data-[active=true]/menu-item:bg-brand/10 group-data-[active=true]/menu-item:text-brand">
                         <item.icon className="size-3.5" />
                       </span>
                       <span className={cn(open ? "inline" : "hidden")}>{item.title}</span>
@@ -202,22 +207,22 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="px-3 pb-4 pt-0">
-        <div className="relative overflow-hidden rounded-[1.35rem] bg-[linear-gradient(135deg,#1837dd_0%,#0f2cc7_52%,#102dbf_100%)] p-4 text-white shadow-[0_18px_40px_rgba(16,45,191,0.28)]">
+        <div className="relative overflow-hidden rounded-[1.35rem] bg-brand-gradient p-4 text-white shadow-brand">
           <div className="pointer-events-none absolute inset-0 opacity-45 [background-image:radial-gradient(circle_at_100%_100%,rgba(255,255,255,0.28)_0,rgba(255,255,255,0.12)_24%,transparent_25%),radial-gradient(circle_at_85%_90%,rgba(255,255,255,0.18)_0,rgba(255,255,255,0.1)_14%,transparent_15%),radial-gradient(circle_at_70%_100%,rgba(255,255,255,0.18)_0,rgba(255,255,255,0.08)_18%,transparent_19%)]" />
           <div className="relative flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
               <Logo width={22} height={22} priority />
             </div>
-            <div className="text-[1.15rem] font-semibold leading-none tracking-[-0.03em]">
+            <div className="text-lg font-semibold leading-none tracking-tight">
               {footerLabel}
             </div>
 
           </div>
           <div className="min-w-0">
-            <p className="mt-2 max-w-[8.5rem] text-[0.82rem] leading-5 text-white/92">
+            <p className="mt-2 max-w-[8.5rem] text-sm leading-5 text-white/92">
               Micro Investment Support Services
             </p>
-            <p className="mt-1 text-[0.72rem] text-white/72">www.misleasing.com</p>
+            <p className="mt-1 text-xs text-white/72">www.misleasing.com</p>
           </div>
         </div>
       </SidebarFooter>

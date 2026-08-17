@@ -72,7 +72,7 @@ export function ForgotPasswordForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col justify-center gap-y-6 max-w-[400px] w-full h-screen sm:h-fit bg-[#2C2C2C]/75 p-8 border border-muted-foreground rounded-md"
+        className="flex flex-col justify-center gap-y-6 max-w-[400px] w-full h-screen sm:h-fit bg-auth-overlay/75 p-8 border border-muted-foreground rounded-md"
       >
         <Logo width={60} height={60} priority />
         <span className="space-y-2">

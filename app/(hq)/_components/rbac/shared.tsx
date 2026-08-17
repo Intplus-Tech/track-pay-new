@@ -20,18 +20,18 @@ export function ManagementPageShell({
 }) {
   return (
     <section className="space-y-6">
-      <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
+      <div className="rounded-[2rem] border border-border bg-card/95 p-6 shadow-elevated-lg">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
-            {/* <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+            {/* <p className="text-xs font-semibold uppercase tracking-widest text-primary">
               {eyebrow}
             </p> */}
             <div className="space-y-1">
-              <h1 className="text-3xl font-semibold tracking-[-0.03em] text-slate-950">
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                 {title}
               </h1>
               {description ? (
-                <div className="max-w-3xl text-sm leading-6 text-slate-600">
+                <div className="max-w-3xl text-sm leading-6 text-muted-foreground">
                   {description}
                 </div>
               ) : null}
@@ -55,16 +55,16 @@ export function StatsGrid({
       {items.map((item) => (
         <Card
           key={item.label}
-          className="border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.05)]"
+          className="border-border bg-card shadow-elevated-md"
         >
           <CardContent className="space-y-2 p-5">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {item.label}
             </p>
-            <p className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+            <p className="text-3xl font-semibold tracking-tight text-foreground">
               {item.value}
             </p>
-            <p className="text-sm text-slate-500">{item.note}</p>
+            <p className="text-sm text-muted-foreground">{item.note}</p>
           </CardContent>
         </Card>
       ))}
@@ -82,13 +82,13 @@ export function Panel({
   children: ReactNode;
 }) {
   return (
-    <Card className="border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.05)]">
+    <Card className="border-border bg-card shadow-elevated-md">
       <CardContent className="space-y-5 p-6">
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold tracking-[-0.03em] text-slate-950">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
             {title}
           </h2>
-          <p className="text-sm text-slate-500">{description}</p>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         {children}
       </CardContent>
@@ -108,8 +108,8 @@ export function InlineMessage({
       className={cn(
         "rounded-2xl border px-4 py-3 text-sm",
         tone === "error"
-          ? "border-red-200 bg-red-50 text-red-700"
-          : "border-slate-200 bg-slate-50 text-slate-600",
+          ? "border-destructive/30 bg-destructive/10 text-destructive"
+          : "border-border bg-muted text-muted-foreground",
       )}
     >
       {message}
@@ -127,7 +127,7 @@ export function PrimaryAction({
   return (
     <Button
       onClick={onClick}
-      className="rounded-full bg-[#1038f0] px-5 text-white hover:bg-[#0d2fd0]"
+      className="rounded-full bg-brand px-5 text-white hover:bg-brand-hover"
     >
       {label}
     </Button>

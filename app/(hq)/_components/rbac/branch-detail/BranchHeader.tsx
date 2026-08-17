@@ -44,19 +44,19 @@ export function BranchHeader({
               {branch?.name ?? "Branch detail"}
             </h1>
             {branch?.isHeadOffice ? (
-              <Badge variant="outline" className="border-primary/30 bg-primary/10 text-[10px] text-primary">
+              <Badge variant="outline" className="border-primary/30 bg-primary/10 text-xs text-primary">
                 <Landmark />
                 Head office
               </Badge>
             ) : null}
             {branch ? (
-              <Badge variant="outline" className={`${statusMeta.className} text-[10px]`}>
+              <Badge variant="outline" className={`${statusMeta.className} text-xs`}>
                 {branch.statusLabel || statusMeta.label}
               </Badge>
             ) : null}
           </div>
           {branch?.code ? (
-            <p className="text-[11px] text-muted-foreground">{branch.code}</p>
+            <p className="text-xs text-muted-foreground">{branch.code}</p>
           ) : null}
         </div>
       </div>
@@ -68,7 +68,7 @@ export function BranchHeader({
             variant="outline"
             size="sm"
             onClick={onEditClick}
-            className="h-8 px-3 text-[11px] font-medium text-slate-700 hover:bg-slate-100"
+            className="h-8 px-3 text-xs font-medium text-foreground hover:bg-muted"
           >
             Edit branch
           </Button>
@@ -79,7 +79,7 @@ export function BranchHeader({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 shrink-0 text-red-400 hover:bg-red-50 hover:text-red-600"
+                className="h-8 w-8 p-0 shrink-0 text-destructive/70 hover:bg-destructive/10 hover:text-destructive"
               >
                 <Trash2 className="size-4" />
               </Button>
@@ -92,7 +92,7 @@ export function BranchHeader({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               {deleteBranchMutation.isError ? (
-                <p className="text-sm text-red-600">{deleteBranchMutation.error.message}</p>
+                <p className="text-sm text-destructive">{deleteBranchMutation.error.message}</p>
               ) : null}
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={deleteBranchMutation.isPending}>Cancel</AlertDialogCancel>

@@ -148,7 +148,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[min(100vw-1rem,56rem)] max-w-none bg-white max-h-[90vh] overflow-hidden overflow-y-scroll">
+      <DialogContent className="w-[min(100vw-1rem,56rem)] max-w-none bg-card max-h-[90vh] overflow-hidden overflow-y-scroll">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
         </DialogHeader>
@@ -206,7 +206,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                         <SelectValue placeholder="Assign a role" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-card">
                       <SelectItem value="unassigned">No role</SelectItem>
                       {roles.map((roleOption) => (
                         <SelectItem key={roleOption.id} value={roleOption.id}>
@@ -227,7 +227,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                         <SelectValue placeholder="Assign a branch" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-card">
                       <SelectItem value="unassigned">No branch</SelectItem>
                       {branches.map((branchOption) => (
                         <SelectItem key={branchOption.id} value={branchOption.id}>
@@ -306,10 +306,10 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                 </FormItem>
               )} />
               <FormField control={form.control} name="isActive" render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-4 md:col-span-2">
+                <FormItem className="flex items-center justify-between rounded-2xl border border-border px-4 py-4 md:col-span-2">
                   <div>
                     <FormLabel>Active account</FormLabel>
-                    <p className="text-sm text-slate-500">Inactive users remain in the system but should not authenticate.</p>
+                    <p className="text-sm text-muted-foreground">Inactive users remain in the system but should not authenticate.</p>
                   </div>
                   <FormControl>
                     <Switch checked={field.value} onCheckedChange={field.onChange} />

@@ -107,7 +107,7 @@ export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBran
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="bg-white sm:max-w-2xl">
+      <DialogContent className="bg-card sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Create new branch</DialogTitle>
           <DialogDescription>Add a branch to your institution&apos;s network.</DialogDescription>
@@ -215,7 +215,7 @@ export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBran
                           <SelectValue placeholder={branchesQuery.isLoading ? "Loading branches..." : "Select a parent branch"} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-card">
                         <SelectItem value="none">No parent branch</SelectItem>
                         {branchOptions.map((branch) => (
                           <SelectItem key={branch.id} value={branch.id}>
@@ -241,7 +241,7 @@ export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBran
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-card">
                         {branchTypeOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
@@ -266,7 +266,7 @@ export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBran
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-card">
                         {branchStatusOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
@@ -280,7 +280,7 @@ export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBran
               />
             </div>
 
-            <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="space-y-3 rounded-lg border border-border bg-muted p-4">
               <FormField
                 control={form.control}
                 name="isHeadOffice"
@@ -291,7 +291,7 @@ export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBran
                         type="checkbox"
                         checked={field.value}
                         onChange={field.onChange}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                       />
                     </FormControl>
                     <FormLabel className="font-normal">This is the head office</FormLabel>
@@ -309,7 +309,7 @@ export function CreateBranchDialog({ open, onOpenChange, onCreated }: CreateBran
                         type="checkbox"
                         checked={field.value}
                         onChange={field.onChange}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                       />
                     </FormControl>
                     <FormLabel className="font-normal">Branch is active</FormLabel>
