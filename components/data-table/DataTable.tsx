@@ -153,7 +153,7 @@ export function DataTable<TData, TValue>({
               <SelectTrigger className="w-[140px] h-8 rounded-full bg-primary/10">
                 <SelectValue placeholder="Time filter" />
               </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg">
+              <SelectContent className="bg-popover border shadow-lg">
                 <SelectItem value="24">Last 24 Hours</SelectItem>
                 <SelectItem value="48">48 Hours</SelectItem>
                 <SelectItem value="week">1 Week</SelectItem>
@@ -174,14 +174,14 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <Table className="bg-gray-50">
-        <TableHeader className="bg-gray-100">
+      <Table className="bg-card">
+        <TableHeader className="bg-muted">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="">
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="font-medium text-gray-900"
+                  className="font-medium text-foreground"
                 >
                   {header.isPlaceholder
                     ? null
@@ -200,7 +200,7 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={onRowClick ? "mb-4 cursor-pointer hover:bg-gray-50" : "mb-4 hover:bg-gray-50"}
+                className={onRowClick ? "mb-4 cursor-pointer hover:bg-muted/50" : "mb-4 hover:bg-muted/50"}
                 onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                 tabIndex={onRowClick ? 0 : undefined}
                 onKeyDown={
@@ -248,7 +248,7 @@ export function DataTable<TData, TValue>({
                   placeholder={table.getState().pagination.pageSize}
                 />
               </SelectTrigger>
-              <SelectContent side="top" className="bg-white border shadow-lg">
+              <SelectContent side="top" className="bg-popover border shadow-lg">
                 {paginationConfig.pageSizeOptions?.map((pageSize) => (
                   <SelectItem key={pageSize} value={`${pageSize}`}>
                     {pageSize}

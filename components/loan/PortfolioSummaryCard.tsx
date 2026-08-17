@@ -3,16 +3,14 @@
 import { LoanStatusBadge } from "@/components/loan/LoanStatusBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioDetailsQuery } from "@/hooks/loan/usePortfolioDetailsQuery";
-import { useScheduleSummaryQuery } from "@/hooks/loan/useScheduleSummaryQuery";
 import { CalendarClock, TrendingDown, BadgeCheck, Wallet } from "lucide-react";
 
 interface PortfolioSummaryCardProps {
   portfolioId: string;
+  nextDueDate?: string | null;
 }
-
-export function PortfolioSummaryCard({ portfolioId }: PortfolioSummaryCardProps) {
+export function PortfolioSummaryCard({ portfolioId, nextDueDate }: PortfolioSummaryCardProps) {
   const detailsQuery = usePortfolioDetailsQuery(portfolioId);
-  const summaryQuery = useScheduleSummaryQuery(portfolioId);
 
   if (detailsQuery.isPending) {
     return (
@@ -33,45 +31,46 @@ export function PortfolioSummaryCard({ portfolioId }: PortfolioSummaryCardProps)
   }
 
   const d = detailsQuery.data;
-  const s = summaryQuery.data;
 
   if (!d) return null;
+
+  const s = d.schedule;
 
   const cards = [
     {
       icon: <Wallet className="h-5 w-5" />,
       iconBg: "bg-primary/10 text-primary",
       label: "PRINCIPAL",
-      value: `₦${Number(d.principal).toLocaleString()}`,
-      sub: d.interestType ? `${d.interestType} · ${d.interestRate ?? "—"}%` : null,
+      value: `₦${Number(d.originalAmount).toLocaleString()}`,
+      sub: null, // Removed as it's no longer provided
     },
     {
       icon: <TrendingDown className="h-5 w-5" />,
       iconBg: "bg-destructive/10 text-destructive",
       label: "OUTSTANDING",
-      value: `₦${Number(d.outstandingBalance).toLocaleString()}`,
-      sub: `of ₦${Number(d.totalExpected).toLocaleString()} expected`,
+      value: `₦${Number(d.outstanding).toLocaleString()}`,
+      sub: `of ₦${Number(s.totalDue).toLocaleString()} expected`,
     },
     {
       icon: <BadgeCheck className="h-5 w-5" />,
       iconBg: "bg-emerald-500/10 text-emerald-500",
       label: "TOTAL REPAID",
-      value: `₦${Number(d.totalRepaid).toLocaleString()}`,
+      value: `₦${Number(d.paidToDate).toLocaleString()}`,
       sub: s
-        ? `${s.settledInstalments} of ${s.totalInstalments} instalments`
+        ? `${s.paidInstallments} of ${s.totalInstallments} instalments`
         : null,
     },
     {
       icon: <CalendarClock className="h-5 w-5" />,
       iconBg: "bg-amber-500/10 text-amber-500",
       label: "NEXT DUE",
-      value: d.nextDueDate
-        ? new Date(d.nextDueDate).toLocaleDateString()
+      value: s?.nextDueDate || nextDueDate
+        ? new Date((s?.nextDueDate || nextDueDate)!).toLocaleDateString()
         : "—",
-      sub: s?.overdueInstalments
-        ? `${s.overdueInstalments} overdue instalment${s.overdueInstalments > 1 ? "s" : ""}`
+      sub: s?.overdueInstallments
+        ? `${s.overdueInstallments} overdue instalment${s.overdueInstallments > 1 ? "s" : ""}`
         : null,
-      subClassName: s?.overdueInstalments ? "text-destructive" : undefined,
+      subClassName: s?.overdueInstallments ? "text-destructive" : undefined,
     },
   ];
 
@@ -80,11 +79,11 @@ export function PortfolioSummaryCard({ portfolioId }: PortfolioSummaryCardProps)
       {/* Status badge */}
       <div className="flex items-center gap-3">
         <LoanStatusBadge status={d.status} />
-        {d.tenureMonths && (
+        {s?.totalInstallments ? (
           <span className="text-sm text-muted-foreground">
-            {d.tenureMonths}-month tenure
+            {s.totalInstallments}-month tenure
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* KPI grid */}

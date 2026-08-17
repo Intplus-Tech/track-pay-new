@@ -60,13 +60,13 @@ const Sampletable = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             DataVerse Table Kit
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Dynamic, reusable data tables with filtering, search, and export
             capabilities
           </p>
@@ -90,11 +90,11 @@ const Sampletable = () => {
           </TabsList>
 
           <TabsContent value="loans" className="space-y-4">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="bg-card rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-semibold mb-4">
                 Loan Management Table
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Full-featured table with search, filtering, export, and row
                 actions
               </p>
@@ -119,11 +119,11 @@ const Sampletable = () => {
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="bg-card rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-semibold mb-4">
                 User Management Table
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Employee data with role-based filtering and actions
               </p>
               <DataTable
@@ -147,9 +147,9 @@ const Sampletable = () => {
           </TabsContent>
 
           <TabsContent value="accounts" className="space-y-4">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="bg-card rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-semibold mb-4">Loanee Accounts</h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Account management with creation and status tracking
               </p>
               <DataTable
@@ -172,7 +172,7 @@ const Sampletable = () => {
           </TabsContent>
         </Tabs>
 
-        <div className="mt-12 bg-white rounded-lg shadow-sm border p-6">
+        <div className="mt-12 bg-card rounded-lg shadow-sm border p-6">
           <h3 className="text-lg font-semibold mb-4">Features Demonstrated</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="p-4 bg-blue-50 rounded-lg">

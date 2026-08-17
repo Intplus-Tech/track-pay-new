@@ -78,7 +78,7 @@ export function BulkUpload() {
                 <span>{file.name}</span>
                 <span className="text-green-600">✓</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div
                   className="bg-orange-400 h-2 rounded-full"
                   style={{ width: "75%" }}

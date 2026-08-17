@@ -42,7 +42,7 @@ export default async function HomeLayout({
         <AppSidebar session={dashboardSession} />
         <div className="flex-1 flex flex-col min-w-0">
           <Header session={dashboardSession} />
-          <main className="flex-1 p-6 space-y-6 z50">{children}</main>
+          <main className="flex-1 p-6 space-y-6 z-50 bg-background">{children}</main>
         </div>
       </div>
     </SidebarProvider>

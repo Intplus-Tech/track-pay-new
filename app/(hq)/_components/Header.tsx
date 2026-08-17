@@ -1,8 +1,8 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Bell, Search, Settings } from "lucide-react";
-import React, { useState } from "react";
+import { ArrowLeft, Bell, Moon, Search, Settings, Sun } from "lucide-react";
+import React, { useState, useSyncExternalStore } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { DashboardSession } from "@/lib/session";
 import Link from "next/link";
@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme } from "next-themes";
 
 function getInitials(name?: string | null) {
   if (!name) {
@@ -33,6 +34,12 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
 
   const routeTitles: Record<string, string> = {
     "/home/overview": "Overview",
@@ -49,7 +56,7 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
 
   const isBranchDetail =
     /^\/home\/branch-matrix\/[^/]+$/.test(pathname);
-  const isLoaneeDetail = 
+  const isLoaneeDetail =
     /^\/home\/loan-ledger\/[^/]+$/.test(pathname);
 
   const title =
@@ -139,6 +146,15 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
             aria-label="Notifications"
           >
             <Bell size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            aria-label={mounted && resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={mounted && resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {mounted && resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <Link
             href="/home/settings"

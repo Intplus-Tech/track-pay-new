@@ -101,6 +101,10 @@ export interface LoanPortfolio {
   deletedAt?: string | null;
   /** Joined loanee name — may be present on list responses */
   loaneeName?: string | null;
+  /** Populated loanee object from detailed fetches */
+  loanee?: Loanee | null;
+  /** Populated loan officer object from detailed fetches */
+  loanOfficer?: any | null;
 }
 
 export type PortfolioListResponse = RbacPaginationResponse<LoanPortfolio>;
@@ -144,17 +148,27 @@ export interface UpdateLoanPortfolioDto {
 /** Response from GET /loan/portfolios/{id}/details */
 export interface PortfolioDetails {
   portfolioId: string;
-  principal: string;
-  outstandingBalance: string;
-  totalRepaid: string;
-  totalExpected: string;
+  loanId: string;
+  loaneeName: string;
+  originalAmount: string;
+  paidToDate: string;
+  outstanding: string;
   status: PortfolioStatus;
-  nextDueDate?: string | null;
-  interestRate?: string | null;
-  interestType?: InterestType | null;
-  tenureMonths?: number | null;
-  /** Payment history summary rows (shape may vary by backend version) */
-  paymentHistory?: PortfolioPaymentSummaryRow[];
+  schedule: {
+    totalInstallments: number;
+    paidInstallments: number;
+    remainingInstallments: number;
+    overdueInstallments: number;
+    progressLabel: string;
+    progressPercent: number;
+    totalDue: string;
+    totalPaid: string;
+    totalOutstanding: string;
+    nextDueDate: string | null;
+    nextDueAmount: string | null;
+    overdueDays: number;
+  };
+  payments: PortfolioPaymentSummaryRow[];
 }
 
 export interface PortfolioPaymentSummaryRow {

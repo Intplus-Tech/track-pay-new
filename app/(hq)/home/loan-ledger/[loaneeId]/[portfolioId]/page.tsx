@@ -8,7 +8,7 @@ import { getAuthHeaders } from "@/lib/api-auth";
 import { PortfolioSummaryCard } from "@/components/loan/PortfolioSummaryCard";
 import { SchedulePanel } from "@/components/loan/SchedulePanel";
 import { RepaymentPanel } from "@/components/loan/RepaymentPanel";
-import type { LoanPortfolio } from "@/types/loan";
+import type { LoanPortfolio, PortfolioDetails } from "@/types/loan";
 
 interface PageProps {
   params: Promise<{ loaneeId: string; portfolioId: string }>;
@@ -28,6 +28,20 @@ async function getPortfolio(
   return (body.data ?? body) as LoanPortfolio;
 }
 
+async function getPortfolioDetails(
+  id: string,
+  accessToken: string,
+): Promise<PortfolioDetails | null> {
+  const response = await getBackendJson(`/loan/portfolios/${id}/details`, {
+    headers: getAuthHeaders(accessToken),
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) return null;
+  const body = await readBackendBody<any>(response);
+  if (!body || typeof body !== "object") return null;
+  return (body.data ?? body) as PortfolioDetails;
+}
+
 export default async function PortfolioDetailPage({ params }: PageProps) {
   const { loaneeId, portfolioId } = await params;
 
@@ -37,10 +51,14 @@ export default async function PortfolioDetailPage({ params }: PageProps) {
   if (!accessToken) notFound();
 
   let portfolio: LoanPortfolio | null = null;
+  let details: PortfolioDetails | null = null;
   let fetchError: string | null = null;
 
   try {
-    portfolio = await getPortfolio(portfolioId, accessToken);
+    [portfolio, details] = await Promise.all([
+      getPortfolio(portfolioId, accessToken),
+      getPortfolioDetails(portfolioId, accessToken),
+    ]);
   } catch (error) {
     fetchError = error instanceof Error ? error.message : "Unknown error";
   }
@@ -65,20 +83,68 @@ export default async function PortfolioDetailPage({ params }: PageProps) {
       ) : portfolio ? (
         <>
           {/* Header */}
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Portfolio Detail
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {portfolio.accountNumber
-                ? `Account ${portfolio.accountNumber} · `
-                : ""}
-              ID: <span className="font-mono">{portfolioId}</span>
-            </p>
+          <div className="flex items-center gap-4">
+            {portfolio.loanee ? (
+              portfolio.loanee.photoUrl ? (
+                <img
+                  src={portfolio.loanee.photoUrl}
+                  alt={`${portfolio.loanee.firstName} ${portfolio.loanee.lastName}`}
+                  className="h-16 w-16 shrink-0 rounded-full object-cover shadow-sm ring-1 ring-border"
+                />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
+                  <span className="text-xl font-semibold">
+                    {portfolio.loanee.firstName?.[0]}
+                    {portfolio.loanee.lastName?.[0]}
+                  </span>
+                </div>
+              )
+            ) : null}
+            
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {portfolio.loanee
+                  ? `${portfolio.loanee.firstName} ${portfolio.loanee.lastName}'s Portfolio`
+                  : details?.loaneeName
+                    ? `${details.loaneeName}'s Portfolio`
+                    : "Portfolio Detail"}
+              </h1>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                {(portfolio.loanId || details?.loanId) && (
+                  <span>Loan {portfolio.loanId || details?.loanId}</span>
+                )}
+                {portfolio.accountNumber && (
+                  <>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span>Account {portfolio.accountNumber}</span>
+                  </>
+                )}
+                <span className="text-muted-foreground/50">•</span>
+                <span>
+                  ID: <span className="font-mono">{portfolioId}</span>
+                </span>
+
+                {portfolio.loanOfficer && (
+                  <>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span>
+                      Officer:{" "}
+                      <span className="font-medium text-foreground">
+                        {portfolio.loanOfficer.fullName ||
+                          `${portfolio.loanOfficer.firstName} ${portfolio.loanOfficer.lastName}`}
+                      </span>
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Summary KPI cards — client component (fetches /details and /summary) */}
-          <PortfolioSummaryCard portfolioId={portfolioId} />
+          <PortfolioSummaryCard
+            portfolioId={portfolioId}
+            nextDueDate={portfolio.nextDueDate}
+          />
 
           {/* Schedule panel */}
           <SchedulePanel portfolioId={portfolioId} />

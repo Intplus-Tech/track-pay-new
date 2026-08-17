@@ -35,7 +35,7 @@ export function TableFilters({
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[200px] bg-white border shadow-lg">
+          <DropdownMenuContent className="w-[200px] bg-popover border shadow-lg">
             <DropdownMenuLabel>{filter.label}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {filter.values.map((option) => (
