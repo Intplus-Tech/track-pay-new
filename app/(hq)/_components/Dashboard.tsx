@@ -3,6 +3,15 @@
 import { useState } from "react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useBranchesQuery } from "@/hooks/rbac/useBranchesQuery";
 import { useDashboardPerformanceChartQuery } from "@/hooks/useDashboardPerformanceChartQuery";
 import { useDashboardTodayQuery } from "@/hooks/useDashboardTodayQuery";
@@ -104,14 +113,14 @@ const Dashboard = () => {
   })) ?? [];
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border bg bg-background p-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+    <div className="space-y-4">
+      <section className="rounded-xl border bg-card text-card-foreground p-3 shadow-sm">
         <form
-          className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5"
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 items-end"
           onSubmit={(event) => {
             event.preventDefault();
             setAppliedFilters({
-              branchId: draftFilters.branchId || undefined,
+              branchId: draftFilters.branchId === "all" ? undefined : draftFilters.branchId || undefined,
               loanOfficerId: draftFilters.loanOfficerId || undefined,
               recentLimit: draftFilters.recentLimit
                 ? Number(draftFilters.recentLimit)
@@ -120,21 +129,24 @@ const Dashboard = () => {
             });
           }}
         >
-          <select
+          <Select
             value={draftFilters.branchId}
-            onChange={(event) =>
-              setDraftFilters((current) => ({ ...current, branchId: event.target.value }))
+            onValueChange={(value) =>
+              setDraftFilters((current) => ({ ...current, branchId: value }))
             }
-            className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-[#1156e8]"
-            aria-label="Filter by branch"
           >
-            <option value="">All branches</option>
-            {branchesQuery.data?.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label="Filter by branch">
+              <SelectValue placeholder="All branches" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All branches</SelectItem>
+              {branchesQuery.data?.map((branch) => (
+                <SelectItem key={branch.id} value={branch.id}>
+                  {branch.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             value={draftFilters.loanOfficerId}
             onChange={(event) =>
@@ -142,7 +154,6 @@ const Dashboard = () => {
             }
             placeholder="Loan officer ID"
             aria-label="Filter by loan officer ID"
-            className="h-10 border-slate-300 shadow-none"
           />
           <Input
             type="date"
@@ -151,7 +162,6 @@ const Dashboard = () => {
               setDraftFilters((current) => ({ ...current, endDate: event.target.value }))
             }
             aria-label="Chart end date"
-            className="h-10 border-slate-300 shadow-none"
           />
           <Input
             type="number"
@@ -162,25 +172,21 @@ const Dashboard = () => {
             }
             placeholder="Recent limit"
             aria-label="Recent activity limit"
-            className="h-10 border-slate-300 shadow-none"
           />
           <div className="flex gap-2">
-            <button
-              type="submit"
-              className="h-10 flex-1 rounded-md bg-[#1156e8] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#0d43b2]"
-            >
+            <Button type="submit" className="flex-1">
               Apply
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="h-10 rounded-md border border-slate-300 px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+              variant="outline"
               onClick={() => {
                 setDraftFilters({ branchId: "", loanOfficerId: "", recentLimit: "", endDate: "" });
                 setAppliedFilters({});
               }}
             >
               Clear
-            </button>
+            </Button>
           </div>
         </form>
       </section>
@@ -189,84 +195,84 @@ const Dashboard = () => {
           {overviewQuery.error.message}
         </div>
       ) : null}
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card, index) => {
           if (!card) {
             return (
-              <article
+              <Skeleton
                 key={`dashboard-card-skeleton-${index}`}
-                className="h-[156px] animate-pulse rounded-2xl border border-slate-200 bg-slate-100"
+                className="h-[120px] rounded-xl border shadow-sm"
               />
             );
           }
 
-          const Icon = card.icon;
+        const Icon = card.icon;
 
-          return (
-            <article
-              key={card.title}
-              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]"
+        return (
+        <article
+          key={card.title}
+          className="rounded-xl border bg-card text-card-foreground p-4 shadow-sm"
+        >
+          <div className="mb-2 flex items-start justify-between gap-2">
+            <div
+              className={[
+                "flex size-8 items-center justify-center rounded-lg",
+                card.valueTone === "success" && "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400",
+                card.valueTone === "danger" && "bg-destructive/10 text-destructive",
+                card.valueTone === "default" && "bg-muted text-muted-foreground",
+              ].join(" ")}
             >
-              <div className="mb-3 flex items-start justify-between gap-2">
-                <div
-                  className={[
-                    "flex size-9 items-center justify-center rounded-lg",
-                    card.valueTone === "success" && "bg-emerald-50 text-emerald-600",
-                    card.valueTone === "danger" && "bg-rose-50 text-rose-600",
-                    card.valueTone === "default" && "bg-slate-100 text-slate-700",
-                  ].join(" ")}
-                >
-                  <Icon className="size-4" />
-                </div>
-                {card.trend ? (
-                  <span
-                    className={[
-                      "text-xs font-semibold",
-                      card.trendTone === "positive" && "text-emerald-500",
-                      card.trendTone === "alert" && "text-rose-500",
-                      card.trendTone === "neutral" && "text-blue-500",
-                    ].join(" ")}
-                  >
-                    {card.trend}
-                  </span>
-                ) : null}
-              </div>
-              <p className="text-[0.73rem] font-semibold tracking-[0.06em] text-slate-500">
-                {card.title}
-              </p>
-              <p
+              <Icon className="size-4" />
+            </div>
+            {card.trend ? (
+              <span
                 className={[
-                  "mt-1 text-[1.9rem] font-bold leading-none tracking-[-0.02em]",
-                  card.valueTone === "success" && "text-emerald-600",
-                  card.valueTone === "danger" && "text-rose-600",
-                  card.valueTone === "default" && "text-slate-900",
+                  "text-xs font-medium",
+                  card.trendTone === "positive" && "text-emerald-500 dark:text-emerald-400",
+                  card.trendTone === "alert" && "text-destructive",
+                  card.trendTone === "neutral" && "text-muted-foreground",
                 ].join(" ")}
               >
-                {card.value}
-              </p>
-              <p className="mt-2 text-xs text-slate-500">{card.subtitle}</p>
-            </article>
-          );
+                {card.trend}
+              </span>
+            ) : null}
+          </div>
+          <p className="text-xs font-medium tracking-wide text-muted-foreground">
+            {card.title}
+          </p>
+          <p
+            className={[
+              "mt-1 text-2xl font-bold leading-none tracking-tight",
+              card.valueTone === "success" && "text-emerald-600 dark:text-emerald-500",
+              card.valueTone === "danger" && "text-destructive",
+              card.valueTone === "default" && "text-foreground",
+            ].join(" ")}
+          >
+            {card.value}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{card.subtitle}</p>
+        </article>
+        );
         })}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
-        <header className="border-b border-slate-200 p-4">
-          <h2 className="text-[1.9rem] font-semibold leading-none tracking-[-0.03em] text-slate-900">
+      <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
+        <header className="border-b p-4">
+          <h2 className="text-lg font-semibold leading-none tracking-tight">
             Today&apos;s Collection Position
           </h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Collection activity and accounts requiring attention today.
           </p>
         </header>
         {todayQuery.isError ? (
-          <div className="px-4 py-8 text-sm text-rose-700">{todayQuery.error.message}</div>
+          <div className="px-4 py-6 text-sm text-destructive">{todayQuery.error.message}</div>
         ) : todayQuery.isPending ? (
           <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }, (_, index) => (
-              <div
+              <Skeleton
                 key={`today-card-skeleton-${index}`}
-                className="h-28 animate-pulse rounded-xl bg-slate-100"
+                className="h-24 rounded-lg"
               />
             ))}
           </div>
@@ -276,53 +282,53 @@ const Dashboard = () => {
               {
                 label: "TOTAL DUE TODAY",
                 value: formatAmount(todayQuery.data.totalDueToday),
-                tone: "text-slate-900",
+                tone: "text-foreground",
               },
               {
                 label: "COLLECTED TODAY",
                 value: formatAmount(todayQuery.data.collectedToday),
-                tone: "text-emerald-600",
+                tone: "text-emerald-600 dark:text-emerald-500",
               },
               {
                 label: "CLIENTS DUE TODAY",
                 value: todayQuery.data.clientsDueToday.toLocaleString(),
-                tone: "text-slate-900",
+                tone: "text-foreground",
               },
               {
                 label: "OVERDUE ACCOUNTS",
                 value: todayQuery.data.overdueAccounts.toLocaleString(),
-                tone: todayQuery.data.overdueAccounts > 0 ? "text-rose-600" : "text-slate-900",
+                tone: todayQuery.data.overdueAccounts > 0 ? "text-destructive" : "text-foreground",
               },
             ].map((card) => (
-              <article key={card.label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-semibold tracking-[0.06em] text-slate-500">{card.label}</p>
-                <p className={`mt-2 text-2xl font-bold ${card.tone}`}>{card.value}</p>
+              <article key={card.label} className="rounded-lg border bg-muted/50 p-4">
+                <p className="text-xs font-medium tracking-wide text-muted-foreground">{card.label}</p>
+                <p className={`mt-1.5 text-xl font-bold ${card.tone}`}>{card.value}</p>
               </article>
             ))}
           </div>
         )}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
-        <header className="border-b border-slate-200 p-4">
-          <h2 className="text-[1.9rem] font-semibold leading-none tracking-[-0.03em] text-slate-900">
+      <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
+        <header className="border-b p-4">
+          <h2 className="text-lg font-semibold leading-none tracking-tight">
             Loan Performance
           </h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Monthly disbursements compared with collections over the last twelve months.
           </p>
         </header>
         {performanceChartQuery.isError ? (
-          <div className="px-4 py-8 text-sm text-rose-700">{performanceChartQuery.error.message}</div>
+          <div className="px-4 py-6 text-sm text-destructive">{performanceChartQuery.error.message}</div>
         ) : performanceChartQuery.isPending ? (
-          <div className="m-4 h-[320px] animate-pulse rounded-xl bg-slate-100" />
+          <Skeleton className="m-4 h-[280px] rounded-lg" />
         ) : (
           <ChartContainer
             config={{
-              disbursedValue: { label: "Disbursed", color: "#1156e8" },
+              disbursedValue: { label: "Disbursed", color: "var(--color-primary)" },
               collectedValue: { label: "Collected", color: "#10b981" },
             }}
-            className="h-[320px] w-full p-4"
+            className="h-[280px] w-full p-4"
           >
             <LineChart data={performanceData} margin={{ top: 12, right: 12, left: 12, bottom: 8 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />

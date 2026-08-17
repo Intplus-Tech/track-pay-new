@@ -101,11 +101,11 @@ export function BranchManagerSection({
             {branch.manager.email}
           </p>
         ) : null}
-        {hasManager ? (
+        {/* {hasManager ? (
           <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-[10px]">
             Assigned
           </Badge>
-        ) : null}
+        ) : null} */}
       </div>
     </Section>
   );
