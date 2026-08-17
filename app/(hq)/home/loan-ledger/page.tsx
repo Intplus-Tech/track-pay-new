@@ -1,11 +1,9 @@
-import React from "react";
+import LoaneeTable from "@/components/loan/LoaneeTable";
 
-const page = async () => {
+export default function LoanLedgerPage() {
   return (
-    <div>
-      <h1>Loan Ledger</h1>
+    <div className="space-y-4">
+      <LoaneeTable />
     </div>
   );
-};
-
-export default page;
+}

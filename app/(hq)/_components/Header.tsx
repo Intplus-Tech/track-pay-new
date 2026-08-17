@@ -49,12 +49,15 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
 
   const isBranchDetail =
     /^\/home\/branch-matrix\/[^/]+$/.test(pathname);
+  const isLoaneeDetail = 
+    /^\/home\/loan-ledger\/[^/]+$/.test(pathname);
 
   const title =
     routeTitles[pathname] ??
     (pathname.startsWith("/home/user-management/") ? "User Detail" : null) ??
     (isBranchDetail ? "Branch Detail" : null) ??
-    (!isBranchDetail
+    (isLoaneeDetail ? "Loanee Details" : null) ??
+    (!isBranchDetail && !isLoaneeDetail
       ? pathname
         .split("/")
         .filter(Boolean)

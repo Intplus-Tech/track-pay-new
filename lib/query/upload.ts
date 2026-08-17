@@ -50,3 +50,36 @@ export async function uploadUserAvatar(file: File) {
     url: payload?.url ?? null,
   };
 }
+
+export async function uploadLoaneePhoto(file: File) {
+  const csrfToken = await getCsrfToken();
+  const body = new FormData();
+  body.append("file", file);
+
+  const response = await fetch("/api/uploads?purpose=LOANEE_PHOTO", {
+    method: "POST",
+    cache: "no-store",
+    credentials: "include",
+    headers: {
+      "X-CSRF-Token": csrfToken,
+    },
+    body,
+  });
+
+  const payload = (await response.json().catch(() => null)) as UploadResponse | null;
+
+  if (!response.ok) {
+    throw new Error(extractMessage(payload, "Unable to upload photo."));
+  }
+
+  const uploadId = payload?.id ?? payload?._id;
+
+  if (!uploadId) {
+    throw new Error("Upload completed but no upload id was returned.");
+  }
+
+  return {
+    uploadId,
+    url: payload?.url ?? null,
+  };
+}

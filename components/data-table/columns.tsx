@@ -3,7 +3,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { LoanData, StaffLoanPerformance, UserData } from "@/types/data-table";
 import type { LoanOfficer } from "@/types/loan-officer";
+import type { Loanee, LoanPortfolio, LoanRepayment, LoanScheduleInstalment } from "@/types/loan";
 import { StatusBadge } from "./StatusBadge";
+import { LoanStatusBadge } from "@/components/loan/LoanStatusBadge";
 import { RowActions, DropdownMenuItem, DropdownMenuSeparator } from "./RowActions";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
@@ -365,5 +367,297 @@ export const loanOfficerColumns: ColumnDef<LoanOfficer>[] = [
         </RowActions>
       );
     },
+  },
+];
+
+// ─── Loanee columns ──────────────────────────────────────────────────────────
+
+export interface LoaneeTableMeta {
+  onEdit: (loanee: Loanee) => void;
+  onViewPortfolios: (loanee: Loanee) => void;
+  onDelete: (loanee: Loanee) => void;
+}
+
+export const loaneeColumns: ColumnDef<Loanee>[] = [
+  {
+    accessorKey: "loaneeNumber",
+    header: "No.",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {row.getValue("loaneeNumber")}
+      </span>
+    ),
+  },
+  {
+    id: "name",
+    header: "Name",
+    cell: ({ row }) => {
+      const loanee = row.original;
+      const name = [loanee.firstName, loanee.middleName, loanee.lastName]
+        .filter(Boolean)
+        .join(" ");
+      const initials = [loanee.firstName, loanee.lastName]
+        .filter(Boolean)
+        .map((s) => s![0])
+        .join("")
+        .toUpperCase();
+      return (
+        <div className="flex items-center gap-3">
+          {loanee.photoUrl ? (
+            <img
+              src={loanee.photoUrl}
+              alt={name || "Loanee"}
+              className="h-8 w-8 shrink-0 rounded-full object-cover border border-border/50"
+            />
+          ) : (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+              {initials || "?"}
+            </span>
+          )}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium leading-none">{name || "—"}</p>
+          </div>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.getValue("email")}</span>
+    ),
+  },
+  {
+    accessorKey: "phoneNumber",
+    header: "Phone",
+    cell: ({ row }) => row.getValue("phoneNumber") ?? "—",
+  },
+  {
+    id: "actions",
+    cell: ({ row, table }) => {
+      const loanee = row.original;
+      const meta = table.options.meta as LoaneeTableMeta | undefined;
+      return (
+        <RowActions>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            onClick={() => meta?.onEdit(loanee)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            onClick={() => meta?.onViewPortfolios(loanee)}
+          >
+            View Portfolios
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start text-destructive"
+            onClick={() => meta?.onDelete(loanee)}
+          >
+            Delete
+          </Button>
+        </RowActions>
+      );
+    },
+  },
+];
+
+// ─── Portfolio columns ────────────────────────────────────────────────────────
+
+export interface PortfolioTableMeta {
+  onViewDetail: (portfolio: LoanPortfolio) => void;
+  onApplyPayment: (portfolio: LoanPortfolio) => void;
+  onDelete: (portfolio: LoanPortfolio) => void;
+}
+
+export const portfolioColumns: ColumnDef<LoanPortfolio>[] = [
+  {
+    accessorKey: "accountNumber",
+    header: "Account",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {row.getValue("accountNumber") ?? "—"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "principal",
+    header: "Principal",
+    cell: ({ row }) => `₦${Number(row.getValue("principal")).toLocaleString()}`,
+  },
+  {
+    accessorKey: "tenureMonths",
+    header: "Tenure",
+    cell: ({ row }) => `${row.getValue("tenureMonths")} mo`,
+  },
+  {
+    accessorKey: "interestRate",
+    header: "Rate",
+    cell: ({ row }) => `${row.getValue("interestRate")}%`,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => <LoanStatusBadge status={row.getValue("status")} />,
+  },
+  {
+    accessorKey: "nextDueDate",
+    header: "Next Due",
+    cell: ({ row }) => {
+      const d = row.getValue("nextDueDate") as string | null;
+      return d ? new Date(d).toLocaleDateString() : "—";
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row, table }) => {
+      const portfolio = row.original;
+      const meta = table.options.meta as PortfolioTableMeta | undefined;
+      return (
+        <RowActions>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            onClick={() => meta?.onViewDetail(portfolio)}
+          >
+            View Detail
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            onClick={() => meta?.onApplyPayment(portfolio)}
+          >
+            Apply Payment
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start text-destructive"
+            onClick={() => meta?.onDelete(portfolio)}
+          >
+            Delete
+          </Button>
+        </RowActions>
+      );
+    },
+  },
+];
+
+// ─── Repayment columns ────────────────────────────────────────────────────────
+
+export interface RepaymentTableMeta {
+  onApply: (repayment: LoanRepayment) => void;
+  onReverse: (repayment: LoanRepayment) => void;
+  applyingId?: string | null;
+  reversingId?: string | null;
+}
+
+export const repaymentColumns: ColumnDef<LoanRepayment>[] = [
+  {
+    accessorKey: "amount",
+    header: "Amount",
+    cell: ({ row }) => `₦${Number(row.getValue("amount")).toLocaleString()}`,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => <LoanStatusBadge status={row.getValue("status")} />,
+  },
+  {
+    accessorKey: "paidAt",
+    header: "Paid At",
+    cell: ({ row }) => {
+      const d = row.getValue("paidAt") as string | null;
+      return d ? new Date(d).toLocaleString() : "—";
+    },
+  },
+  {
+    accessorKey: "provider",
+    header: "Provider",
+    cell: ({ row }) => row.getValue("provider") ?? "—",
+  },
+  {
+    id: "actions",
+    cell: ({ row, table }) => {
+      const repayment = row.original;
+      const meta = table.options.meta as RepaymentTableMeta | undefined;
+      return (
+        <RowActions>
+          {repayment.status === "RECEIVED" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={meta?.applyingId === (repayment.id || repayment._id)}
+              className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+              onClick={() => meta?.onApply(repayment)}
+            >
+              {meta?.applyingId === (repayment.id || repayment._id) ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Applying…</>
+              ) : "Apply"}
+            </Button>
+          )}
+          {repayment.status === "APPLIED" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={meta?.reversingId === (repayment.id || repayment._id)}
+              className="px-2 text-sm font-normal w-full text-left flex items-center justify-start text-destructive"
+              onClick={() => meta?.onReverse(repayment)}
+            >
+              {meta?.reversingId === (repayment.id || repayment._id) ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Reversing…</>
+              ) : "Reverse"}
+            </Button>
+          )}
+        </RowActions>
+      );
+    },
+  },
+];
+
+// ─── Schedule columns ─────────────────────────────────────────────────────────
+
+export const scheduleColumns: ColumnDef<LoanScheduleInstalment>[] = [
+  {
+    accessorKey: "instalmentNumber",
+    header: "#",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {row.getValue("instalmentNumber")}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "dueDate",
+    header: "Due Date",
+    cell: ({ row }) => new Date(row.getValue("dueDate")).toLocaleDateString(),
+  },
+  {
+    accessorKey: "amount",
+    header: "Amount",
+    cell: ({ row }) => `₦${Number(row.getValue("amount")).toLocaleString()}`,
+  },
+  {
+    accessorKey: "settledAmount",
+    header: "Settled",
+    cell: ({ row }) => {
+      const v = row.getValue("settledAmount") as string | null;
+      return v ? `₦${Number(v).toLocaleString()}` : "—";
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => <LoanStatusBadge status={row.getValue("status")} />,
   },
 ];
