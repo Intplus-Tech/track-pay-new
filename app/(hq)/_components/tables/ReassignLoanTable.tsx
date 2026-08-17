@@ -1,29 +1,16 @@
+/**
+ * ReassignLoanTable is no longer used for direct officer-to-officer reassignment.
+ * That workflow is now handled by ReassignLoansDialog which fetches live officer
+ * loans and targets from the API. This stub is kept to avoid breaking any existing
+ * import references while the codebase is migrated.
+ */
 import React from "react";
-import { staffLoanPerformanceData } from "@/data/sample-data";
-import { DataTable } from "@/components/data-table/DataTable";
-import { loanOfficerColumns } from "@/components/data-table/columns";
 
 const ReassignLoanTable = () => {
   return (
-    <DataTable
-      columns={loanOfficerColumns}
-      data={staffLoanPerformanceData}
-      durationConfig={{
-        enabled: false,
-      }}
-      searchConfig={{
-        enabled: true,
-        placeholder: "Search Loans",
-      }}
-      exportConfig={{
-        enabled: true,
-        options: ["excel"],
-      }}
-      paginationConfig={{
-        enabled: true,
-        pageSizeOptions: [5, 10, 15, 40, 50],
-      }}
-    />
+    <div className="p-4 text-sm text-muted-foreground text-center">
+      Use the Reassign Loans button in the Loan Officers table to reassign loans.
+    </div>
   );
 };
 

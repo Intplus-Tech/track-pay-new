@@ -42,7 +42,10 @@ export interface DataTableProps<TData, TValue> {
   rowActions?: (row: TData) => ReactNode;
   onRowClick?: (row: TData) => void;
   title?: string;
+  /** Arbitrary meta object forwarded to useReactTable — use for row-action callbacks */
+  meta?: unknown;
 }
+
 
 export interface LoanData {
   id: string;

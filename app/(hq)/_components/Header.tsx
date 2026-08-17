@@ -43,7 +43,7 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
     "/home/team": "Team",
     "/home/settings": "Settings",
     "/home/accounts": "Branch Matrix",
-    "/home/loan-officer": "User Directory",
+    "/home/loan-officer": "Loan Officers",
     "/home/tracker": "Loan Ledger",
   };
 
@@ -56,11 +56,11 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
     (isBranchDetail ? "Branch Detail" : null) ??
     (!isBranchDetail
       ? pathname
-          .split("/")
-          .filter(Boolean)
-          .pop()
-          ?.replace(/-/g, " ")
-          .replace(/\b\w/g, (char) => char.toUpperCase()) ?? "Dashboard"
+        .split("/")
+        .filter(Boolean)
+        .pop()
+        ?.replace(/-/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase()) ?? "Dashboard"
       : null) ??
     "Dashboard";
 

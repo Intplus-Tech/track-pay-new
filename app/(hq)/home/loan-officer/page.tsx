@@ -1,12 +1,9 @@
-import React from "react";
+import LoanOfficerTable from "@/app/(hq)/_components/tables/LoanOfficertable";
 
-const page = async () => {
-
+export default function LoanOfficerPage() {
   return (
-    <div>
-      <h1>Loan Officers</h1>
+    <div className="space-y-4">
+      <LoanOfficerTable />
     </div>
   );
-};
-
-export default page;
+}

@@ -2,26 +2,21 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { LoanData, StaffLoanPerformance, UserData } from "@/types/data-table";
+import type { LoanOfficer } from "@/types/loan-officer";
 import { StatusBadge } from "./StatusBadge";
-import {
-  RowActions,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "./RowActions";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { RowActions, DropdownMenuItem, DropdownMenuSeparator } from "./RowActions";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
-import { PortfolioCard } from "../PortfolioCard";
 import { formatCurrency } from "@/lib/utils";
-import ReassignLoanTable from "@/app/(hq)/_components/tables/ReassignLoanTable";
-import { DialogClose } from "@radix-ui/react-dialog";
-import { Eye, EyeOff, X } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+
+/** Callbacks injected via table.options.meta for the loanOfficerColumns action cell */
+export interface LoanOfficerTableMeta {
+  onViewSnapshot: (officer: LoanOfficer) => void;
+  onReassign: (officer: LoanOfficer) => void;
+  onToggleAvailability: (officer: LoanOfficer) => void;
+}
 
 const portfolioData = {
   title: "Chike Portfolio Snapshot",
@@ -219,84 +214,147 @@ export const loaneeAccountColumns: ColumnDef<LoanData>[] = [
   },
 ];
 
-export const loanOfficerColumns: ColumnDef<StaffLoanPerformance>[] = [
+export const loanOfficerColumns: ColumnDef<LoanOfficer>[] = [
   {
     accessorKey: "employeeId",
     header: "Employee ID",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {row.getValue("employeeId") ?? "—"}
+      </span>
+    ),
   },
   {
-    accessorKey: "fullName",
-    header: "Full Name",
+    id: "fullName",
+    header: "Name",
+    cell: ({ row }) => {
+      const officer = row.original;
+      const name = (officer.fullName ?? `${officer.firstName ?? ""} ${officer.lastName ?? ""}`.trim()) || officer.email;
+
+      const initials = name
+        .split(" ")
+        .slice(0, 2)
+        .map((s: string) => s[0])
+        .join("")
+        .toUpperCase();
+      return (
+        <div className="flex items-center gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+            {initials}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium leading-none">{name}</p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {officer.email}
+            </p>
+          </div>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "branch",
+    id: "branch",
     header: "Branch",
+    cell: ({ row }) => row.original.branch?.name ?? "—",
   },
   {
-    accessorKey: "activeLoan",
-    header: "Active Loans",
+    id: "assignedLoans",
+    header: "Loans",
+    cell: ({ row }) => {
+      const active = row.original.activeLoans;
+      const max = row.original.maxAssignedLoans;
+      if (active == null) return "—";
+      return (
+        <span>
+          {active}
+          {max != null && (
+            <span className="text-muted-foreground"> / {max}</span>
+          )}
+        </span>
+      );
+    },
   },
   {
-    accessorKey: "collectionRate",
-    header: "Collection rate",
+    id: "collectionRate",
+    header: "Collection Rate",
+    cell: ({ row }) => {
+      const rate = row.original.collectionRate;
+      if (rate == null) return "—";
+      return (
+        <span
+          className={
+            rate >= 80
+              ? "text-emerald-600 dark:text-emerald-400 font-medium"
+              : rate >= 50
+              ? "text-amber-600 dark:text-amber-400 font-medium"
+              : "text-destructive font-medium"
+          }
+        >
+          {rate.toFixed(1)}%
+        </span>
+      );
+    },
   },
   {
-    accessorKey: "overdueRate",
-    header: "Overdue Rate",
-    cell: ({ row }) => formatCurrency(row.getValue("overdueRate")),
-  },
-  {
-    accessorKey: "status",
+    id: "availabilityStatus",
     header: "Status",
-    cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
+    cell: ({ row }) => {
+      const status = row.original.availabilityStatus;
+      return (
+        <span
+          className={[
+            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+            status === "ACTIVE"
+              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              : "bg-destructive/10 text-destructive",
+          ].join(" ")}
+        >
+          <span
+            className={[
+              "h-1.5 w-1.5 rounded-full",
+              status === "ACTIVE" ? "bg-emerald-500" : "bg-destructive",
+            ].join(" ")}
+          />
+          {status === "ACTIVE" ? "Active" : "Unavailable"}
+        </span>
+      );
+    },
   },
   {
     id: "actions",
-    cell: ({ row }) => (
-      <RowActions>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              variant={"ghost"}
-              size={"sm"}
-              className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
-            >
-              View Portfolio
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="">
-            <DialogTitle className="sr-only">
-              Empolyee portfolio information
-            </DialogTitle>
-            <PortfolioCard {...portfolioData} />
-          </DialogContent>
-        </Dialog>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              variant={"ghost"}
-              size={"sm"}
-              className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
-            >
-              Reassign Loans
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-transparent border-none">
-            <DialogTitle className="sr-only">
-              Reassign Employee loads
-            </DialogTitle>
-            <div className="p-6 rounded-md bg-background max-h-[90vh] overflow-y-auto w-fit mx-auto">
-              <div className="flex items-center justify-end w-full">
-                <DialogClose>
-                  <X />
-                </DialogClose>
-              </div>
-              <ReassignLoanTable />
-            </div>
-          </DialogContent>
-        </Dialog>
-        <DropdownMenuItem>Mark as Unavailable</DropdownMenuItem>
-      </RowActions>
-    ),
+    cell: ({ row, table }) => {
+      const officer = row.original;
+      const meta = table.options.meta as LoanOfficerTableMeta | undefined;
+      return (
+        <RowActions>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            onClick={() => meta?.onViewSnapshot(officer)}
+          >
+            View Portfolio
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            onClick={() => meta?.onReassign(officer)}
+          >
+            Reassign Loans
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
+            onClick={() => meta?.onToggleAvailability(officer)}
+          >
+            {officer.availabilityStatus === "ACTIVE"
+              ? "Mark as Unavailable"
+              : "Mark as Active"}
+          </Button>
+        </RowActions>
+      );
+    },
   },
 ];

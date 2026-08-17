@@ -94,17 +94,11 @@ export function ExportButton({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 rounded-full bg-primary/10 font-normal"
-        >
-          Export
-          <ChevronDown className="ml-2 h-4 w-4" />
-        </Button>
+      <DropdownMenuTrigger className="flex pl-2 ">
+        Export
+        <ChevronDown className="ml-2 h-4 w-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-white border shadow-lg">
+      <DropdownMenuContent>
         {options.map((option) => (
           <DropdownMenuItem
             key={option}

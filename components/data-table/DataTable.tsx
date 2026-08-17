@@ -46,7 +46,9 @@ export function DataTable<TData, TValue>({
   // rowActions,
   onRowClick,
   title,
+  meta,
 }: DataTableProps<TData, TValue>) {
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -103,7 +105,11 @@ export function DataTable<TData, TValue>({
       rowSelection,
       globalFilter,
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    meta: meta as any,
+
   });
+
 
   const handleFilterChange = (filterId: string, values: string[]) => {
     setSelectedFilters((prev) => ({
