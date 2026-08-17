@@ -26,10 +26,10 @@ async function getSnapshot(id: string, accessToken: string): Promise<LoanOfficer
   if (response.status === 404) return null;
   if (!response.ok) throw new Error("Unable to load officer snapshot.");
 
-  const body = await readBackendBody<LoanOfficerSnapshot>(response);
+  const body = await readBackendBody<any>(response);
   // readBackendBody can return a string when content-type isn’t JSON
   if (!body || typeof body !== "object") return null;
-  return body as LoanOfficerSnapshot;
+  return (body.data ?? body) as LoanOfficerSnapshot;
 }
 
 export default async function OfficerSnapshotPage({ params }: PageProps) {
@@ -55,15 +55,16 @@ export default async function OfficerSnapshotPage({ params }: PageProps) {
     notFound();
   }
 
-  const capacityPct = snapshot
+  const capacityPct = snapshot?.capacity?.max
     ? Math.min(
         100,
-        Math.round((snapshot.capacity.assigned / snapshot.capacity.max) * 100),
+        Math.round(((snapshot.capacity.assigned ?? 0) / snapshot.capacity.max) * 100),
       )
     : 0;
 
-  const overdue = snapshot?.problemLoans.filter((l) => l.type === "overdue") ?? [];
-  const partial = snapshot?.problemLoans.filter((l) => l.type === "partial") ?? [];
+  const problemLoans = Array.isArray(snapshot?.problemLoans) ? snapshot.problemLoans : [];
+  const overdue = problemLoans.filter((l) => l.type === "overdue");
+  const partial = problemLoans.filter((l) => l.type === "partial");
 
   return (
     <div className="space-y-6">
@@ -108,9 +109,9 @@ export default async function OfficerSnapshotPage({ params }: PageProps) {
                 ASSIGNED LOANS
               </p>
               <p className="mt-1 text-3xl font-bold leading-none tracking-tight">
-                {snapshot.capacity.assigned}
+                {snapshot?.capacity?.assigned ?? 0}
                 <span className="ml-1 text-lg font-normal text-muted-foreground">
-                  / {snapshot.capacity.max}
+                  / {snapshot?.capacity?.max ?? 0}
                 </span>
               </p>
               {/* Capacity bar */}
@@ -136,17 +137,17 @@ export default async function OfficerSnapshotPage({ params }: PageProps) {
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
                 <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                  {snapshot.currentMonth.percentage.toFixed(1)}% of target
+                  {snapshot?.currentMonth?.percentage?.toFixed(1) ?? "0.0"}% of target
                 </span>
               </div>
               <p className="text-xs font-medium tracking-wide text-muted-foreground">
                 COLLECTED THIS MONTH
               </p>
               <p className="mt-1 text-3xl font-bold leading-none tracking-tight text-emerald-600 dark:text-emerald-500">
-                ₦{Number(snapshot.currentMonth.collected).toLocaleString()}
+                ₦{Number(snapshot?.currentMonth?.collected ?? 0).toLocaleString()}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Target: ₦{Number(snapshot.currentMonth.target).toLocaleString()}
+                Target: ₦{Number(snapshot?.currentMonth?.target ?? 0).toLocaleString()}
               </p>
             </article>
 
@@ -156,7 +157,7 @@ export default async function OfficerSnapshotPage({ params }: PageProps) {
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
                   <AlertTriangle className="h-5 w-5" />
                 </div>
-                {snapshot.problemLoans.length > 0 && (
+                {problemLoans.length > 0 && (
                   <span className="text-xs font-medium text-destructive">
                     Requires attention
                   </span>
@@ -166,7 +167,7 @@ export default async function OfficerSnapshotPage({ params }: PageProps) {
                 PROBLEM LOANS
               </p>
               <p className="mt-1 text-3xl font-bold leading-none tracking-tight text-destructive">
-                {snapshot.problemLoans.length}
+                {problemLoans.length}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {overdue.length} overdue · {partial.length} partial payments
@@ -175,7 +176,7 @@ export default async function OfficerSnapshotPage({ params }: PageProps) {
           </section>
 
           {/* Problem loans detail */}
-          {snapshot.problemLoans.length > 0 && (
+          {problemLoans.length > 0 && (
             <section className="rounded-xl border bg-card shadow-sm">
               <header className="border-b p-4">
                 <h2 className="text-base font-semibold leading-none tracking-tight">

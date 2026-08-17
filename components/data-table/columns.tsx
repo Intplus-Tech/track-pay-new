@@ -8,7 +8,7 @@ import { RowActions, DropdownMenuItem, DropdownMenuSeparator } from "./RowAction
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 import { formatCurrency } from "@/lib/utils";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 /** Callbacks injected via table.options.meta for the loanOfficerColumns action cell */
@@ -16,6 +16,7 @@ export interface LoanOfficerTableMeta {
   onViewSnapshot: (officer: LoanOfficer) => void;
   onReassign: (officer: LoanOfficer) => void;
   onToggleAvailability: (officer: LoanOfficer) => void;
+  updatingAvailabilityId?: string | null;
 }
 
 const portfolioData = {
@@ -346,12 +347,20 @@ export const loanOfficerColumns: ColumnDef<LoanOfficer>[] = [
           <Button
             variant="ghost"
             size="sm"
+            disabled={meta?.updatingAvailabilityId === officer.id}
             className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
             onClick={() => meta?.onToggleAvailability(officer)}
           >
-            {officer.availabilityStatus === "ACTIVE"
-              ? "Mark as Unavailable"
-              : "Mark as Active"}
+            {meta?.updatingAvailabilityId === officer.id ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : officer.availabilityStatus === "ACTIVE" ? (
+              "Mark as Unavailable"
+            ) : (
+              "Mark as Active"
+            )}
           </Button>
         </RowActions>
       );

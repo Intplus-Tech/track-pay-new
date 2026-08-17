@@ -102,6 +102,9 @@ export default function LoanOfficerTable() {
     onViewSnapshot: handleViewSnapshot,
     onReassign: handleReassign,
     onToggleAvailability: handleToggleAvailability,
+    updatingAvailabilityId: availabilityMutation.isPending
+      ? availabilityMutation.variables?.officerId
+      : null,
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
