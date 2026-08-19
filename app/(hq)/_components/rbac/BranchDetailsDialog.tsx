@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useDeleteBranchMutation } from "@/hooks/rbac/useDeleteBranchMutation";
 import { useBranchStatusMutation } from "@/hooks/rbac/useBranchStatusMutation";
 import { useUnassignBranchManagerMutation } from "@/hooks/rbac/useUnassignBranchManagerMutation";
+import { formatCurrency } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -61,23 +62,7 @@ function getBranchAddress(branch: RbacBranch) {
   return parts.length > 0 ? parts.join(", ") : branch.location || "Location unavailable";
 }
 
-function formatCurrency(value: string | number | null | undefined) {
-  if (value === null || value === undefined || value === "") {
-    return "Not available";
-  }
 
-  const normalized = typeof value === "string" ? Number(value) : Number(value);
-
-  if (!Number.isFinite(normalized)) {
-    return "Not available";
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(normalized);
-}
 
 function formatCollectionRate(value: number | null | undefined) {
   if (typeof value !== "number" || Number.isNaN(value)) {

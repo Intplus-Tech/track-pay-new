@@ -12,7 +12,7 @@ import {
 import { useBranchTransactionsQuery } from "@/hooks/rbac/useBranchTransactionsQuery";
 import type { RbacBranchTransaction } from "@/types/rbac";
 import { Section } from "./shared";
-import { formatCurrency } from "./utils";
+import { formatCurrency } from "@/lib/utils";
 
 function getTransactionTag(type: RbacBranchTransaction["type"], label?: string | null) {
   const normalizedLabel = label ?? type.replace("_", " ");
@@ -67,7 +67,7 @@ export function BranchTransactions({ branchId }: { branchId: string }) {
                     </div>
                   </TableCell>
                   <TableCell className="text-right text-xs font-semibold text-foreground">
-                    {row.amount != null ? formatCurrency(Number(row.amount)) : "-"}
+                    {row.amount != null ? formatCurrency(Number(row.amount), "-") : "-"}
                   </TableCell>
                   <TableCell className="text-right">
                     <span

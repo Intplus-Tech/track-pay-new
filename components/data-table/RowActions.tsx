@@ -23,7 +23,6 @@ export function RowActions({ children }: RowActionsProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="min-w-[160px] bg-popover border shadow-lg"
       >
         {children}
       </DropdownMenuContent>

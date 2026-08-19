@@ -9,6 +9,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { RecordRepaymentForm } from "@/components/forms/RecordRepaymentForm";
 import { ApplyPaymentForm } from "@/components/forms/ApplyPaymentForm";
 import { useRepaymentListQuery } from "@/hooks/loan/useRepaymentListQuery";
@@ -24,20 +35,45 @@ interface RepaymentPanelProps {
 export function RepaymentPanel({ portfolioId }: RepaymentPanelProps) {
   const [recordOpen, setRecordOpen] = useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
+  const [repaymentToReverse, setRepaymentToReverse] = useState<LoanRepayment | null>(null);
 
   const repaymentQuery = useRepaymentListQuery(portfolioId);
   const applyMutation = useApplyRepaymentMutation();
   const reverseMutation = useReverseRepaymentMutation();
 
-  const repayments = repaymentQuery.data?.data ?? [];
+  const repayments = Array.isArray(repaymentQuery.data)
+    ? repaymentQuery.data
+    : (repaymentQuery.data?.data ?? []);
 
   const handleApply = (repayment: LoanRepayment) => {
-    applyMutation.mutate({ repaymentId: (repayment.id || repayment._id)!, portfolioId });
+    applyMutation.mutate(
+      { repaymentId: (repayment.id || repayment._id)!, portfolioId },
+      {
+        onSuccess: () => toast.success("Repayment applied successfully"),
+        onError: (err) => toast.error(err.message || "Failed to apply repayment"),
+      }
+    );
   };
 
   const handleReverse = (repayment: LoanRepayment) => {
-    if (!confirm("Reverse this repayment? This will roll back the portfolio balance.")) return;
-    reverseMutation.mutate({ repaymentId: (repayment.id || repayment._id)!, portfolioId });
+    setRepaymentToReverse(repayment);
+  };
+
+  const confirmReverse = () => {
+    if (!repaymentToReverse) return;
+    reverseMutation.mutate(
+      { repaymentId: (repaymentToReverse.id || repaymentToReverse._id)!, portfolioId },
+      {
+        onSuccess: () => {
+          toast.success("Repayment reversed successfully");
+          setRepaymentToReverse(null);
+        },
+        onError: (err) => {
+          toast.error(err.message || "Failed to reverse repayment");
+          setRepaymentToReverse(null);
+        },
+      }
+    );
   };
 
   const tableMeta: RepaymentTableMeta = {
@@ -125,6 +161,32 @@ export function RepaymentPanel({ portfolioId }: RepaymentPanelProps) {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Reverse confirmation dialog */}
+      <AlertDialog
+        open={!!repaymentToReverse}
+        onOpenChange={(open) => !open && setRepaymentToReverse(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reverse Repayment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will roll back the portfolio balance and mark this repayment as reversed. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+            <Button
+              onClick={confirmReverse}
+              variant="destructive"
+              disabled={reverseMutation.isPending}
+            >
+              {reverseMutation.isPending ? "Reversing..." : "Reverse"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }

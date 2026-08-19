@@ -16,6 +16,7 @@ import { useBranchesQuery } from "@/hooks/rbac/useBranchesQuery";
 import { useDashboardPerformanceChartQuery } from "@/hooks/useDashboardPerformanceChartQuery";
 import { useDashboardTodayQuery } from "@/hooks/useDashboardTodayQuery";
 import { useDashboardOverviewQuery } from "@/hooks/useDashboardOverviewQuery";
+import { formatCurrency } from "@/lib/utils";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -38,9 +39,7 @@ interface StatCard {
   valueTone?: "default" | "success" | "danger";
 }
 
-function formatAmount(value: string) {
-  return value.startsWith("N") ? value : `N${value}`;
-}
+
 
 function buildStatCards(overview?: {
   overallLoan: DashboardMetric;
@@ -55,7 +54,7 @@ function buildStatCards(overview?: {
   return [
     {
       title: "TOTAL LOAN PORTFOLIO",
-      value: formatAmount(overview.overallLoan.value),
+      value: formatCurrency(overview.overallLoan.value),
       subtitle: `${overview.overallLoan.count} loans in the portfolio`,
       icon: Square,
       trend: `${overview.overallLoan.changePercent >= 0 ? "+" : ""}${overview.overallLoan.changePercent}%`,
@@ -64,14 +63,14 @@ function buildStatCards(overview?: {
     },
     {
       title: "ACTIVE LOANS",
-      value: formatAmount(overview.activeLoan.value),
+      value: formatCurrency(overview.activeLoan.value),
       subtitle: `${overview.activeLoan.count} active loans`,
       icon: CheckCircle2,
       valueTone: "success",
     },
     {
       title: "OVERDUE LOANS",
-      value: formatAmount(overview.overdue.value),
+      value: formatCurrency(overview.overdue.value),
       subtitle: `${overview.overdue.count} overdue loans`,
       icon: AlertTriangle,
       trend: overview.overdue.count > 0 ? "Requires attention" : "Up to date",
@@ -135,7 +134,7 @@ const Dashboard = () => {
               setDraftFilters((current) => ({ ...current, branchId: value }))
             }
           >
-            <SelectTrigger aria-label="Filter by branch">
+            <SelectTrigger aria-label="Filter by branch" className="w-full">
               <SelectValue placeholder="All branches" />
             </SelectTrigger>
             <SelectContent>
@@ -206,53 +205,53 @@ const Dashboard = () => {
             );
           }
 
-        const Icon = card.icon;
+          const Icon = card.icon;
 
-        return (
-        <article
-          key={card.title}
-          className="rounded-xl border bg-card text-card-foreground p-4 shadow-sm"
-        >
-          <div className="mb-2 flex items-start justify-between gap-2">
-            <div
-              className={[
-                "flex size-8 items-center justify-center rounded-lg",
-                card.valueTone === "success" && "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400",
-                card.valueTone === "danger" && "bg-destructive/10 text-destructive",
-                card.valueTone === "default" && "bg-muted text-muted-foreground",
-              ].join(" ")}
+          return (
+            <article
+              key={card.title}
+              className="rounded-xl border bg-card text-card-foreground p-4 shadow-sm"
             >
-              <Icon className="size-4" />
-            </div>
-            {card.trend ? (
-              <span
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div
+                  className={[
+                    "flex size-8 items-center justify-center rounded-lg",
+                    card.valueTone === "success" && "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400",
+                    card.valueTone === "danger" && "bg-destructive/10 text-destructive",
+                    card.valueTone === "default" && "bg-muted text-muted-foreground",
+                  ].join(" ")}
+                >
+                  <Icon className="size-4" />
+                </div>
+                {card.trend ? (
+                  <span
+                    className={[
+                      "text-xs font-medium",
+                      card.trendTone === "positive" && "text-emerald-500 dark:text-emerald-400",
+                      card.trendTone === "alert" && "text-destructive",
+                      card.trendTone === "neutral" && "text-muted-foreground",
+                    ].join(" ")}
+                  >
+                    {card.trend}
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-xs font-medium tracking-wide text-muted-foreground">
+                {card.title}
+              </p>
+              <p
                 className={[
-                  "text-xs font-medium",
-                  card.trendTone === "positive" && "text-emerald-500 dark:text-emerald-400",
-                  card.trendTone === "alert" && "text-destructive",
-                  card.trendTone === "neutral" && "text-muted-foreground",
+                  "mt-1 text-2xl font-bold leading-none tracking-tight",
+                  card.valueTone === "success" && "text-emerald-600 dark:text-emerald-500",
+                  card.valueTone === "danger" && "text-destructive",
+                  card.valueTone === "default" && "text-foreground",
                 ].join(" ")}
               >
-                {card.trend}
-              </span>
-            ) : null}
-          </div>
-          <p className="text-xs font-medium tracking-wide text-muted-foreground">
-            {card.title}
-          </p>
-          <p
-            className={[
-              "mt-1 text-2xl font-bold leading-none tracking-tight",
-              card.valueTone === "success" && "text-emerald-600 dark:text-emerald-500",
-              card.valueTone === "danger" && "text-destructive",
-              card.valueTone === "default" && "text-foreground",
-            ].join(" ")}
-          >
-            {card.value}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">{card.subtitle}</p>
-        </article>
-        );
+                {card.value}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{card.subtitle}</p>
+            </article>
+          );
         })}
       </section>
 
@@ -281,12 +280,12 @@ const Dashboard = () => {
             {[
               {
                 label: "TOTAL DUE TODAY",
-                value: formatAmount(todayQuery.data.totalDueToday),
+                value: formatCurrency(todayQuery.data.totalDueToday),
                 tone: "text-foreground",
               },
               {
                 label: "COLLECTED TODAY",
-                value: formatAmount(todayQuery.data.collectedToday),
+                value: formatCurrency(todayQuery.data.collectedToday),
                 tone: "text-emerald-600 dark:text-emerald-500",
               },
               {

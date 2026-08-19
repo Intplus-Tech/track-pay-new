@@ -30,13 +30,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", inter.variable, nunitoSansHeading.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn("font-sans", inter.variable, nunitoSansHeading.variable)}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-surface-tint`}
       >
         <Providers>
           {children}
-          <Toaster />
+          <Toaster position="top-right" duration={4000} visibleToasts={3} closeButton />
         </Providers>
       </body>
     </html>

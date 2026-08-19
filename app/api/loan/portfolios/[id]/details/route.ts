@@ -22,7 +22,6 @@ export async function GET(
     });
     const payload = await readBackendBody<unknown>(response);
 
-    console.log("Portfolio details server response:", payload);
 
     if (!response.ok) {
       return NextResponse.json(

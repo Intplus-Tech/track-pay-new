@@ -5,6 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AmountInput } from "@/components/ui/amount-input";
 import {
   Form,
   FormControl,
@@ -15,9 +16,10 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { useCreateRepaymentMutation } from "@/hooks/loan/useCreateRepaymentMutation";
+import { zodAmount } from "@/lib/utils";
 
 const schema = z.object({
-  amount: z.string().min(1, "Amount is required"),
+  amount: zodAmount,
   currency: z.string().optional(),
   paidAt: z.string().optional(),
   provider: z.string().optional(),
@@ -90,7 +92,7 @@ export function RecordRepaymentForm({
                   Amount (₦) <span className="text-destructive">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. 25000" {...field} />
+                  <AmountInput placeholder="e.g. 25000" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -3,13 +3,15 @@
 import { LoanStatusBadge } from "@/components/loan/LoanStatusBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioDetailsQuery } from "@/hooks/loan/usePortfolioDetailsQuery";
+import { formatCurrency } from "@/lib/utils";
 import { CalendarClock, TrendingDown, BadgeCheck, Wallet } from "lucide-react";
 
 interface PortfolioSummaryCardProps {
   portfolioId: string;
   nextDueDate?: string | null;
+  principal?: string | null;
 }
-export function PortfolioSummaryCard({ portfolioId, nextDueDate }: PortfolioSummaryCardProps) {
+export function PortfolioSummaryCard({ portfolioId, nextDueDate, principal }: PortfolioSummaryCardProps) {
   const detailsQuery = usePortfolioDetailsQuery(portfolioId);
 
   if (detailsQuery.isPending) {
@@ -41,21 +43,21 @@ export function PortfolioSummaryCard({ portfolioId, nextDueDate }: PortfolioSumm
       icon: <Wallet className="h-5 w-5" />,
       iconBg: "bg-primary/10 text-primary",
       label: "PRINCIPAL",
-      value: `₦${Number(d.originalAmount).toLocaleString()}`,
+      value: formatCurrency((d as any).principal || d.originalAmount || principal),
       sub: null, // Removed as it's no longer provided
     },
     {
       icon: <TrendingDown className="h-5 w-5" />,
       iconBg: "bg-destructive/10 text-destructive",
       label: "OUTSTANDING",
-      value: `₦${Number(d.outstanding).toLocaleString()}`,
-      sub: `of ₦${Number(s.totalDue).toLocaleString()} expected`,
+      value: formatCurrency(d.outstanding),
+      sub: `of ${formatCurrency(s?.totalDue)} expected`,
     },
     {
       icon: <BadgeCheck className="h-5 w-5" />,
       iconBg: "bg-emerald-500/10 text-emerald-500",
       label: "TOTAL REPAID",
-      value: `₦${Number(d.paidToDate).toLocaleString()}`,
+      value: formatCurrency(d.paidToDate),
       sub: s
         ? `${s.paidInstallments} of ${s.totalInstallments} instalments`
         : null,

@@ -1,11 +1,12 @@
 import type { RbacBranch } from "@/types/rbac";
-import { formatCollectionRate, formatCurrency } from "./utils";
+import { formatCollectionRate } from "./utils";
+import { formatCurrency } from "@/lib/utils";
 
 export function BranchStats({ branch }: { branch: RbacBranch }) {
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {[
-        { label: "Total exposure", value: formatCurrency(branch.totalExposure), tone: "bg-card" },
+        { label: "Total exposure", value: formatCurrency(branch.totalExposure, "-"), tone: "bg-card" },
         {
           label: "Active loans",
           value: typeof branch.activeLoans === "number" ? String(branch.activeLoans) : "-",

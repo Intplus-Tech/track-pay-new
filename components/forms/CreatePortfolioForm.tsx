@@ -5,6 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AmountInput } from "@/components/ui/amount-input";
 import {
   Form,
   FormControl,
@@ -24,11 +25,11 @@ import { Loader2 } from "lucide-react";
 import { useCreatePortfolioMutation } from "@/hooks/loan/useCreatePortfolioMutation";
 import { useLoanOfficersQuery } from "@/hooks/loan-officers/useLoanOfficersQuery";
 import type { InterestType, PortfolioStatus } from "@/types/loan";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, zodAmount } from "@/lib/utils";
 
 const schema = z.object({
   loaneeId: z.string().min(1, "Loanee is required"),
-  principal: z.string().min(1, "Principal is required"),
+  principal: zodAmount,
   tenureMonths: z.coerce
     .number({ invalid_type_error: "Must be a number" })
     .int()
@@ -175,7 +176,7 @@ export function CreatePortfolioForm({
                     Principal (₦) <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. 500000" {...field} />
+                    <AmountInput placeholder="e.g. 500000" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

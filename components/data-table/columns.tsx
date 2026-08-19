@@ -289,8 +289,8 @@ export const loanOfficerColumns: ColumnDef<LoanOfficer>[] = [
             rate >= 80
               ? "text-emerald-600 dark:text-emerald-400 font-medium"
               : rate >= 50
-              ? "text-amber-600 dark:text-amber-400 font-medium"
-              : "text-destructive font-medium"
+                ? "text-amber-600 dark:text-amber-400 font-medium"
+                : "text-destructive font-medium"
           }
         >
           {rate.toFixed(1)}%
@@ -594,30 +594,38 @@ export const repaymentColumns: ColumnDef<LoanRepayment>[] = [
       return (
         <RowActions>
           {repayment.status === "RECEIVED" && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <DropdownMenuItem
+              asChild
               disabled={meta?.applyingId === (repayment.id || repayment._id)}
-              className="px-2 text-sm font-normal w-full text-left flex items-center justify-start"
               onClick={() => meta?.onApply(repayment)}
+              className="bg-transparent hover:bg-transparent"
             >
-              {meta?.applyingId === (repayment.id || repayment._id) ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Applying…</>
-              ) : "Apply"}
-            </Button>
+              <Button
+                className="w-full"
+                variant="secondary"
+              >
+                {meta?.applyingId === (repayment.id || repayment._id) ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Applying…</>
+                ) : "Apply"}
+              </Button>
+            </DropdownMenuItem>
           )}
           {repayment.status === "APPLIED" && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <DropdownMenuItem
+              asChild
               disabled={meta?.reversingId === (repayment.id || repayment._id)}
-              className="px-2 text-sm font-normal w-full text-left flex items-center justify-start text-destructive"
               onClick={() => meta?.onReverse(repayment)}
+              className="bg-transparent hover:bg-transparent"
             >
-              {meta?.reversingId === (repayment.id || repayment._id) ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Reversing…</>
-              ) : "Reverse"}
-            </Button>
+              <Button
+                variant="destructive"
+                className="w-full"
+              >
+                {meta?.reversingId === (repayment.id || repayment._id) ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Reversing…</>
+                ) : "Reverse"}
+              </Button>
+            </DropdownMenuItem>
           )}
         </RowActions>
       );

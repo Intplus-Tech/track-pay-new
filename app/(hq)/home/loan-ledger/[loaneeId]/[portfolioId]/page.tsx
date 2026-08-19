@@ -144,6 +144,7 @@ export default async function PortfolioDetailPage({ params }: PageProps) {
           <PortfolioSummaryCard
             portfolioId={portfolioId}
             nextDueDate={portfolio.nextDueDate}
+            principal={portfolio.principal}
           />
 
           {/* Schedule panel */}

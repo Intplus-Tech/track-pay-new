@@ -18,12 +18,7 @@ export function getBranchAddress(branch: RbacBranch) {
   return parts.length > 0 ? parts.join(", ") : branch.location || "Location unavailable";
 }
 
-export function formatCurrency(value: string | number | null | undefined) {
-  if (value === null || value === undefined || value === "") return "-";
-  const normalized = Number(value);
-  if (!Number.isFinite(normalized)) return "-";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(normalized);
-}
+
 
 export function formatCollectionRate(value: number | null | undefined) {
   if (typeof value !== "number" || Number.isNaN(value)) return "-";

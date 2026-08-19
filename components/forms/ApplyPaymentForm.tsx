@@ -5,6 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AmountInput } from "@/components/ui/amount-input";
 import {
   Form,
   FormControl,
@@ -15,9 +16,11 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { useApplyPaymentMutation } from "@/hooks/loan/useApplyPaymentMutation";
+import { zodAmount } from "@/lib/utils";
+import { toast } from "sonner";
 
 const schema = z.object({
-  amount: z.string().min(1, "Amount is required"),
+  amount: zodAmount,
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -43,8 +46,12 @@ export function ApplyPaymentForm({
       { portfolioId, payload: { amount: values.amount } },
       {
         onSuccess: () => {
+          toast.success("Payment applied successfully");
           form.reset();
           onSuccess?.();
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to apply payment");
         },
       },
     );
@@ -73,7 +80,7 @@ export function ApplyPaymentForm({
                 Amount (₦) <span className="text-destructive">*</span>
               </FormLabel>
               <FormControl>
-                <Input placeholder="e.g. 25000" {...field} />
+                <AmountInput placeholder="e.g. 25000" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
