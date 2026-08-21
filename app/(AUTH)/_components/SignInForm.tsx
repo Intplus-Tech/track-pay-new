@@ -68,6 +68,8 @@ export function SignInForm() {
         }
         | null;
 
+      console.log("Login API Response:", payload);
+
       if (!response.ok) {
         setErrorMessage(payload?.message ?? "Unable to sign in.");
         return;

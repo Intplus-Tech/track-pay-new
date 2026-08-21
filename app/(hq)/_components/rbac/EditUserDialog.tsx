@@ -148,13 +148,13 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[min(100vw-1rem,56rem)] max-w-none bg-card max-h-[90vh] overflow-hidden overflow-y-scroll">
+      <DialogContent className="sm:max-w-[600px] bg-card max-h-[85vh] overflow-hidden grid-rows-[auto_1fr]">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSave)} className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
+          <form onSubmit={form.handleSubmit(onSave)} className="flex flex-col overflow-hidden min-h-0 gap-4">
+            <div className="grid gap-4 md:grid-cols-2 overflow-y-auto pr-2 md:pr-0 py-1">
               <FormField control={form.control} name="email" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
@@ -202,7 +202,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                   <FormLabel>Role</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Assign a role" />
                       </SelectTrigger>
                     </FormControl>
@@ -223,7 +223,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                   <FormLabel>Branch</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Assign a branch" />
                       </SelectTrigger>
                     </FormControl>
@@ -257,7 +257,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                         </AttachmentMedia>
                         <AttachmentContent>
                           <AttachmentTitle>{avatarUploadName || "Upload avatar image"}</AttachmentTitle>
-                          <AttachmentDescription>
+                          <AttachmentDescription className="text-wrap">
                             {avatarUploadName
                               ? "Image uploaded successfully."
                               : "Uploads to the backend and updates the stored upload id for this user profile."}
@@ -317,7 +317,7 @@ export function EditUserDialog({ open, onOpenChange, user, roles, branches }: Ed
                 </FormItem>
               )} />
             </div>
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-end gap-3 mt-auto pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={avatarUploadPending}>
                 Cancel
               </Button>

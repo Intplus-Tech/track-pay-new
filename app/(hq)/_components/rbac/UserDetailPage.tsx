@@ -16,6 +16,7 @@ import { useRolesQuery } from "@/hooks/rbac/useRolesQuery";
 import { useUserDetailQuery } from "@/hooks/rbac/useUserDetailQuery";
 import { EditUserDialog } from "./EditUserDialog";
 import { UserModulePermissionsSection } from "./UserModulePermissionsSection";
+import { cn } from "@/lib/utils";
 
 function fieldValue(value: string | number | boolean | null | undefined) {
   if (value === null || value === undefined || value === "") {
@@ -31,9 +32,9 @@ function fieldValue(value: string | number | boolean | null | undefined) {
 
 function fieldCard({ label, value }: { label: string; value: string | number | boolean | null | undefined }) {
   return (
-    <div className="rounded-2xl border border-border bg-muted px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
-      <p className="mt-1 break-words text-sm font-medium text-foreground">{fieldValue(value)}</p>
+    <div className="rounded-md border border-border bg-muted px-4 py-3">
+      <p className="text-[8px] sm:text-xs md:text-xs md:font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="mt-1 break-words text-[10px] sm:text-xs md:text-xs font-medium text-foreground">{fieldValue(value)}</p>
     </div>
   );
 }
@@ -108,8 +109,8 @@ export default function UserDetailPage({ userId }: { userId: string }) {
       eyebrow="RBAC workspace"
       title={
         user ? (
-          <div className="flex min-w-0 items-start gap-4">
-            <Avatar className="size-24">
+          <div className="flex flex-col md:flex-row min-w-0 items-start gap-4">
+            <Avatar className="size-16 md:size-24">
               {photoUrl ? <AvatarImage src={photoUrl} alt={user.name} /> : null}
               <AvatarFallback >
                 {user.name.slice(0, 2).toUpperCase()}
@@ -117,8 +118,8 @@ export default function UserDetailPage({ userId }: { userId: string }) {
             </Avatar>
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="break-words">{user.name}</span>
-                <Badge variant={user.isActive ? "default" : "outline"}>{user.isActive ? "Active" : "Inactive"}</Badge>
+                <span className="break-words text-md md:text-2xl font-semibold">{user.name}</span>
+                {/* <Badge variant={user.isActive ? "default" : "outline"}>{user.isActive ? "Active" : "Inactive"}</Badge> */}
                 <Badge variant={user.isDeleted ? "destructive" : "outline"}>{user.isDeleted ? "Deleted" : "Available"}</Badge>
               </div>
               <div className="break-all text-sm font-normal leading-6 text-muted-foreground">{user.email}</div>
@@ -133,8 +134,14 @@ export default function UserDetailPage({ userId }: { userId: string }) {
           <Button onClick={() => setEditDialogOpen(true)} disabled={!user}>
             Edit profile
           </Button>
-          <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
-            <span className="text-sm font-medium text-muted-foreground">
+          <div className={cn("flex items-center gap-2 rounded-full px-3 py-1.5 border", {
+            "border-primary bg-primary/10 dark:bg-primary/20": user?.isActive,
+            "border-red-500 bg-red-500/10 dark:bg-red-500/20": !user?.isActive,
+          })}>
+            <span className={cn("text-[10px] sm:text-xs md:text-xs font-medium text-muted-foreground", {
+              "text-primary dark:text-white": user?.isActive,
+              "text-red-500": !user?.isActive,
+            })}>
               {activateUserMutation.isPending || deactivateUserMutation.isPending
                 ? "Updating..."
                 : user?.isActive
@@ -148,7 +155,7 @@ export default function UserDetailPage({ userId }: { userId: string }) {
             />
           </div>
           <Button variant="destructive" onClick={() => void onDeactivate()} disabled={deleteUserMutation.isPending || !user}>
-            {deleteUserMutation.isPending ? "Deleting..." : "Delete user"}
+            {deleteUserMutation.isPending ? "Deleting..." : "Delete"}
           </Button>
         </div>
       }
@@ -163,7 +170,7 @@ export default function UserDetailPage({ userId }: { userId: string }) {
 
       {user ? (
         <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 text-xs">
             {[
               // { key: "mongoId", label: "Mongo ID", value: user._id ?? user.id },
               { key: "employeeId", label: "Employee ID", value: user.employeeId },
@@ -182,7 +189,7 @@ export default function UserDetailPage({ userId }: { userId: string }) {
           </div>
 
           <Section title="Identity and timestamps" description="Account lifecycle and audit markers.">
-            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-2 grid-cols-2 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3">
               {[
                 // { key: "internalId", label: "Internal ID", value: user.id },
                 { key: "createdAt", label: "Created at", value: renderDate(user.createdAt) },
@@ -197,47 +204,47 @@ export default function UserDetailPage({ userId }: { userId: string }) {
             </div>
           </Section>
 
-          <Section title="Organization" description="Role and branch context.">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="space-y-3 rounded-2xl border border-border bg-muted p-4">
-                <p className="text-sm font-semibold text-foreground">Role</p>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {[
-                    { key: "roleName", label: "Role name", value: role?.name },
-                    { key: "isActive", label: "Active", value: role?.isActive },
-                    // { key: "roleId", label: "Role ID", value: role?._id ?? user.roleId },
-                    { key: "roleDescription", label: "Description", value: role?.description },
-                    { key: "rolePermissionCount", label: "Permission count", value: role?.permissionIds?.length ?? 0 },
-                  ].map((item) => (
-                    <div key={item.key}>{fieldCard(item)}</div>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-3 rounded-2xl border border-border bg-muted p-4">
-                <p className="text-sm font-semibold text-foreground">Branch</p>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {[
-                    { key: "branchName", label: "Branch name", value: branch?.name },
-                    // { key: "branchId", label: "Branch ID", value: branch?._id ?? user.branchId },
-                    { key: "branchCode", label: "Code", value: branch?.code },
-                    { key: "branchLocation", label: "Location", value: branch?.location },
-                    { key: "branchStatus", label: "Status", value: branch?.status },
-                    { key: "branchHeadOffice", label: "Head office", value: branch?.isHeadOffice },
-                    // { key: "branchManagerId", label: "Manager ID", value: branch?.managerId },
-                    // { key: "branchParentId", label: "Parent branch", value: branch?.parentBranchId },
-                  ].map((item) => (
-                    <div key={item.key}>{fieldCard(item)}</div>
-                  ))}
-                </div>
+          {/* <Section title="Organization" description="Role and branch context."> */}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-3 rounded-md border border-border bg-muted p-4">
+              <p className="text-sm font-semibold text-foreground">Role</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: "roleName", label: "Role name", value: role?.name },
+                  { key: "isActive", label: "Active", value: role?.isActive },
+                  // { key: "roleId", label: "Role ID", value: role?._id ?? user.roleId },
+                  { key: "roleDescription", label: "Description", value: role?.description },
+                  { key: "rolePermissionCount", label: "Permission count", value: role?.permissionIds?.length ?? 0 },
+                ].map((item) => (
+                  <div key={item.key}>{fieldCard(item)}</div>
+                ))}
               </div>
             </div>
-          </Section>
+            <div className="space-y-3 rounded-md border border-border bg-muted p-4">
+              <p className="text-sm font-semibold text-foreground">Branch</p>
+              <div className="grid gap-3 grid-cols-2">
+                {[
+                  { key: "branchName", label: "Branch name", value: branch?.name },
+                  // { key: "branchId", label: "Branch ID", value: branch?._id ?? user.branchId },
+                  { key: "branchCode", label: "Code", value: branch?.code },
+                  { key: "branchLocation", label: "Location", value: branch?.location },
+                  { key: "branchStatus", label: "Status", value: branch?.status },
+                  { key: "branchHeadOffice", label: "Head office", value: branch?.isHeadOffice },
+                  // { key: "branchManagerId", label: "Manager ID", value: branch?.managerId },
+                  // { key: "branchParentId", label: "Parent branch", value: branch?.parentBranchId },
+                ].map((item) => (
+                  <div key={item.key}>{fieldCard(item)}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* </Section> */}
 
           <Section title="Role permissions" description="The permissions attached to the user's role, as returned by the backend.">
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {(role?.permissions ?? []).map((permission) => (
-                  <div key={permission._id ?? permission.id ?? permission.name} className="rounded-2xl border border-border bg-muted p-4">
+                  <div key={permission._id ?? permission.id ?? permission.name} className="rounded-md h-20 border border-border bg-muted p-4">
                     <p className="font-semibold text-foreground">{permission.name}</p>
                     <p className="mt-2 text-sm text-muted-foreground">{permission.description ?? "No description"}</p>
                   </div>

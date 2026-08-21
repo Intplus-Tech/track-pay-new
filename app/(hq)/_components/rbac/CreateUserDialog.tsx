@@ -26,6 +26,7 @@ import { useCreateUserMutation } from "@/hooks/rbac/useCreateUserMutation";
 import { RBAC_MODULE_OPTIONS } from "@/lib/rbac";
 import { uploadUserAvatar } from "@/lib/query/upload";
 import type { CreateUserPayload, RbacModuleName, RbacModulePermission, RbacRole, RbacBranch } from "@/types/rbac";
+import { AmountInput } from "@/components/ui/amount-input";
 
 const createUserSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -241,16 +242,16 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
         }
       }}
     >
-      <DialogContent className="min-w-[50vw] max-h-[96vh]">
+      <DialogContent className="md:min-w-[65vw] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Create user</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="max-h-[65vh] space-y-6 overflow-y-auto pr-1">
+            <div className="max-h-[65vh] space-y-6 overflow-y-auto pr-4">
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Identity</p>
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   <FormField control={form.control} name="firstName" render={({ field }) => (
                     <FormItem>
                       <FormLabel>First name</FormLabel>
@@ -352,7 +353,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
 
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Access and assignment</p>
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 p-10">
+                <div className="space-y-3 ">
 
                   <FormField control={form.control} name="photoUploadId" render={({ field }) => (
                     <FormItem>
@@ -370,12 +371,12 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                                 <ImageIcon />
                               )}
                             </AttachmentMedia>
-                            <AttachmentContent>
+                            <AttachmentContent className="w-full">
                               <AttachmentTitle>{avatarUploadName || "Upload avatar image"}</AttachmentTitle>
-                              <AttachmentDescription>
+                              <AttachmentDescription className="">
                                 {avatarUploadName
                                   ? "Image uploaded successfully."
-                                  : "Uploads to the backend and stores the returned upload id automatically."}
+                                  : "File size should be less than 2MB."}
                               </AttachmentDescription>
                             </AttachmentContent>
 
@@ -440,7 +441,13 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                       <FormItem>
                         <FormLabel>Max assigned loans</FormLabel>
                         <FormControl>
-                          <Input inputMode="numeric" placeholder="75" {...field} />
+                          {/* <Input inputMode="numeric" placeholder="75" {...field} /> */}
+                          <AmountInput
+                            value={field.value}
+                            onChange={(value) => {
+                              field.onChange(value);
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -465,13 +472,13 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                     <p className="text-sm text-muted-foreground">Leave this off to inherit permissions from the selected role. Enable it only when this specific user needs exceptions beyond role-based access.</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">Enable overrides</span>
-                    <Switch checked={moduleOverridesEnabled} onCheckedChange={setModuleOverridesEnabled} />
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">Enable overrides</span>
+                    <Switch className="cursor-pointer" checked={moduleOverridesEnabled} onCheckedChange={setModuleOverridesEnabled} />
                   </div>
                 </div>
 
                 {moduleOverridesEnabled ? (
-                  <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="grid gap-4 lg:grid-cols-3">
                     {RBAC_MODULE_OPTIONS.map((option) => {
                       const current = createPermissionGridState[option.module];
 
@@ -481,7 +488,7 @@ export function CreateUserDialog({ open, onOpenChange, roles, branches }: Create
                             <p className="font-semibold text-foreground">{option.label}</p>
                             <p className="text-sm text-muted-foreground">{option.description}</p>
                           </div>
-                          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div className="mt-4 grid grid-cols-1 gap-3 ">
                             <label className="flex min-w-[8.5rem] items-center gap-2 rounded-xl border border-border px-3 py-2">
                               <Switch
                                 checked={current.view}

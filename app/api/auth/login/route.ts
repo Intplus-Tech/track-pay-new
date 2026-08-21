@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     );
 
     const safePayload = sanitizeAuthPayloadForLogs(payload);
+    console.log("Backend Login Response:", safePayload);
 
 
 
