@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Bell, Moon, Search, Settings, Sun } from "lucide-react";
+import { ArrowLeft, Bell, Moon, PanelLeft, Search, Settings, Sun } from "lucide-react";
 import React, { useState, useSyncExternalStore } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { DashboardSession } from "@/lib/session";
@@ -108,6 +108,7 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-sidebar px-6 py-3 backdrop-blur-sm flex items-center gap-2">
       <div className="flex items-center justify-between gap-4 w-full">
+        <SidebarTrigger icon="panel" />
         {isBranchDetail ? (
           <div className="flex items-center gap-2 min-w-0">
             <button
@@ -126,7 +127,7 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
             </div>
           </div>
         ) : (
-          <h1 className="text-3xl font-semibold leading-none tracking-tight text-foreground">
+          <h1 className="text-lg md:text-3xl font-semibold leading-none tracking-tight text-foreground">
             {title}
           </h1>
         )}

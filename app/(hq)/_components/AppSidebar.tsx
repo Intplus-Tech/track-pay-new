@@ -106,9 +106,9 @@ export function AppSidebar({
       className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-elevated-lg"
       {...props}
     >
-      <SidebarHeader className="px-4 pb-2 pt-5">
+      <SidebarHeader className=" pl-3 pt-5">
         <div className="flex items-center gap-4">
-          <SidebarTrigger />
+          <SidebarTrigger className="cursor-pointer hover:scale-110" />
           <span
             className={cn(
               "text-2xl font-semibold tracking-tight text-brand transition-all duration-200",
@@ -208,12 +208,12 @@ export function AppSidebar({
             <div className="flex size-10 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
               <Logo width={22} height={22} priority />
             </div>
-            <div className="text-lg font-semibold leading-none tracking-tight">
+            <div className={cn("text-lg font-semibold tracking-tight transition-all duration-200", open ? "opacity-100" : "hidden opacity-0")}>
               {footerLabel}
             </div>
 
           </div>
-          <div className="min-w-0">
+          < div className={cn("min-w-0 transition-all duration-200", open ? "opacity-100" : "hidden opacity-0")}>
             <p className="mt-2 max-w-[8.5rem] text-sm leading-5 text-white/92">
               Micro Investment Support Services
             </p>
