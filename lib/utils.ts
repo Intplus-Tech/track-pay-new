@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { z } from "zod"
+import { z } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(value: string | number | null | undefined, fallback = "₦0.00") {
   if (value === null || value === undefined || value === "") return fallback;
-  
+
   // Strip any existing "N" or non-numeric characters if it's a string, then parse
   const numericValue = typeof value === "string" ? Number(value.replace(/[^0-9.-]+/g, "")) : value;
 

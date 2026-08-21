@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 function getInitials(name?: string | null) {
   if (!name) {
@@ -105,8 +106,8 @@ const Header = ({ session }: { session: DashboardSession | null }) => {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-sidebar px-6 py-3 backdrop-blur-sm">
-      <div className="flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 border-b border-border bg-sidebar px-6 py-3 backdrop-blur-sm flex items-center gap-2">
+      <div className="flex items-center justify-between gap-4 w-full">
         {isBranchDetail ? (
           <div className="flex items-center gap-2 min-w-0">
             <button

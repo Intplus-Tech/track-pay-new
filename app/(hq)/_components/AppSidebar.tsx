@@ -25,6 +25,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
   useSidebar,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronRight } from "lucide-react";
@@ -106,14 +107,8 @@ export function AppSidebar({
       {...props}
     >
       <SidebarHeader className="px-4 pb-2 pt-5">
-        <Link
-          href="/home/overview"
-          className={cn(
-            "flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-sidebar-accent",
-            !open && "justify-center px-0",
-          )}
-        >
-          <Logo width={34} height={34} priority />
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
           <span
             className={cn(
               "text-2xl font-semibold tracking-tight text-brand transition-all duration-200",
@@ -122,7 +117,7 @@ export function AppSidebar({
           >
             TrackPay
           </span>
-        </Link>
+        </div>
       </SidebarHeader>
       <SidebarContent className="px-3 pb-4 pt-8">
         <SidebarMenu className="space-y-1 p-0">
