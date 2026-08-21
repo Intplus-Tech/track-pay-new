@@ -22,14 +22,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const accessToken = await getAccessTokenOrThrow();
-    
+
     // Attempt to get the authUserId from the session cookie
     const cookieStore = await cookies();
     const userCookie = cookieStore.get(AUTH_USER_COOKIE)?.value;
     const user = decodeSessionValue<AuthUser>(userCookie);
 
     if (!user || !user.id) {
-       return NextResponse.json(
+      return NextResponse.json(
         { message: "User session not found." },
         { status: 401 },
       );
@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
 
     const nextResponse = NextResponse.json(payload, { status: 200 });
 
-    if (payload?.twoFactorEnabled !== undefined && user) {
+    if (payload && typeof payload === "object" && payload.twoFactorEnabled !== undefined && user) {
       user.twoFactorEnabled = payload.twoFactorEnabled;
-      
+
       const { encodeSessionValue } = await import("@/lib/auth");
       nextResponse.cookies.set(
         AUTH_USER_COOKIE,
